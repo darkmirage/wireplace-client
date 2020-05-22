@@ -9,6 +9,14 @@ class WirePlaceClient {
     console.log('transmit', hostname, port);
     this.socket.transmit('move', 123);
   }
+
+  handleKeyDown = (event: any) => {
+    console.log(event);
+  };
+
+  handleKeyUp = (event: any) => {
+    console.log(event);
+  };
 }
 
 export default WirePlaceClient;

@@ -2,13 +2,14 @@ import React from 'react';
 import WirePlaceClient from 'client/WirePlaceClient';
 
 type ChildProps = {
-  client: WirePlaceClient | null;
+  client: WirePlaceClient;
 };
 
 type Props = {
   children: (props: ChildProps) => React.ReactNode;
   hostname: string;
   port: number;
+  spinner: React.ReactNode | null;
 };
 
 const ClientProvider = (props: Props) => {
@@ -21,11 +22,12 @@ const ClientProvider = (props: Props) => {
     setClient(client);
   }, [hostname, port]);
 
-  return <>{props.children({ client })}</>;
+  return <>{client ? props.children({ client }) : props.spinner}</>;
 };
 
 ClientProvider.defaultProps = {
   port: 8000,
+  spinner: null,
 } as Partial<Props>;
 
 export default ClientProvider;
