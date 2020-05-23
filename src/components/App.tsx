@@ -2,6 +2,7 @@ import React from 'react';
 import { createUseStyles, useTheme } from 'react-jss';
 
 import ClientProvider from 'components/ClientProvider';
+import GameRenderer from 'components/GameRenderer';
 import Spinner from 'components/Spinner';
 import type { Theme } from 'themes';
 
@@ -23,7 +24,7 @@ const App = () => {
               onKeyDown={client.handleKeyDown}
               onKeyUp={client.handleKeyUp}
             >
-              <div>initialized</div>
+              <GameRenderer client={client} />
             </div>
           )}
         </ClientProvider>
