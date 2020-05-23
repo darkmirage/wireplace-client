@@ -1,6 +1,5 @@
 import React from 'react';
 import { createUseStyles } from 'react-jss';
-import { Scene } from 'three';
 
 import type WirePlaceClient from 'client/WirePlaceClient';
 
@@ -21,10 +20,10 @@ const GameRenderer = (props: Props) => {
 
     client.renderer.setDOMElement(current);
     window.addEventListener('resize', client.renderer.resize);
-    client.engine.start();
+    client.engine.startLoop();
   
     return () => {
-      client.engine.stop();
+      client.engine.stopLoop();
       window.removeEventListener('resize', client.renderer.resize);
     };
   }, [client]);

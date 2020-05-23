@@ -13,17 +13,17 @@ class WirePlaceEngine {
     this._lastTime = 0;
   }
 
-  start = () => {
+  startLoop = () => {
     this._running = true;
     this._lastTime = Date.now() - 1;
-    this.run();
+    this.loop();
   }
 
-  stop = () => {
+  stopLoop = () => {
     this._running = false;
   }
 
-  run = () => {
+  loop = () => {
     this.tick += 1;
     const now = Date.now();
     const elapsed = now - this._lastTime;
@@ -31,7 +31,7 @@ class WirePlaceEngine {
     this.update(this.tick, elapsed);
 
     if (this._running) {
-      window.requestAnimationFrame(this.run);
+      window.requestAnimationFrame(this.loop);
     }
   }
 

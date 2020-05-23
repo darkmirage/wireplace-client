@@ -3,7 +3,7 @@ import type { AGClientSocket } from 'socketcluster-client';
 
 import WirePlaceEngine from './WirePlaceEngine';
 import WirePlaceRenderer from './WirePlaceRenderer';
-import { SyntheticEvent, KeyboardEvent } from 'react';
+import { KeyboardEvent } from 'react';
 
 class WirePlaceClient {
   socket: AGClientSocket;
