@@ -19,6 +19,7 @@ const ClientProvider = (props: Props) => {
 
   React.useEffect(() => {
     const client = new WirePlaceClient(hostname, port);
+    client.connect();
     setClient(client);
   }, [hostname, port]);
 

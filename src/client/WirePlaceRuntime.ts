@@ -1,16 +1,20 @@
+import type { WirePlaceScene } from 'wireplace-scene';
+
 import WirePlaceRenderer from "./WirePlaceRenderer";
 
-class WirePlaceEngine {
+class WirePlaceRuntime {
   renderer: WirePlaceRenderer;
   tick: number;
+  _scene: WirePlaceScene;
   _running: boolean;
   _lastTime: number;
 
-  constructor(renderer: WirePlaceRenderer) {
+  constructor(renderer: WirePlaceRenderer, scene: WirePlaceScene) {
     this.renderer = renderer;
     this.tick = 0;
     this._running = false;
     this._lastTime = 0;
+    this._scene = scene;
   }
 
   startLoop = () => {
@@ -40,4 +44,4 @@ class WirePlaceEngine {
   }
 }
 
-export default WirePlaceEngine;
+export default WirePlaceRuntime;

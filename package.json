@@ -17,7 +17,8 @@
     "react-scripts": "3.4.1",
     "socketcluster-client": "^16.0.1",
     "three": "^0.116.1",
-    "typescript": "^3.9.3"
+    "typescript": "^3.9.3",
+    "wireplace-scene": "file:../wireplace-scene"
   },
   "scripts": {
     "start": "react-scripts start",

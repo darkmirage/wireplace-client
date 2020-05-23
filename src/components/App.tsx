@@ -6,7 +6,7 @@ import GameRenderer from 'components/GameRenderer';
 import Spinner from 'components/Spinner';
 import type { Theme } from 'themes';
 
-const HOSTNAME = 'raven-ubuntu';
+const HOSTNAME = 'localhost';
 const PORT = 8000;
 
 const App = () => {

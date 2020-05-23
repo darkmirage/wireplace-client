@@ -1,21 +1,29 @@
+import { WirePlaceScene } from 'wireplace-scene';
 import socketClusterClient from 'socketcluster-client';
 import type { AGClientSocket } from 'socketcluster-client';
+import type { KeyboardEvent } from 'react';
 
-import WirePlaceEngine from './WirePlaceEngine';
+import WirePlaceRuntime from './WirePlaceRuntime';
 import WirePlaceRenderer from './WirePlaceRenderer';
-import { KeyboardEvent } from 'react';
 
 class WirePlaceClient {
   socket: AGClientSocket;
   renderer: WirePlaceRenderer;
-  engine: WirePlaceEngine;
+  runtime: WirePlaceRuntime;
+  scene: WirePlaceScene;
 
   constructor(hostname: string = 'localhost', port: number = 8000) {
-    this.socket = socketClusterClient.create({ hostname, port });
-    console.log('transmit', hostname, port);
-    this.socket.transmit('move', 123);
+    this.socket = socketClusterClient.create({ hostname, port, autoConnect: false });
     this.renderer = new WirePlaceRenderer();
-    this.engine = new WirePlaceEngine(this.renderer);
+    this.scene = new WirePlaceScene();
+    this.runtime = new WirePlaceRuntime(this.renderer, this.scene);
+  }
+
+  async connect() {
+    const actorId = await this.socket.invoke('join', {});
+    console.log(actorId);
+    this.scene.addActor(actorId);
+    console.log(this.scene.retrieveDiff());
   }
 
   handleKeyDown = (event: KeyboardEvent) => {

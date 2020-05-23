@@ -20,10 +20,10 @@ const GameRenderer = (props: Props) => {
 
     client.renderer.setDOMElement(current);
     window.addEventListener('resize', client.renderer.resize);
-    client.engine.startLoop();
+    client.runtime.startLoop();
   
     return () => {
-      client.engine.stopLoop();
+      client.runtime.stopLoop();
       window.removeEventListener('resize', client.renderer.resize);
     };
   }, [client]);
