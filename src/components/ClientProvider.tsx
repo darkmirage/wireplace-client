@@ -20,8 +20,8 @@ const ClientProvider = (props: Props) => {
   let [client, setClient] = React.useState<WirePlaceClient | null>(null);
 
   React.useEffect(() => {
-    const newClient = new WirePlaceClient(hostname, port);
-    newClient.connect(username, token);
+    const newClient = new WirePlaceClient(username, token, hostname, port);
+    newClient.connect();
     setClient(newClient);
 
     return () => newClient.disconnect();

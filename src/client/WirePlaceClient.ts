@@ -26,8 +26,16 @@ class WirePlaceClient implements WirePlaceChatClient {
   renderer: WirePlaceThreeRenderer;
   runtime: WirePlaceRuntime;
   scene: WirePlaceScene;
+  _username: string;
+  _token: string;
+  _unsubscribe: () => void;
 
-  constructor(hostname: string = 'localhost', port: number = 8000) {
+  constructor(
+    username: string,
+    token: string,
+    hostname: string = 'localhost',
+    port: number = 8000
+  ) {
     this.socket = socketClusterClient.create({
       hostname,
       port,
@@ -36,6 +44,9 @@ class WirePlaceClient implements WirePlaceChatClient {
     this.renderer = new WirePlaceThreeRenderer();
     this.scene = new WirePlaceScene();
     this.runtime = new WirePlaceRuntime(this.renderer, this.scene);
+    this._username = username;
+    this._token = token;
+    this._unsubscribe = () => {};
     (window as any).client = this;
   }
 
@@ -66,31 +77,49 @@ class WirePlaceClient implements WirePlaceChatClient {
     this.socket.closeAllChannels();
   }
 
-  async connect(username: string, token: string) {
-    const start = Date.now();
-    let unsubscribe = () => {};
-
-    (async () => {
-      for await (let { code, reason } of this.socket.listener('connectAbort')) {
-        console.error('[Client] Connection aborted', code, reason);
-        unsubscribe();
-      }
-    })();
+  async join() {
+    const username = this._username;
+    const token = this._token;
 
     const actorId: string = await this.socket.invoke('join', {
       username,
       token,
     });
     this.runtime.setActor(actorId);
-    console.log(`[Client] Connected in ${Date.now() - start}ms`);
+    console.log(`[Client] Logged in as ${username}`);
 
-    const initialDiff = await this.socket.invoke('sync', {});
-    console.log('[Client] Initial diff:', JSON.parse(initialDiff));
-    this.scene.applyDiff(initialDiff);
-
-    unsubscribe = this.scene.onActorUpdate(actorId, (update) => {
+    this._unsubscribe = this.scene.onActorUpdate(actorId, (update) => {
       this.socket.transmit('move', update);
     });
+  }
+
+  async connect() {
+    let lastSeen = Date.now();
+
+    // Listen for disconnects
+    (async () => {
+      for await (let { code, reason } of this.socket.listener('connectAbort')) {
+        console.error('[Client] Connection aborted', code, reason);
+        this.scene.clear();
+        this._unsubscribe();
+        lastSeen = Date.now();
+      }
+    })();
+
+    // Listen for reconnections
+    (async () => {
+      for await (let info of this.socket.listener('connect')) {
+        console.log(`[Client] Connected in ${Date.now() - lastSeen}ms`);
+        await this.join();
+        console.log('[Client] Connection info:', info);
+        const initialDiff = await this.socket.invoke('sync', {});
+        console.log('[Client] Initial diff:', JSON.parse(initialDiff));
+        this.scene.applyDiff(initialDiff);
+      }
+    })();
+
+    lastSeen = Date.now();
+    this.socket.connect();
 
     (async () => {
       const channel = this.socket.subscribe('update');
