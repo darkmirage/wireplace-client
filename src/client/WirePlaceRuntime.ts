@@ -1,15 +1,15 @@
 import type { WirePlaceScene } from 'wireplace-scene';
 
-import WirePlaceRenderer from "./WirePlaceRenderer";
+import WirePlaceThreeRenderer from "./WirePlaceThreeRenderer";
 
 class WirePlaceRuntime {
-  renderer: WirePlaceRenderer;
+  renderer: WirePlaceThreeRenderer;
   tick: number;
   _scene: WirePlaceScene;
   _running: boolean;
   _lastTime: number;
 
-  constructor(renderer: WirePlaceRenderer, scene: WirePlaceScene) {
+  constructor(renderer: WirePlaceThreeRenderer, scene: WirePlaceScene) {
     this.renderer = renderer;
     this.tick = 0;
     this._running = false;
@@ -40,6 +40,12 @@ class WirePlaceRuntime {
   }
 
   update = (tick: number, elapsed: number) => {
+    const diff = this._scene.retrieveDiff();
+    const updates = diff.d;
+    if (Object.keys(updates).length > 0) {
+      this.renderer.applyUpdates((updates as any));
+    }
+    this.renderer.render(elapsed);
     return;
   }
 }

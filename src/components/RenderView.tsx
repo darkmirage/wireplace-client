@@ -7,7 +7,7 @@ type Props = {
   client: WirePlaceClient;
 }
 
-const GameRenderer = (props: Props) => {
+const RenderView = (props: Props) => {
   const ref = React.useRef<HTMLDivElement | null>(null);
   const classes = useStyles();
   const { client } = props;
@@ -39,4 +39,4 @@ const useStyles = createUseStyles({
   }
 });
 
-export default GameRenderer;
+export default RenderView;
