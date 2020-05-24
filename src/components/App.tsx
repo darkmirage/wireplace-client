@@ -1,6 +1,7 @@
 import React from 'react';
 import { createUseStyles, useTheme } from 'react-jss';
 
+import Chat from 'components/Chat';
 import ClientProvider from 'components/ClientProvider';
 import RenderView from 'components/RenderView';
 import Spinner from 'components/Spinner';
@@ -14,21 +15,32 @@ const App = () => {
 
   return (
     <div className={classes.app}>
-      <div className={classes.panel}>WirePlace</div>
-      <div className={classes.main}>
-        <ClientProvider hostname={HOSTNAME} port={PORT} spinner={<Spinner />}>
-          {({ client }) => (
-            <div
-              className={classes.eventArea}
-              tabIndex={0}
-              onKeyDown={client.handleKeyDown}
-              onKeyUp={client.handleKeyUp}
-            >
-              <RenderView client={client} />
+      <ClientProvider
+        username={Date.now().toString()}
+        token="foobar"
+        hostname={HOSTNAME}
+        port={PORT}
+        spinner={<Spinner />}
+      >
+        {({ client }) => (
+          <>
+            <div className={classes.panel}>
+              WirePlace
+              <Chat client={client} />
             </div>
-          )}
-        </ClientProvider>
-      </div>
+            <div className={classes.main}>
+              <div
+                className={classes.eventArea}
+                tabIndex={0}
+                onKeyDown={client.handleKeyDown}
+                onKeyUp={client.handleKeyUp}
+              >
+                <RenderView client={client} />
+              </div>
+            </div>
+          </>
+        )}
+      </ClientProvider>
     </div>
   );
 };

@@ -9,21 +9,23 @@ type Props = {
   children: (props: ChildProps) => React.ReactNode;
   hostname: string;
   port: number;
+  username: string;
+  token: string;
   spinner: React.ReactNode | null;
 };
 
 const ClientProvider = (props: Props) => {
-  const { hostname, port } = props;
+  const { hostname, port, username, token } = props;
 
   let [client, setClient] = React.useState<WirePlaceClient | null>(null);
 
   React.useEffect(() => {
     const newClient = new WirePlaceClient(hostname, port);
-    newClient.connect();
+    newClient.connect(username, token);
     setClient(newClient);
 
     return () => newClient.disconnect();
-  }, [hostname, port]);
+  }, [hostname, port, username, token]);
 
   return <>{client ? props.children({ client }) : props.spinner}</>;
 };

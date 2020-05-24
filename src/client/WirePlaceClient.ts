@@ -6,7 +6,22 @@ import type { KeyboardEvent } from 'react';
 import WirePlaceRuntime, { Directions } from './WirePlaceRuntime';
 import WirePlaceThreeRenderer from './WirePlaceThreeRenderer';
 
-class WirePlaceClient {
+export interface ChatLine {
+  lineId: number;
+  time: number;
+  username: string;
+  message: string;
+}
+
+type ChatCallback = (line: ChatLine) => void;
+
+export interface WirePlaceChatClient {
+  sendMessage: (message: string) => void;
+  onMessage: (callback: ChatCallback) => Function;
+  fetchMessages: () => Promise<Array<ChatLine>>;
+}
+
+class WirePlaceClient implements WirePlaceChatClient {
   socket: AGClientSocket;
   renderer: WirePlaceThreeRenderer;
   runtime: WirePlaceRuntime;
@@ -24,12 +39,34 @@ class WirePlaceClient {
     (window as any).client = this;
   }
 
+  sendMessage(message: string) {
+    this.socket.transmit('say', message);
+  }
+
+  onMessage(callback: ChatCallback): Function {
+    const channel = this.socket.subscribe('said');
+
+    (async () => {
+      for await (let line of channel) {
+        callback(line);
+      }
+    })();
+
+    return () => {
+      channel.unsubscribe();
+    };
+  }
+
+  async fetchMessages(): Promise<Array<ChatLine>> {
+    return [];
+  }
+
   disconnect() {
     console.log('[Client] Disconnect');
     this.socket.closeAllChannels();
   }
 
-  async connect() {
+  async connect(username: string, token: string) {
     const start = Date.now();
     let unsubscribe = () => {};
 
@@ -40,7 +77,10 @@ class WirePlaceClient {
       }
     })();
 
-    const actorId: string = await this.socket.invoke('join', {});
+    const actorId: string = await this.socket.invoke('join', {
+      username,
+      token,
+    });
     this.runtime.setActor(actorId);
     console.log(`[Client] Connected in ${Date.now() - start}ms`);
 
