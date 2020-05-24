@@ -11,6 +11,7 @@ export enum Directions {
   Down = 'Down',
   Left = 'Left',
   Right = 'Right',
+  Random = 'Random',
 }
 
 class WirePlaceRuntime {
@@ -34,18 +35,25 @@ class WirePlaceRuntime {
       [Directions.Down]: false,
       [Directions.Left]: false,
       [Directions.Right]: false,
+      [Directions.Random]: false,
     };
   }
 
   isMoving(): boolean {
     return (
       this._directions[Directions.Up] !== this._directions[Directions.Down] ||
-      this._directions[Directions.Left] !== this._directions[Directions.Right]
+      this._directions[Directions.Left] !==
+        this._directions[Directions.Right] ||
+      this._directions[Directions.Random]
     );
   }
 
   move(direction: keyof typeof Directions, start: boolean) {
     this._directions[direction] = start;
+  }
+
+  toggleRandom() {
+    this._directions[Directions.Random] = !this._directions[Directions.Random];
   }
 
   setActor(actorId: string) {
@@ -83,16 +91,24 @@ class WirePlaceRuntime {
       if (actor) {
         const { speed } = actor;
         v.set(0, 0, 0);
+
         if (this._directions[Directions.Down]) {
           v.z += 1;
         } else if (this._directions[Directions.Up]) {
           v.z -= 1;
         }
+
         if (this._directions[Directions.Left]) {
           v.x -= 1;
         } else if (this._directions[Directions.Right]) {
           v.x += 1;
         }
+
+        if (this._directions[Directions.Random]) {
+          v.x += Math.random() * 2.0 - 1.0;
+          v.z += Math.random() * 2.0 - 1.0;
+        }
+
         v.normalize();
         v.multiplyScalar((speed * elapsed) / 1000);
         v.x += actor.position.x;

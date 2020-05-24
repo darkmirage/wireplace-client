@@ -62,8 +62,6 @@ class WirePlaceThreeRenderer {
     this._scene.add(floor);
 
     this._scene.add(new AxesHelper(1.0));
-
-    (window as any).floor = floor;
   }
 
   _getObjectById(objectId: ObjectID): Object3D | null {

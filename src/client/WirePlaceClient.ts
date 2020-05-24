@@ -30,26 +30,37 @@ class WirePlaceClient {
   }
 
   async connect() {
-    console.log('[Client] Connect');
+    const start = Date.now();
+    let unsubscribe = () => {};
+
+    (async () => {
+      for await (let { code, reason } of this.socket.listener('connectAbort')) {
+        console.error('[Client] Connection aborted', code, reason);
+        unsubscribe();
+      }
+    })();
+
     const actorId: string = await this.socket.invoke('join', {});
     this.runtime.setActor(actorId);
+    console.log(`[Client] Connected in ${Date.now() - start}ms`);
+
     const initialDiff = await this.socket.invoke('sync', {});
+    console.log('[Client] Initial diff:', JSON.parse(initialDiff));
     this.scene.applyDiff(initialDiff);
 
-    this.listen();
-    this.scene.onActorUpdate(actorId, (update, actor) => {
-      this.socket.transmit('move', { id: actorId, u: update });
+    unsubscribe = this.scene.onActorUpdate(actorId, (update) => {
+      this.socket.transmit('move', update);
     });
-  }
 
-  async listen() {
-    const channel = this.socket.subscribe('update');
-    for await (let data of channel) {
-      this.scene.applyDiff(
-        data,
-        this.runtime.isMoving() ? this.runtime.actorId : null
-      );
-    }
+    (async () => {
+      const channel = this.socket.subscribe('update');
+      for await (let data of channel) {
+        this.scene.applyDiff(
+          data,
+          this.runtime.isMoving() ? this.runtime.actorId : null
+        );
+      }
+    })();
   }
 
   handleKeyDown = (event: KeyboardEvent) => {
@@ -89,6 +100,10 @@ class WirePlaceClient {
       }
       case 'ArrowRight': {
         this.runtime.move(Directions.Right, false);
+        break;
+      }
+      case 's': {
+        this.runtime.toggleRandom();
         break;
       }
     }
