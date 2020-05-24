@@ -18,12 +18,11 @@ const ClientProvider = (props: Props) => {
   let [client, setClient] = React.useState<WirePlaceClient | null>(null);
 
   React.useEffect(() => {
-    if (client) {
-      client.disconnect();
-    }
     const newClient = new WirePlaceClient(hostname, port);
     newClient.connect();
     setClient(newClient);
+
+    return () => newClient.disconnect();
   }, [hostname, port]);
 
   return <>{client ? props.children({ client }) : props.spinner}</>;

@@ -31,6 +31,7 @@ class WirePlaceClient {
     console.log('[Client] Connect');
     this._actorId = await this.socket.invoke('join', {});
     const initialDiff = await this.socket.invoke('sync', {});
+    console.log('Initial sync', initialDiff);
     this.scene.applyDiff(initialDiff);
     this.listen();
   }
