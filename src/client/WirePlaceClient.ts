@@ -1,4 +1,4 @@
-import { WirePlaceScene } from 'wireplace-scene';
+import { WirePlaceScene, deserializeDiff } from 'wireplace-scene';
 import socketClusterClient from 'socketcluster-client';
 import type { AGClientSocket } from 'socketcluster-client';
 import type { KeyboardEvent } from 'react';
@@ -113,9 +113,10 @@ class WirePlaceClient implements WirePlaceChatClient {
         this.scene.clear();
         await this.join();
         console.log('[Client] Connection info:', info);
-        const initialDiff = await this.socket.invoke('sync', {});
-        console.log('[Client] Initial diff:', JSON.parse(initialDiff));
-        this.scene.applyDiff(initialDiff);
+        const diffRaw = await this.socket.invoke('sync', {});
+        const diff = deserializeDiff(diffRaw);
+        console.log('[Client] Initial diff:', diff);
+        this.scene.applyDiff(diff);
       }
     })();
 
@@ -125,7 +126,7 @@ class WirePlaceClient implements WirePlaceChatClient {
     (async () => {
       const channel = this.socket.subscribe('update');
       for await (let data of channel) {
-        this.scene.applyDiff(
+        this.scene.applySerializedDiff(
           data,
           this.runtime.isMoving() ? this.runtime.actorId : null
         );
