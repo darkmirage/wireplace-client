@@ -10,6 +10,8 @@ interface ObjectCustomData {
   speed: number;
 }
 
+const SMOOTHING_CONSTANT = 5.0;
+
 const d = new Vector3();
 
 class AnimationRuntime {
@@ -55,7 +57,7 @@ class AnimationRuntime {
     }
   }
 
-  update = (deltaTimeMs: number) => {
+  update = (delta: number) => {
     for (const child of this._scene.children) {
       const { userData } = child;
       if (!userData.animateable) {
@@ -66,14 +68,14 @@ class AnimationRuntime {
       if (!child.position.equals(target.position)) {
         d.copy(target.position).sub(child.position);
         const distance = d.length();
-        const progress = distance / 3.5;
+        const progress = distance / SMOOTHING_CONSTANT;
         d.normalize();
         d.multiplyScalar(progress);
         child.position.add(d);
       }
 
       if (!child.quaternion.equals(target.quaternion)) {
-        child.quaternion.slerp(target.quaternion, 1 / 3.5);
+        child.quaternion.slerp(target.quaternion, 1 / SMOOTHING_CONSTANT);
       }
 
       // TODO:

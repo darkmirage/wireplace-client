@@ -1,13 +1,13 @@
-import { Vector3, Quaternion, Euler } from 'three';
+import { Clock, Vector3, Quaternion, Euler } from 'three';
 import type { WirePlaceScene } from 'wireplace-scene';
 
 import WirePlaceThreeRenderer from './WirePlaceThreeRenderer';
 
-const TICK_RATE_MS = 50;
 const FORWARD = new Vector3(0, 0, 1);
 const _v = new Vector3();
 const _q = new Quaternion();
 const _r = new Euler();
+const _clock = new Clock();
 
 export enum Directions {
   Up = 'Up',
@@ -74,21 +74,16 @@ class WirePlaceRuntime {
   };
 
   loop = () => {
-    const now = Date.now();
-    const elapsed = now - this._lastTime;
-
-    if (elapsed >= TICK_RATE_MS) {
-      this.tick += 1;
-      this.update(this.tick, elapsed);
-      this._lastTime = now;
-    }
+    const deltaTimeMs = _clock.getDelta();
+    this.tick += 1;
+    this.update(this.tick, deltaTimeMs);
 
     if (this._running) {
       window.requestAnimationFrame(this.loop);
     }
   };
 
-  update = (tick: number, elapsed: number) => {
+  update = (tick: number, delta: number) => {
     if (this.isMoving() && this.actorId) {
       const actor = this._scene.getActor(this.actorId);
       if (actor) {
@@ -114,7 +109,7 @@ class WirePlaceRuntime {
 
         _v.normalize();
         _q.setFromUnitVectors(FORWARD, _v);
-        _v.multiplyScalar((speed * elapsed) / 1000);
+        _v.multiplyScalar(speed * delta);
         _v.x += actor.position.x;
         _v.y += actor.position.y;
         _v.z += actor.position.z;
@@ -132,7 +127,7 @@ class WirePlaceRuntime {
     if (Object.keys(updates).length > 0) {
       this.renderer.applyUpdates(updates as any);
     }
-    this.renderer.render(elapsed);
+    this.renderer.render(delta);
     return;
   };
 }

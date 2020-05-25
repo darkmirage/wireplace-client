@@ -21,6 +21,8 @@ export interface WirePlaceChatClient {
   fetchMessages: () => Promise<Array<ChatLine>>;
 }
 
+const UPDATE_FPS = 30;
+
 class WirePlaceClient implements WirePlaceChatClient {
   socket: AGClientSocket;
   renderer: WirePlaceThreeRenderer;
@@ -88,8 +90,12 @@ class WirePlaceClient implements WirePlaceChatClient {
     this.runtime.setActor(actorId);
     console.log(`[Client] Logged in as ${username}`);
 
+    let lastSent = Date.now();
     this._unsubscribe = this.scene.onActorUpdate(actorId, (update) => {
-      this.socket.transmit('move', update);
+      if (Date.now() - lastSent >= 1000 / UPDATE_FPS) {
+        this.socket.transmit('move', update);
+        lastSent = Date.now();
+      }
     });
   }
 

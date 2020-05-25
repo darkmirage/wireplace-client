@@ -13,6 +13,9 @@ import {
   Scene,
   WebGLRenderer,
 } from 'three';
+import { MapControls } from 'three/examples/jsm/controls/OrbitControls';
+import Stats from 'three/examples/jsm/libs/stats.module';
+import type { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import type { Update } from 'wireplace-scene';
 
 import AnimationRuntime from './AnimationRuntime';
@@ -32,6 +35,8 @@ class WirePlaceThreeRenderer {
   _scene: Scene;
   _camera: PerspectiveCamera;
   _animation: AnimationRuntime;
+  _controls: OrbitControls;
+  _stats: Stats;
 
   constructor() {
     this.domElement = document.createElement('div');
@@ -39,6 +44,20 @@ class WirePlaceThreeRenderer {
     this._scene = new Scene();
     this._camera = new PerspectiveCamera(60);
     this._animation = new AnimationRuntime(this._scene);
+
+    this._controls = new MapControls(
+      this._camera,
+      this.webGLRenderer.domElement
+    );
+    this._controls.target.set(0, 0, 0);
+    this._controls.screenSpacePanning = false;
+    this._controls.maxPolarAngle = Math.PI / 2;
+    this._controls.enableKeys = false;
+
+    this._stats = new (Stats as any)();
+    this._stats.dom.setAttribute('style', 'position: fixed; right: 0; top: 0');
+    document.body.appendChild(this._stats.dom);
+
     this._setupScene();
   }
 
@@ -128,9 +147,11 @@ class WirePlaceThreeRenderer {
     }
   }
 
-  render = (deltaTimeMs: number) => {
-    this._animation.update(deltaTimeMs);
+  render = (delta: number) => {
+    this._animation.update(delta);
     this.webGLRenderer.render(this._scene, this._camera);
+    this._stats.update();
+    this._controls.update();
   };
 }
 
