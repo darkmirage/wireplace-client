@@ -47,6 +47,7 @@ const Chat = (props: Props) => {
       <form onSubmit={handleSubmit}>
         <input
           value={message}
+          placeholder="Type something"
           onChange={(evt) => setMessage(evt.target.value)}
         />
       </form>
