@@ -115,7 +115,7 @@ class WirePlaceRuntime {
         v.y += actor.position.y;
         v.z += actor.position.z;
         const position = { x: v.x, y: v.y, z: v.z };
-        this._scene.updateActor(this.actorId, { position });
+        this._scene.updateActor(this.actorId, { position }, true);
       }
     }
 
