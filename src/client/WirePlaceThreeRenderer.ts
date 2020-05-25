@@ -88,40 +88,42 @@ class WirePlaceThreeRenderer {
       let obj = this._getObjectById(objectId);
       const u = updates[objectId];
 
-      if (u) {
-        if (!obj) {
-          obj = new Object3D();
-          obj.name = objectId;
-          const material = new MeshPhongMaterial({
-            color: 0xffffff,
-            flatShading: false,
-          });
-          const body = new Mesh(boxGeometry, material);
-          body.position.y = 0.75;
-          obj.add(body);
-          this._scene.add(obj);
+      if (u.deleted) {
+        if (obj) {
+          this._scene.remove(obj);
         }
+        continue;
+      }
 
-        const { color, position, rotation, scale, up } = u;
-        if (color) {
-          ((obj.children[0] as Mesh).material as MeshPhongMaterial).color.set(
-            color
-          );
-        }
-        if (position) {
-          obj.position.set(position.x, position.y, position.z);
-        }
-        if (rotation) {
-          obj.rotation.set(rotation.x, rotation.y, rotation.z, 'XYZ');
-        }
-        if (scale) {
-          obj.scale.set(scale.x, scale.y, scale.z);
-        }
-        if (up) {
-          obj.up.set(up.x, up.y, up.z);
-        }
-      } else if (obj) {
-        this._scene.remove(obj);
+      if (!obj) {
+        obj = new Object3D();
+        obj.name = objectId;
+        const material = new MeshPhongMaterial({
+          color: u.color || 0xffffff,
+          flatShading: false,
+        });
+        const body = new Mesh(boxGeometry, material);
+        body.position.y = 0.75;
+        obj.add(body);
+        this._scene.add(obj);
+      }
+
+      if (u.color) {
+        ((obj.children[0] as Mesh).material as MeshPhongMaterial).color.set(
+          u.color
+        );
+      }
+      if (u.position) {
+        obj.position.set(u.position.x, u.position.y, u.position.z);
+      }
+      if (u.rotation) {
+        obj.rotation.set(u.rotation.x, u.rotation.y, u.rotation.z, 'XYZ');
+      }
+      if (u.scale) {
+        obj.scale.set(u.scale.x, u.scale.y, u.scale.z);
+      }
+      if (u.up) {
+        obj.up.set(u.up.x, u.up.y, u.up.z);
       }
     }
     this._dirty = true;
