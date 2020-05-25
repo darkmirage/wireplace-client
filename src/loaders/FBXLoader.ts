@@ -10,7 +10,7 @@ function setChildrenProperties(parent: Object3D) {
   const mesh = parent as Mesh;
   if (mesh.isMesh) {
     mesh.castShadow = true;
-    mesh.receiveShadow = false;
+    mesh.receiveShadow = true;
     const materials = Array.isArray(mesh.material)
       ? mesh.material
       : [mesh.material];

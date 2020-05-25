@@ -8,8 +8,7 @@ import {
   GridHelper,
   HemisphereLight,
   Mesh,
-  MeshBasicMaterial,
-  MeshPhongMaterial,
+  MeshStandardMaterial,
   Object3D,
   PCFSoftShadowMap,
   PerspectiveCamera,
@@ -75,21 +74,21 @@ class WirePlaceThreeRenderer {
   }
 
   async _setupScene() {
-    this._scene.background = new Color(0xcccccc);
+    this._scene.background = new Color(0xdbf7ff);
     this._camera.position.set(0, 5, 4);
     const distance = this._camera.position.length();
-    this._scene.fog = new Fog(0xa0a0a0, distance * 1.5, distance * 4);
+    this._scene.fog = new Fog(0xdbf7ff, distance * 1.5, distance * 5);
 
     let l1 = new DirectionalLight(0xffffff);
     l1.position.set(0, 200, 200);
     l1.castShadow = true;
-    l1.intensity = 0.3;
+    l1.intensity = 0.4;
     this._scene.add(l1);
 
     const l2 = new DirectionalLight(0xffffff);
     l2.position.set(0, 200, 200);
     l2.castShadow = false;
-    l2.intensity = 1 - l1.intensity - 0.2;
+    l2.intensity = 0.3;
     this._scene.add(l2);
 
     const l3 = new AmbientLight(0xffffff, 0.1);
@@ -99,19 +98,20 @@ class WirePlaceThreeRenderer {
     l4.position.set(0, 200, 0);
     this._scene.add(l4);
 
-    const floor = new Mesh(
-      new PlaneBufferGeometry(6, 6),
-      new MeshPhongMaterial({ color: 0x999999, depthTest: false })
-    );
+    const floorMaterial = new MeshStandardMaterial({
+      color: 0x666666,
+    });
+    const floor = new Mesh(new PlaneBufferGeometry(2000, 2000), floorMaterial);
     floor.rotation.x = -Math.PI / 2;
     floor.receiveShadow = true;
     this._scene.add(floor);
 
     const grid = new GridHelper(2000, 2000, 0, 0);
     if (!Array.isArray(grid.material)) {
-      grid.material.opacity = 0.2;
+      grid.material.opacity = 0.1;
       grid.material.transparent = true;
     }
+    grid.position.setY(0.005);
     this._scene.add(grid);
 
     const map = await loadDefaultMap();
@@ -126,11 +126,12 @@ class WirePlaceThreeRenderer {
     const obj = new Object3D();
     obj.name = objectId;
 
-    const material = new MeshBasicMaterial({
+    const material = new MeshStandardMaterial({
       color: 0xffffff,
     });
     const body = new Mesh(boxGeometry, material);
     body.castShadow = true;
+    body.receiveShadow = true;
     body.position.y = 0.75;
     obj.add(body);
 
@@ -138,7 +139,9 @@ class WirePlaceThreeRenderer {
       obj.position.set(u.position.x, u.position.y, u.position.z);
     }
 
-    obj.add(new AxesHelper(1.0));
+    const axes = new AxesHelper(1.0);
+    axes.position.setY(1);
+    obj.add(axes);
 
     this._animation.initializeCustomData(obj);
     this._scene.add(obj);
