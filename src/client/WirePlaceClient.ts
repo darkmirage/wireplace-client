@@ -110,6 +110,7 @@ class WirePlaceClient implements WirePlaceChatClient {
     (async () => {
       for await (let info of this.socket.listener('connect')) {
         console.log(`[Client] Connected in ${Date.now() - lastSeen}ms`);
+        this.scene.clear();
         await this.join();
         console.log('[Client] Connection info:', info);
         const initialDiff = await this.socket.invoke('sync', {});
