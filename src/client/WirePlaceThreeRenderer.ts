@@ -42,17 +42,23 @@ class WirePlaceThreeRenderer {
     this.domElement = document.createElement('div');
     this.webGLRenderer = new WebGLRenderer({ antialias: true });
     this._scene = new Scene();
-    this._camera = new PerspectiveCamera(60);
+    this._camera = new PerspectiveCamera(45);
     this._animation = new AnimationRuntime(this._scene);
 
-    this._controls = new MapControls(
+    const controls = new MapControls(
       this._camera,
       this.webGLRenderer.domElement
     );
-    this._controls.target.set(0, 0, 0);
-    this._controls.screenSpacePanning = false;
-    this._controls.maxPolarAngle = Math.PI / 2;
-    this._controls.enableKeys = false;
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.05;
+    controls.target.set(0, 0, 0);
+    controls.screenSpacePanning = false;
+    controls.maxPolarAngle = Math.PI / 2 - Math.PI / 16;
+    controls.minPolarAngle = Math.PI / 16;
+    controls.enableKeys = false;
+    controls.minDistance = 0.5;
+    controls.maxDistance = 7.5;
+    this._controls = controls;
 
     this._stats = new (Stats as any)();
     this._stats.dom.setAttribute('style', 'position: fixed; right: 0; top: 0');
@@ -63,10 +69,9 @@ class WirePlaceThreeRenderer {
 
   _setupScene() {
     this._scene.background = new Color(0xcccccc);
-    this._camera.position.set(0, 12.5, 12.5);
-    this._camera.zoom = 3.0;
+    this._camera.position.set(0, 5, 4);
     const distance = this._camera.position.length();
-    this._scene.fog = new Fog(0xcce0ff, distance, distance * 1.5);
+    this._scene.fog = new Fog(0xcccccc, distance, distance * 2);
     this._camera.lookAt(0, 0, 0);
 
     let l1 = new DirectionalLight(0xffffff);
