@@ -22,6 +22,7 @@ import Stats from 'three/examples/jsm/libs/stats.module';
 import type { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import type { Update } from 'wireplace-scene';
 
+import { loadDefaultMap } from 'loaders/PreconfiguredAssets';
 import AnimationRuntime from './AnimationRuntime';
 
 type ObjectID = string;
@@ -82,13 +83,13 @@ class WirePlaceThreeRenderer {
     let l1 = new DirectionalLight(0xffffff);
     l1.position.set(0, 200, 200);
     l1.castShadow = true;
-    l1.intensity = 0.3
+    l1.intensity = 0.3;
     this._scene.add(l1);
 
     const l2 = new DirectionalLight(0xffffff);
     l2.position.set(0, 200, 200);
     l2.castShadow = false;
-    l2.intensity = 1 - l1.intensity;
+    l2.intensity = 1 - l1.intensity - 0.2;
     this._scene.add(l2);
 
     const l3 = new AmbientLight(0xffffff, 0.1);
@@ -112,6 +113,9 @@ class WirePlaceThreeRenderer {
       grid.material.transparent = true;
     }
     this._scene.add(grid);
+
+    const map = await loadDefaultMap();
+    this._scene.add(map);
   }
 
   _getObjectById(objectId: ObjectID): Object3D | null {
