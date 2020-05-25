@@ -1,21 +1,28 @@
 import {
+  AmbientLight,
   AxesHelper,
+  BoxBufferGeometry,
   Color,
-  Mesh,
   DirectionalLight,
   Fog,
-  AmbientLight,
+  Mesh,
   MeshPhongMaterial,
+  Object3D,
+  PerspectiveCamera,
   PlaneBufferGeometry,
-  BoxBufferGeometry,
   Scene,
   WebGLRenderer,
-  PerspectiveCamera,
-  Object3D,
 } from 'three';
 import type { Update } from 'wireplace-scene';
 
+import AnimationRuntime from './AnimationRuntime';
+
 type ObjectID = string;
+
+interface ObjectCustomData {
+  target: Object3D;
+  color: number;
+}
 
 const boxGeometry = new BoxBufferGeometry(0.25, 1.5, 0.25);
 
@@ -24,14 +31,14 @@ class WirePlaceThreeRenderer {
   webGLRenderer: WebGLRenderer;
   _scene: Scene;
   _camera: PerspectiveCamera;
-  _dirty: boolean;
+  _animation: AnimationRuntime;
 
   constructor() {
     this.domElement = document.createElement('div');
     this.webGLRenderer = new WebGLRenderer({ antialias: true });
     this._scene = new Scene();
-    this._dirty = false;
     this._camera = new PerspectiveCamera(60);
+    this._animation = new AnimationRuntime(this._scene);
     this._setupScene();
   }
 
@@ -68,6 +75,27 @@ class WirePlaceThreeRenderer {
     return this._scene.getObjectByName(objectId) || null;
   }
 
+  _initializeObject(objectId: ObjectID, u: Update): Object3D {
+    const obj = new Object3D();
+    obj.name = objectId;
+
+    const material = new MeshPhongMaterial({
+      color: 0xffffff,
+      flatShading: false,
+    });
+    const body = new Mesh(boxGeometry, material);
+    body.position.y = 0.75;
+    obj.add(body);
+
+    if (u.position) {
+      obj.position.set(u.position.x, u.position.y, u.position.z);
+    }
+
+    this._animation.initializeCustomData(obj);
+    this._scene.add(obj);
+    return obj;
+  }
+
   setDOMElement(element: HTMLDivElement) {
     this.domElement = element;
     element.appendChild(this.webGLRenderer.domElement);
@@ -95,43 +123,14 @@ class WirePlaceThreeRenderer {
         continue;
       }
 
-      if (!obj) {
-        obj = new Object3D();
-        obj.name = objectId;
-        const material = new MeshPhongMaterial({
-          color: u.color || 0xffffff,
-          flatShading: false,
-        });
-        const body = new Mesh(boxGeometry, material);
-        body.position.y = 0.75;
-        obj.add(body);
-        this._scene.add(obj);
-      }
-
-      if (u.color) {
-        ((obj.children[0] as Mesh).material as MeshPhongMaterial).color.set(
-          u.color
-        );
-      }
-      if (u.position) {
-        obj.position.set(u.position.x, u.position.y, u.position.z);
-      }
-      if (u.rotation) {
-        obj.rotation.set(u.rotation.x, u.rotation.y, u.rotation.z, 'XYZ');
-      }
-      if (u.scale) {
-        obj.scale.set(u.scale.x, u.scale.y, u.scale.z);
-      }
-      if (u.up) {
-        obj.up.set(u.up.x, u.up.y, u.up.z);
-      }
+      obj = obj || this._initializeObject(objectId, u);
+      this._animation.updateCustomData(obj, u);
     }
-    this._dirty = true;
   }
 
   render = (deltaTimeMs: number) => {
+    this._animation.update(deltaTimeMs);
     this.webGLRenderer.render(this._scene, this._camera);
-    this._dirty = false;
   };
 }
 
