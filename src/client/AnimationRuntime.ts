@@ -62,14 +62,23 @@ class AnimationRuntime {
         continue;
       }
       const data: ObjectCustomData = userData as any;
-      if (!child.position.equals(data.target.position)) {
-        d.copy(data.target.position).sub(child.position);
+      const { target } = data;
+      if (!child.position.equals(target.position)) {
+        d.copy(target.position).sub(child.position);
         const distance = d.length();
         const progress = distance / 3.5;
         d.normalize();
         d.multiplyScalar(progress);
         child.position.add(d);
       }
+
+      if (!child.quaternion.equals(target.quaternion)) {
+        child.quaternion.slerp(target.quaternion, 1 / 3.5);
+      }
+
+      // TODO:
+      // - Update scale and up
+      // - Implement proper interpolation and easing
     }
   };
 }

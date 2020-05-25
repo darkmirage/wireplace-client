@@ -67,8 +67,6 @@ class WirePlaceThreeRenderer {
     );
     floor.rotation.x = -Math.PI / 2;
     this._scene.add(floor);
-
-    this._scene.add(new AxesHelper(1.0));
   }
 
   _getObjectById(objectId: ObjectID): Object3D | null {
@@ -90,6 +88,8 @@ class WirePlaceThreeRenderer {
     if (u.position) {
       obj.position.set(u.position.x, u.position.y, u.position.z);
     }
+
+    obj.add(new AxesHelper(1.0));
 
     this._animation.initializeCustomData(obj);
     this._scene.add(obj);

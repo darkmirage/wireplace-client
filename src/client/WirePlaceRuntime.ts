@@ -1,10 +1,13 @@
-import { Vector3 } from 'three';
+import { Vector3, Quaternion, Euler } from 'three';
 import type { WirePlaceScene } from 'wireplace-scene';
 
 import WirePlaceThreeRenderer from './WirePlaceThreeRenderer';
 
 const TICK_RATE_MS = 50;
-const v = new Vector3();
+const FORWARD = new Vector3(0, 0, 1);
+const _v = new Vector3();
+const _q = new Quaternion();
+const _r = new Euler();
 
 export enum Directions {
   Up = 'Up',
@@ -90,32 +93,37 @@ class WirePlaceRuntime {
       const actor = this._scene.getActor(this.actorId);
       if (actor) {
         const { speed } = actor;
-        v.set(0, 0, 0);
+        _v.set(0, 0, 0);
 
         if (this._directions[Directions.Down]) {
-          v.z += 1;
+          _v.z += 1;
         } else if (this._directions[Directions.Up]) {
-          v.z -= 1;
+          _v.z -= 1;
         }
 
         if (this._directions[Directions.Left]) {
-          v.x -= 1;
+          _v.x -= 1;
         } else if (this._directions[Directions.Right]) {
-          v.x += 1;
+          _v.x += 1;
         }
 
         if (this._directions[Directions.Random]) {
-          v.x += Math.random() * 2.0 - 1.0;
-          v.z += Math.random() * 2.0 - 1.0;
+          _v.x += Math.random() * 2.0 - 1.0;
+          _v.z += Math.random() * 2.0 - 1.0;
         }
 
-        v.normalize();
-        v.multiplyScalar((speed * elapsed) / 1000);
-        v.x += actor.position.x;
-        v.y += actor.position.y;
-        v.z += actor.position.z;
-        const position = { x: v.x, y: v.y, z: v.z };
-        this._scene.updateActor(this.actorId, { position }, true);
+        _v.normalize();
+        _q.setFromUnitVectors(FORWARD, _v);
+        _v.multiplyScalar((speed * elapsed) / 1000);
+        _v.x += actor.position.x;
+        _v.y += actor.position.y;
+        _v.z += actor.position.z;
+        const position = { x: _v.x, y: _v.y, z: _v.z };
+
+        _r.setFromQuaternion(_q);
+        const rotation = { x: _r.x, y: _r.y, z: _r.z };
+
+        this._scene.updateActor(this.actorId, { position, rotation }, true);
       }
     }
 
