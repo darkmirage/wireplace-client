@@ -10,7 +10,6 @@ import {
 } from 'three';
 import type { Update } from 'wireplace-scene';
 
-import FBXLoader from 'loaders/FBXLoader';
 import {
   getAnimationIndex,
   loadAsset,

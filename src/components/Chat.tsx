@@ -1,6 +1,6 @@
 import React from 'react';
 
-import type { WirePlaceChatClient, ChatLine } from 'client/WirePlaceClient';
+import type { WirePlaceChatClient, ChatLine } from 'wireplace/WirePlaceClient';
 
 type Props = {
   client: WirePlaceChatClient;

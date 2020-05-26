@@ -1,5 +1,5 @@
 import React from 'react';
-import WirePlaceClient from 'client/WirePlaceClient';
+import WirePlaceClient from 'wireplace/WirePlaceClient';
 
 type ChildProps = {
   client: WirePlaceClient;

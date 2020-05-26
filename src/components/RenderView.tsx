@@ -1,7 +1,7 @@
 import React from 'react';
 import { createUseStyles } from 'react-jss';
 
-import type WirePlaceClient from 'client/WirePlaceClient';
+import type WirePlaceClient from 'wireplace/WirePlaceClient';
 
 type Props = {
   client: WirePlaceClient;
