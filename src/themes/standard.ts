@@ -3,7 +3,7 @@ import type { RawTheme } from './types';
 const standard: RawTheme = {
   color: {
     background: '#333333',
-    panel: '#dddddd',
+    panel: 'rgba(0, 0, 0, 0.2)',
   },
   spacing: {
     narrow: 4,

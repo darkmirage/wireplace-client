@@ -1,11 +1,13 @@
 import React from 'react';
 import { createUseStyles, useTheme } from 'react-jss';
+import classNames from 'classnames';
 
 import type { WirePlaceChatClient, ChatLine } from 'wireplace/WirePlaceClient';
 import type { Theme } from 'themes';
 
 type Props = {
   client: WirePlaceChatClient;
+  username: string;
 };
 
 const Chat = (props: Props) => {
@@ -14,7 +16,12 @@ const Chat = (props: Props) => {
   const [messages, setMessages] = React.useState<{
     m: Record<string, ChatLine>;
   }>({ m: {} });
+  const ref = React.useRef<HTMLDivElement | null>(null);
   const classes = useStyles({ theme: useTheme() });
+
+  const lineIds = Object.keys(messages.m);
+  const lastId = lineIds[lineIds.length - 1];
+  const lastLine = messages.m[lastId];
 
   React.useEffect(() => {
     client.onMessage((line) => {
@@ -29,9 +36,20 @@ const Chat = (props: Props) => {
     });
   }, [client]);
 
+  React.useEffect(() => {
+    if (ref.current && lastLine && lastLine.username === props.username) {
+      ref.current.scrollTo({
+        top: ref.current?.scrollHeight,
+        behavior: 'smooth',
+      });
+    }
+  }, [ref.current, props.username, lastLine]);
+
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    client.sendMessage(message);
+    if (message) {
+      client.sendMessage(message);
+    }
     setMessage('');
   };
 
@@ -43,17 +61,27 @@ const Chat = (props: Props) => {
         <div className={classes.username}>{username}</div>
       );
     prevName = username;
+    const className = classNames(classes.message, {
+      [classes.currentUser]: username === props.username,
+    });
     return (
-      <div className={classes.message} key={lineId}>
+      <div className={className} key={lineId}>
         {nameField}
         <div className={classes.messageText}>{message}</div>
       </div>
     );
   });
 
+  const messageArea =
+    messageElements.length > 0 ? (
+      <div className={classes.messages} ref={ref}>
+        {messageElements}
+      </div>
+    ) : null;
+
   return (
     <div className={classes.root}>
-      <div className={classes.messages}>{messageElements}</div>
+      {messageArea}
       <div className={classes.footer}>
         <form onSubmit={handleSubmit}>
           <input
@@ -70,17 +98,31 @@ const Chat = (props: Props) => {
 
 const useStyles = createUseStyles<Theme>((theme) => ({
   root: {
-    position: 'relative',
     display: 'flex',
     flexDirection: 'column',
+    height: '100%',
+    justifyContent: 'flex-end',
+    position: 'relative',
     width: 300,
-    maxHeight: 500,
   },
   footer: {
-    marginTop: theme.spacing.normal,
+    marginRight: theme.spacing.normal,
+    padding: theme.spacing.normal,
   },
   messages: {
+    overflowX: 'hidden',
     overflowY: 'scroll',
+    paddingLeft: theme.spacing.normal,
+    paddingRight: theme.spacing.normal,
+    '&::-webkit-scrollbar-thumb': {
+      background: 'rgba(0, 0, 0, 0.3)',
+      borderRadius: theme.spacing.narrow,
+      width: theme.spacing.normal,
+    },
+    '&::-webkit-scrollbar': {
+      background: 'rgba(0, 0, 0, 0)',
+      width: theme.spacing.normal,
+    },
   },
   message: {
     alignItems: 'flex-start',
@@ -88,19 +130,34 @@ const useStyles = createUseStyles<Theme>((theme) => ({
     flexDirection: 'column',
     marginTop: theme.spacing.narrow,
     overflowWrap: 'break-word',
+    wordBreak: 'break-all',
   },
   messageText: {
-    background: '#ffffff',
+    background: 'rgba(0, 0, 0, 0.4)',
     borderRadius: theme.spacing.narrow,
-    padding: theme.spacing.narrow,
+    color: '#ddd',
+    paddingBottom: theme.spacing.narrow,
+    paddingLeft: theme.spacing.normal,
+    paddingRight: theme.spacing.normal,
+    paddingTop: theme.spacing.narrow,
   },
   input: {
-    padding: theme.spacing.narrow,
+    background: 'rgba(0, 0, 0, 0.5)',
+    border: 0,
+    borderRadius: theme.spacing.narrow,
+    boxSizing: 'border-box',
+    color: '#ddd',
+    outline: 0,
+    padding: theme.spacing.normal,
+    width: '100%',
   },
   username: {
     fontWeight: 'bold',
     marginBottom: theme.spacing.narrow,
     marginTop: theme.spacing.normal,
+  },
+  currentUser: {
+    alignItems: 'flex-end',
   },
 }));
 

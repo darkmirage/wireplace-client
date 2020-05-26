@@ -9,6 +9,7 @@ import type { Theme } from 'themes';
 
 const HOSTNAME = 'localhost';
 const PORT = 8000;
+const USERNAME = Date.now().toString();
 
 const App = () => {
   const classes = useStyles({ theme: useTheme() });
@@ -16,7 +17,7 @@ const App = () => {
   return (
     <div className={classes.app}>
       <ClientProvider
-        username={Date.now().toString()}
+        username={USERNAME}
         token="foobar"
         hostname={HOSTNAME}
         port={PORT}
@@ -25,8 +26,7 @@ const App = () => {
         {({ client }) => (
           <>
             <div className={classes.panel}>
-              WirePlace
-              <Chat client={client} />
+              <Chat client={client} username={USERNAME} />
             </div>
             <div className={classes.main}>
               <div
@@ -67,11 +67,11 @@ const useStyles = createUseStyles<Theme>((theme) => ({
     zIndex: theme.zIndices.bottom,
   },
   panel: {
-    background: theme.color.panel,
+    bottom: 0,
     left: 0,
-    padding: theme.spacing.normal,
+    height: '100%',
+    maxWidth: '100%',
     position: 'absolute',
-    top: 0,
     zIndex: theme.zIndices.middle,
   },
 }));
