@@ -43,7 +43,7 @@ const Chat = (props: Props) => {
         behavior: 'smooth',
       });
     }
-  }, [ref.current, props.username, lastLine]);
+  }, [props.username, lastLine]);
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
