@@ -1,13 +1,13 @@
 import {
   AmbientLight,
-  AxesHelper,
-  BoxBufferGeometry,
+  SphereBufferGeometry,
   Color,
   DirectionalLight,
   Fog,
   GridHelper,
   HemisphereLight,
   Mesh,
+  MeshBasicMaterial,
   MeshStandardMaterial,
   Object3D,
   PCFSoftShadowMap,
@@ -31,7 +31,7 @@ interface ObjectCustomData {
   color: number;
 }
 
-const boxGeometry = new BoxBufferGeometry(0.25, 1.5, 0.25);
+const boxGeometry = new SphereBufferGeometry(0.05, 16, 16);
 
 class WirePlaceThreeRenderer {
   domElement: HTMLDivElement;
@@ -126,24 +126,20 @@ class WirePlaceThreeRenderer {
     const obj = new Object3D();
     obj.name = objectId;
 
-    const material = new MeshStandardMaterial({
+    const material = new MeshBasicMaterial({
       color: 0xffffff,
     });
-    const body = new Mesh(boxGeometry, material);
-    body.castShadow = true;
-    body.receiveShadow = true;
-    body.position.y = 0.75;
-    obj.add(body);
+    material.transparent = true;
+    material.opacity = 0.7;
+    const indicator = new Mesh(boxGeometry, material);
+    indicator.position.y = 2;
+    obj.add(indicator);
 
     if (u.position) {
       obj.position.set(u.position.x, u.position.y, u.position.z);
     }
 
-    const axes = new AxesHelper(1.0);
-    axes.position.setY(1);
-    obj.add(axes);
-
-    this._animation.initializeCustomData(obj);
+    this._animation.loadAsset(obj, u);
     this._scene.add(obj);
     return obj;
   }

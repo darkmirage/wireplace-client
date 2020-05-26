@@ -1,7 +1,39 @@
-import type { Object3D } from 'three';
-import { Group } from 'three';
+import { Cache, Group, Object3D } from 'three';
 
 import FBXLoader from './FBXLoader';
+
+Cache.enabled = true;
+
+export enum AnimationTypes {
+  IDLE = 'IDLE',
+  WALK = 'WALK',
+  RUN = 'RUN',
+  SIT = 'SIT',
+}
+
+export type AnimationType = keyof typeof AnimationTypes;
+
+interface Asset {
+  url: string;
+  scale: number;
+  animations: Partial<Record<AnimationType, number>>;
+}
+
+const Assets: Array<Asset> = [
+  { url: '/assets/mixamo/characters/BlueBot.fbx', scale: 0.01, animations: { [AnimationTypes.IDLE] : 0 } },
+  { url: '/assets/mixamo/characters/BlueBot.fbx', scale: 0.01, animations: { [AnimationTypes.IDLE] : 0 } },
+];
+
+function getAnimationIndex(assetId: number, type: AnimationType): number | undefined {
+  return Assets[assetId].animations[type];
+}
+
+async function loadAsset(assetId: number): Promise<Group> {
+  const { url, scale } = Assets[assetId];
+  const g = await new FBXLoader().loadGroupAsync(url);
+  g.scale.set(scale, scale, scale);
+  return g;
+}
 
 async function loadNature(filename: string): Promise<Group> {
   const g = await new FBXLoader().loadGroupAsync(
@@ -64,4 +96,4 @@ async function loadDefaultMap(): Promise<Group> {
   return group;
 }
 
-export { loadNature, loadDefaultMap };
+export { getAnimationIndex, loadAsset, loadNature, loadDefaultMap };

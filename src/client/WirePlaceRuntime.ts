@@ -10,11 +10,11 @@ const _r = new Euler();
 const _clock = new Clock();
 
 export enum Directions {
-  Up = 'Up',
-  Down = 'Down',
-  Left = 'Left',
-  Right = 'Right',
-  Random = 'Random',
+  UP = 'UP',
+  DOWN = 'DOWN',
+  LEFT = 'LEFT',
+  RIGHT = 'RIGHT',
+  RANDOM = 'RANDOM',
 }
 
 class WirePlaceRuntime {
@@ -34,20 +34,20 @@ class WirePlaceRuntime {
     this._lastTime = 0;
     this._scene = scene;
     this._directions = {
-      [Directions.Up]: false,
-      [Directions.Down]: false,
-      [Directions.Left]: false,
-      [Directions.Right]: false,
-      [Directions.Random]: false,
+      [Directions.UP]: false,
+      [Directions.DOWN]: false,
+      [Directions.LEFT]: false,
+      [Directions.RIGHT]: false,
+      [Directions.RANDOM]: false,
     };
   }
 
   isMoving(): boolean {
     return (
-      this._directions[Directions.Up] !== this._directions[Directions.Down] ||
-      this._directions[Directions.Left] !==
-        this._directions[Directions.Right] ||
-      this._directions[Directions.Random]
+      this._directions[Directions.UP] !== this._directions[Directions.DOWN] ||
+      this._directions[Directions.LEFT] !==
+        this._directions[Directions.RIGHT] ||
+      this._directions[Directions.RANDOM]
     );
   }
 
@@ -56,7 +56,7 @@ class WirePlaceRuntime {
   }
 
   toggleRandom() {
-    this._directions[Directions.Random] = !this._directions[Directions.Random];
+    this._directions[Directions.RANDOM] = !this._directions[Directions.RANDOM];
   }
 
   setActor(actorId: string) {
@@ -90,19 +90,19 @@ class WirePlaceRuntime {
         const { speed } = actor;
         _v.set(0, 0, 0);
 
-        if (this._directions[Directions.Down]) {
+        if (this._directions[Directions.DOWN]) {
           _v.z += 1;
-        } else if (this._directions[Directions.Up]) {
+        } else if (this._directions[Directions.UP]) {
           _v.z -= 1;
         }
 
-        if (this._directions[Directions.Left]) {
+        if (this._directions[Directions.LEFT]) {
           _v.x -= 1;
-        } else if (this._directions[Directions.Right]) {
+        } else if (this._directions[Directions.RIGHT]) {
           _v.x += 1;
         }
 
-        if (this._directions[Directions.Random]) {
+        if (this._directions[Directions.RANDOM]) {
           _v.x += Math.random() * 2.0 - 1.0;
           _v.z += Math.random() * 2.0 - 1.0;
         }

@@ -143,19 +143,19 @@ class WirePlaceClient implements WirePlaceChatClient {
   handleKeyDown = (event: KeyboardEvent) => {
     switch (event.key) {
       case 'ArrowUp': {
-        this.runtime.move(Directions.Up, true);
+        this.runtime.move(Directions.UP, true);
         break;
       }
       case 'ArrowDown': {
-        this.runtime.move(Directions.Down, true);
+        this.runtime.move(Directions.DOWN, true);
         break;
       }
       case 'ArrowLeft': {
-        this.runtime.move(Directions.Left, true);
+        this.runtime.move(Directions.LEFT, true);
         break;
       }
       case 'ArrowRight': {
-        this.runtime.move(Directions.Right, true);
+        this.runtime.move(Directions.RIGHT, true);
         break;
       }
     }
@@ -164,19 +164,19 @@ class WirePlaceClient implements WirePlaceChatClient {
   handleKeyUp = (event: KeyboardEvent) => {
     switch (event.key) {
       case 'ArrowUp': {
-        this.runtime.move(Directions.Up, false);
+        this.runtime.move(Directions.UP, false);
         break;
       }
       case 'ArrowDown': {
-        this.runtime.move(Directions.Down, false);
+        this.runtime.move(Directions.DOWN, false);
         break;
       }
       case 'ArrowLeft': {
-        this.runtime.move(Directions.Left, false);
+        this.runtime.move(Directions.LEFT, false);
         break;
       }
       case 'ArrowRight': {
-        this.runtime.move(Directions.Right, false);
+        this.runtime.move(Directions.RIGHT, false);
         break;
       }
       case 's': {
