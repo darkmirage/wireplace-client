@@ -1,40 +1,33 @@
 import { Cache, Group, Object3D } from 'three';
 
+import { AnimationAction, AnimationActions } from 'types/AnimationTypes';
+
 import FBXLoader from './FBXLoader';
 
 Cache.enabled = true;
 
-export enum AnimationTypes {
-  IDLE = 'IDLE',
-  WALK = 'WALK',
-  RUN = 'RUN',
-  SIT = 'SIT',
-}
-
-export type AnimationType = keyof typeof AnimationTypes;
-
 interface Asset {
   url: string;
   scale: number;
-  animations: Partial<Record<AnimationType, number>>;
+  animations: Partial<Record<AnimationAction, number>>;
 }
 
 const Assets: Array<Asset> = [
   {
     url: '/assets/mixamo/characters/BlueBot.fbx',
     scale: 0.01,
-    animations: { [AnimationTypes.IDLE]: 0 },
+    animations: { [AnimationActions.IDLE]: 0 },
   },
   {
     url: '/assets/mixamo/characters/RedBot.fbx',
     scale: 0.01,
-    animations: { [AnimationTypes.IDLE]: 0 },
+    animations: { [AnimationActions.IDLE]: 0 },
   },
 ];
 
 function getAnimationIndex(
   assetId: number,
-  type: AnimationType
+  type: AnimationAction
 ): number | undefined {
   return Assets[assetId].animations[type];
 }

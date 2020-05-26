@@ -3,6 +3,7 @@ import socketClusterClient from 'socketcluster-client';
 import type { AGClientSocket } from 'socketcluster-client';
 import type { KeyboardEvent } from 'react';
 
+import { AnimationActions } from 'types/AnimationTypes';
 import TypedEventsEmitter, { Events } from 'wireplace/TypedEventsEmitter';
 import WirePlaceRuntime from './WirePlaceRuntime';
 
@@ -195,6 +196,14 @@ class WirePlaceClient implements WirePlaceChatClient {
       case 's': {
         this._ee.emit(Events.TOGGLE_RANDOM_WALK);
         break;
+      }
+      case '1': {
+        if (this.runtime.actorId) {
+          this._ee.emit(Events.PERFORM_ACTION, {
+            actorId: this.runtime.actorId,
+            actionType: AnimationActions.DANCE_SAMBA,
+          });
+        }
       }
     }
   };

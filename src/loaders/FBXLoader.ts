@@ -25,10 +25,18 @@ function setChildrenProperties(parent: Object3D) {
 }
 
 class FBXLoader extends ThreeFBXLoader {
+  constructor() {
+    super();
+    this.path = DOMAIN;
+  }
+
   async loadGroupAsync(uri: string): Promise<Group> {
     if (uri.startsWith('/')) {
-      uri = DOMAIN + uri;
+      this.path = DOMAIN;
+    } else {
+      this.path = '';
     }
+
     const group: Group = await this.loadAsync(uri);
     setChildrenProperties(group);
     return group;

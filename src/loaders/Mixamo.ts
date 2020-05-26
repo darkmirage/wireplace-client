@@ -1,16 +1,17 @@
 import { AnimationClip } from 'three';
-import { AnimationTypes, AnimationType } from './PreconfiguredAssets';
+import { AnimationAction, AnimationActions } from 'types/AnimationTypes';
 import FBXLoader from './FBXLoader';
 
-const AnimationURLs: Partial<Record<AnimationType, string>> = {
-  [AnimationTypes.WALK]: '/assets/mixamo/animations/Walking.fbx',
-  [AnimationTypes.IDLE]: '/assets/mixamo/animations/Idle.fbx',
+const AnimationURLs: Partial<Record<AnimationAction, string>> = {
+  [AnimationActions.WALK]: '/assets/mixamo/animations/Walking.fbx',
+  [AnimationActions.IDLE]: '/assets/mixamo/animations/Idle.fbx',
+  [AnimationActions.DANCE_SAMBA]: '/assets/mixamo/animations/DanceSamba.fbx',
 };
 
-const clipCache: Partial<Record<AnimationType, AnimationClip>> = {};
+const clipCache: Partial<Record<AnimationAction, AnimationClip>> = {};
 
 async function getClip(
-  animationType: AnimationType
+  animationType: AnimationAction
 ): Promise<AnimationClip | null> {
   const url = AnimationURLs[animationType];
   if (url) {

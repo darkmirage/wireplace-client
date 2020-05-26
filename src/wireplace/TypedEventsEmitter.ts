@@ -1,5 +1,7 @@
 import { EventEmitter } from 'events';
 
+import { AnimationAction } from 'types/AnimationTypes';
+
 export enum Events {
   MOVE_DOWN = 'MOVE_DOWN',
   MOVE_LEFT = 'MOVE_LEFT',
@@ -7,6 +9,7 @@ export enum Events {
   MOVE_UP = 'MOVE_UP',
   SET_ACTIVE_ACTOR = 'SET_ACTIVE_ACTOR',
   TOGGLE_RANDOM_WALK = 'TOGGLE_RANDOM_WALK',
+  PERFORM_ACTION = 'PERFORM_ACTION',
 }
 
 type Event = keyof typeof Events;
@@ -18,6 +21,11 @@ interface EventPayloads {
   [Events.MOVE_UP]: boolean;
   [Events.SET_ACTIVE_ACTOR]: string;
   [Events.TOGGLE_RANDOM_WALK]: undefined;
+  [Events.PERFORM_ACTION]: {
+    actorId: string;
+    actionType: AnimationAction;
+    loop?: boolean;
+  };
 }
 
 interface GenericTypedEventEmitter<P> {

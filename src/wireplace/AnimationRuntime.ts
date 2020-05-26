@@ -1,5 +1,4 @@
 import {
-  AnimationAction,
   AnimationClip,
   AnimationMixer,
   Mesh,
@@ -10,29 +9,81 @@ import {
 } from 'three';
 import type { Update } from 'wireplace-scene';
 
-import {
-  getAnimationIndex,
-  loadAsset,
-  AnimationType,
-  AnimationTypes,
-} from 'loaders/PreconfiguredAssets';
+import { AnimationAction, AnimationActions } from 'types/AnimationTypes';
+import { getAnimationIndex, loadAsset } from 'loaders/PreconfiguredAssets';
 import { getClip } from 'loaders/Mixamo';
 
-interface ObjectCustomData {
-  assetId: number;
+interface AnimationMetadata {
+  assetId: number | null;
   animateable: boolean;
   target: Object3D;
   color: number;
   speed: number;
-  animationType: AnimationType | null;
+  actionType: AnimationAction | null;
+  currentClip: AnimationClip | null;
   asset: Object3D | null;
   mixer: AnimationMixer | null;
-  action: AnimationAction | null;
+  networkedActionType: AnimationAction;
+  networkedActionState: number;
 }
 
 const SMOOTHING_CONSTANT = 5.0;
+const ANIMATION_FADE_TIME = 0.3;
 
 const _v = new Vector3();
+
+function getMetadata(obj: Object3D): AnimationMetadata | null {
+  const data: AnimationMetadata = obj.userData as any;
+  if (!data.animateable) {
+    return null;
+  }
+  return data;
+}
+
+function getAndAssertMetadata(obj: Object3D): AnimationMetadata {
+  const data = getMetadata(obj);
+  if (!data) {
+    throw new Error('Missing metadata');
+  }
+  return data;
+}
+
+async function getClipFromMetadata(
+  obj: Object3D,
+  actionType: AnimationAction
+): Promise<AnimationClip | null> {
+  const data = getAndAssertMetadata(obj);
+  if (data.assetId === null || data.asset === null) {
+    return null;
+  }
+
+  let clip: AnimationClip | null;
+  const index = getAnimationIndex(data.assetId, actionType);
+  if (index === undefined) {
+    clip = await getClip(actionType);
+  } else {
+    clip = (data.asset as any).animations[index];
+  }
+
+  return clip;
+}
+
+function initializeMetadata(u: Update): AnimationMetadata {
+  const data = {
+    assetId: null,
+    animateable: true,
+    target: new Object3D(),
+    color: 0,
+    speed: 1.4,
+    actionType: null,
+    currentClip: null,
+    asset: null,
+    mixer: null,
+    networkedActionType: AnimationActions.IDLE,
+    networkedActionState: -1,
+  };
+  return data;
+}
 
 class AnimationRuntime {
   _scene: Scene;
@@ -42,71 +93,93 @@ class AnimationRuntime {
   }
 
   loadAsset(obj: Object3D, u: Update) {
-    let data: ObjectCustomData = obj.userData as any;
+    let data = getMetadata(obj);
+    if (!data) {
+      data = initializeMetadata(u);
+      obj.userData = data;
+    }
 
     const assetId = u.assetId || 0;
     if (data.assetId === assetId) {
       return;
     }
 
-    data = {
-      assetId,
-      animateable: true,
-      target: new Object3D(),
-      color: 0,
-      speed: 1.4,
-      animationType: null,
-      asset: null,
-      mixer: null,
-      action: null,
-    };
-    obj.userData = data;
-
     loadAsset(assetId).then((g) => {
+      data = getAndAssertMetadata(obj);
+
+      if (data.assetId === assetId) {
+        return;
+      }
+
+      if (data.asset) {
+        obj.remove(data.asset);
+      }
+
       obj.add(g);
+      data.assetId = assetId;
       data.asset = g;
       data.mixer = new AnimationMixer(g);
-      this.startAction(obj, AnimationTypes.IDLE);
+      this.startAction(obj, AnimationActions.IDLE);
     });
   }
 
-  async startAction(obj: Object3D, animationType: AnimationType) {
-    const data: ObjectCustomData = obj.userData as any;
-    if (!data.animateable) {
-      throw new Error('Invalid meta data in object');
-    }
+  async startAction(obj: Object3D, actionType: AnimationAction) {
+    const data = getAndAssertMetadata(obj);
 
     const assetId = data.assetId;
-    if (data.animationType === animationType || !data.asset || !data.mixer) {
+    if (
+      assetId === null ||
+      data.actionType === actionType ||
+      !data.asset ||
+      !data.mixer
+    ) {
       return;
     }
 
-    data.animationType = animationType;
-
-    let clip: AnimationClip | null;
-    const index = getAnimationIndex(assetId, animationType);
-    if (index === undefined) {
-      clip = await getClip(animationType);
-    } else {
-      clip = (data.asset as any).animations[index];
-    }
-
+    const clip = await getClipFromMetadata(obj, actionType);
     if (!clip) {
       return;
     }
 
-    if (data.action) {
-      data.action.fadeOut(0.2);
+    this.playClip(obj, clip);
+    data.actionType = actionType;
+  }
+
+  async updateAction(obj: Object3D) {
+    const data = getAndAssertMetadata(obj);
+    const { networkedActionType, actionType } = data;
+    if (networkedActionType !== actionType) {
+      const clip = await getClipFromMetadata(obj, networkedActionType);
+      if (!clip) {
+        return;
+      }
+      this.playClip(obj, clip);
+    }
+  }
+
+  playClip(obj: Object3D, clip: AnimationClip) {
+    const data = getAndAssertMetadata(obj);
+    const prevClip = data.currentClip;
+
+    if (!data.mixer) {
+      return;
     }
 
-    data.action = data.mixer.clipAction(clip);
-    data.action.reset();
-    data.action.fadeIn(0.2);
-    data.action.play();
+    if (prevClip && prevClip !== clip) {
+      const prevAction = data.mixer.clipAction(prevClip);
+      prevAction.fadeOut(ANIMATION_FADE_TIME);
+    }
+
+    const action = data.mixer.clipAction(clip);
+    action.reset();
+    action.fadeIn(ANIMATION_FADE_TIME);
+    action.play();
+
+    data.currentClip = clip;
   }
 
   updateCustomData(obj: Object3D, u: Update) {
-    const data: ObjectCustomData = obj.userData as any;
+    const data = getAndAssertMetadata(obj);
 
     if (u.color) {
       data.color = u.color;
@@ -132,20 +205,30 @@ class AnimationRuntime {
     if (u.up) {
       data.target.up.set(u.up.x, u.up.y, u.up.z);
     }
+    if (u.action) {
+      if (
+        data.networkedActionType !== u.action.type ||
+        data.networkedActionState !== u.action.state
+      ) {
+        data.networkedActionType = u.action.type;
+        data.networkedActionState = u.action.state;
+        this.updateAction(obj);
+      }
+    }
   }
 
   update = (delta: number): boolean => {
     let translated = false;
     for (const child of this._scene.children) {
-      const { userData } = child;
-      if (!userData.animateable) {
+      const data = getMetadata(child);
+      if (!data) {
         continue;
       }
-      const data: ObjectCustomData = userData as any;
+
       const { target } = data;
       if (!child.position.equals(target.position)) {
         translated = true;
-        this.startAction(child, AnimationTypes.WALK);
+        this.startAction(child, AnimationActions.WALK);
 
         _v.copy(target.position).sub(child.position);
         const distance = _v.length();
@@ -157,9 +240,8 @@ class AnimationRuntime {
         _v.copy(target.position).sub(child.position);
         if (_v.length() <= 0.01) {
           child.position.copy(target.position);
+          this.startAction(child, AnimationActions.IDLE);
         }
-      } else {
-        this.startAction(child, AnimationTypes.IDLE);
       }
 
       if (!child.quaternion.equals(target.quaternion)) {

@@ -2,6 +2,7 @@ import { Clock, Vector3, Quaternion, Euler } from 'three';
 import { WirePlaceScene, Update } from 'wireplace-scene';
 
 import TypedEventsEmitter, { Events } from 'wireplace/TypedEventsEmitter';
+import { AnimationActions } from 'types/AnimationTypes';
 
 const FORWARD = new Vector3(0, 0, 1);
 const _v1 = new Vector3();
@@ -68,6 +69,15 @@ class WirePlaceRuntime {
       ];
     });
     this._ee.on(Events.SET_ACTIVE_ACTOR, (actorId) => this.setActor(actorId));
+    this._ee.on(Events.PERFORM_ACTION, ({ actorId, actionType, loop }) => {
+      if (this.actorId === actorId) {
+        const action = {
+          type: actionType,
+          state: 1,
+        };
+        this._scene.updateActor(this.actorId, { action }, true);
+      }
+    });
   }
 
   setRenderer(renderer: Renderer) {
@@ -158,7 +168,17 @@ class WirePlaceRuntime {
         _r.setFromQuaternion(_q);
         const rotation = { x: _r.x, y: _r.y, z: _r.z };
 
-        this._scene.updateActor(this.actorId, { position, rotation }, true);
+        // Reset any networked actions
+        const action = {
+          type: AnimationActions.IDLE,
+          state: -1,
+        };
+
+        this._scene.updateActor(
+          this.actorId,
+          { position, rotation, action },
+          true
+        );
       }
     }
 
