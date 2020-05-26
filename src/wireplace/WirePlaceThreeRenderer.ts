@@ -194,7 +194,11 @@ class WirePlaceThreeRenderer {
     }
   }
 
-  render = (delta: number) => {
+  render = (delta: number, updates: Record<ObjectID, Update>) => {
+    if (Object.keys(updates).length > 0) {
+      this.applyUpdates(updates);
+    }
+
     this._animation.update(delta);
     this.webGLRenderer.render(this._scene, this._camera);
     this._stats.update();

@@ -4,7 +4,6 @@ import type { AGClientSocket } from 'socketcluster-client';
 import type { KeyboardEvent } from 'react';
 
 import WirePlaceRuntime, { Directions } from './WirePlaceRuntime';
-import WirePlaceThreeRenderer from './WirePlaceThreeRenderer';
 
 export interface ChatLine {
   lineId: number;
@@ -25,14 +24,15 @@ const UPDATE_FPS = 30;
 
 class WirePlaceClient implements WirePlaceChatClient {
   socket: AGClientSocket;
-  renderer: WirePlaceThreeRenderer;
-  runtime: WirePlaceRuntime;
   scene: WirePlaceScene;
+  runtime: WirePlaceRuntime;
   _username: string;
   _token: string;
   _unsubscribe: () => void;
 
   constructor(
+    scene: WirePlaceScene,
+    runtime: WirePlaceRuntime,
     username: string,
     token: string,
     hostname: string = 'localhost',
@@ -43,9 +43,8 @@ class WirePlaceClient implements WirePlaceChatClient {
       port,
       autoConnect: false,
     });
-    this.renderer = new WirePlaceThreeRenderer();
-    this.scene = new WirePlaceScene();
-    this.runtime = new WirePlaceRuntime(this.renderer, this.scene);
+    this.scene = scene;
+    this.runtime = runtime;
     this._username = username;
     this._token = token;
     this._unsubscribe = () => {};

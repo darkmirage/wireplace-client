@@ -1,5 +1,8 @@
 import React from 'react';
+import { WirePlaceScene } from 'wireplace-scene';
+
 import WirePlaceClient from 'wireplace/WirePlaceClient';
+import WirePlaceRuntime from 'wireplace/WirePlaceRuntime';
 
 type ChildProps = {
   client: WirePlaceClient;
@@ -20,7 +23,16 @@ const ClientProvider = (props: Props) => {
   let [client, setClient] = React.useState<WirePlaceClient | null>(null);
 
   React.useEffect(() => {
-    const newClient = new WirePlaceClient(username, token, hostname, port);
+    const scene = new WirePlaceScene();
+    const runtime = new WirePlaceRuntime(scene);
+    const newClient = new WirePlaceClient(
+      scene,
+      runtime,
+      username,
+      token,
+      hostname,
+      port
+    );
     newClient.connect();
     setClient(newClient);
 

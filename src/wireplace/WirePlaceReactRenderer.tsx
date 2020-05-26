@@ -1,5 +1,3 @@
-class WirePlaceReactRenderer {
-
-}
+class WirePlaceReactRenderer {}
 
 export default WirePlaceReactRenderer;
