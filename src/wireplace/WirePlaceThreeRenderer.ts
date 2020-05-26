@@ -83,6 +83,11 @@ class WirePlaceThreeRenderer {
     this._stats.dom.setAttribute('style', 'position: fixed; right: 0; top: 0');
     document.body.appendChild(this._stats.dom);
 
+    // TODO: find a less hacky way to achieve this
+    window.addEventListener('resize', () => {
+      this._reacter.update(10, this._scene, this._camera);
+    });
+
     this._setupScene();
   }
 
