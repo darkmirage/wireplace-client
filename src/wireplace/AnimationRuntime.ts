@@ -1,12 +1,12 @@
 import {
-  AnimationMixer,
   AnimationAction,
+  AnimationClip,
+  AnimationMixer,
   Mesh,
   MeshPhongMaterial,
   Object3D,
   Scene,
   Vector3,
-  AnimationClip,
 } from 'three';
 import type { Update } from 'wireplace-scene';
 
@@ -32,7 +32,7 @@ interface ObjectCustomData {
 
 const SMOOTHING_CONSTANT = 5.0;
 
-const d = new Vector3();
+const _v = new Vector3();
 
 class AnimationRuntime {
   _scene: Scene;
@@ -134,7 +134,8 @@ class AnimationRuntime {
     }
   }
 
-  update = (delta: number) => {
+  update = (delta: number): boolean => {
+    let translated = false;
     for (const child of this._scene.children) {
       const { userData } = child;
       if (!userData.animateable) {
@@ -143,17 +144,18 @@ class AnimationRuntime {
       const data: ObjectCustomData = userData as any;
       const { target } = data;
       if (!child.position.equals(target.position)) {
+        translated = true;
         this.startAction(child, AnimationTypes.WALK);
 
-        d.copy(target.position).sub(child.position);
-        const distance = d.length();
+        _v.copy(target.position).sub(child.position);
+        const distance = _v.length();
         const progress = distance / SMOOTHING_CONSTANT;
-        d.normalize();
-        d.multiplyScalar(progress);
-        child.position.add(d);
+        _v.normalize();
+        _v.multiplyScalar(progress);
+        child.position.add(_v);
 
-        d.copy(target.position).sub(child.position);
-        if (d.length() <= 0.01) {
+        _v.copy(target.position).sub(child.position);
+        if (_v.length() <= 0.01) {
           child.position.copy(target.position);
         }
       } else {
@@ -161,17 +163,22 @@ class AnimationRuntime {
       }
 
       if (!child.quaternion.equals(target.quaternion)) {
-        child.quaternion.slerp(target.quaternion, 1 / SMOOTHING_CONSTANT);
+        translated = true;
+        if (target.quaternion.angleTo(child.quaternion) < 0.01) {
+          child.quaternion.copy(target.quaternion);
+        } else {
+          child.quaternion.slerp(target.quaternion, 1 / SMOOTHING_CONSTANT);
+        }
       }
 
       if (data.mixer) {
         data.mixer.update(delta);
       }
-
       // TODO:
       // - Update scale and up
       // - Implement proper interpolation and easing
     }
+    return translated;
   };
 }
 

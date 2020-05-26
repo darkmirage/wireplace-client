@@ -24,6 +24,7 @@ import type { Update } from 'wireplace-scene';
 
 import { loadDefaultMap } from 'loaders/PreconfiguredAssets';
 import AnimationRuntime from './AnimationRuntime';
+import WirePlaceReactRenderer from './WirePlaceReactRenderer';
 
 type ObjectID = string;
 
@@ -43,18 +44,22 @@ class WirePlaceThreeRenderer {
   cameraRight: Vector3;
   _scene: Scene;
   _camera: PerspectiveCamera;
+  _prevCameraPosition: Vector3;
   _animation: AnimationRuntime;
   _controls: OrbitControls;
   _stats: Stats;
+  _reacter: WirePlaceReactRenderer;
 
-  constructor() {
+  constructor(reacter: WirePlaceReactRenderer) {
     this.domElement = document.createElement('div');
     this.webGLRenderer = new WebGLRenderer({ antialias: true });
     this.webGLRenderer.shadowMap.enabled = true;
     this.webGLRenderer.shadowMap.type = PCFSoftShadowMap;
     this._scene = new Scene();
     this._camera = new PerspectiveCamera(45);
+    this._prevCameraPosition = new Vector3();
     this._animation = new AnimationRuntime(this._scene);
+    this._reacter = reacter;
 
     this.cameraForward = new Vector3(0, 0, -1);
     this.cameraRight = new Vector3(1, 0, 0);
@@ -141,6 +146,7 @@ class WirePlaceThreeRenderer {
     material.opacity = 0.7;
     const indicator = new Mesh(boxGeometry, material);
     indicator.position.y = 2;
+    indicator.visible = false;
     obj.add(indicator);
 
     if (u.position) {
@@ -195,15 +201,31 @@ class WirePlaceThreeRenderer {
   }
 
   render = (delta: number, updates: Record<ObjectID, Update>) => {
-    if (Object.keys(updates).length > 0) {
+    const sceneDirty = Object.keys(updates).length > 0;
+    const controlsDirty = this._controls.update();
+
+    if (sceneDirty) {
       this.applyUpdates(updates);
     }
 
-    this._animation.update(delta);
+    if (controlsDirty) {
+      this._updateCameraDirections();
+    }
+
+    const animated = this._animation.update(delta);
+
+    if (
+      sceneDirty ||
+      controlsDirty ||
+      animated ||
+      !this._prevCameraPosition.equals(this._camera.position)
+    ) {
+      this._reacter.update(delta, this._scene, this._camera);
+    }
+    this._prevCameraPosition.copy(this._camera.position);
+
     this.webGLRenderer.render(this._scene, this._camera);
     this._stats.update();
-    this._controls.update();
-    this._updateCameraDirections();
   };
 }
 
