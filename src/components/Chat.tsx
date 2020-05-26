@@ -2,8 +2,9 @@ import React from 'react';
 import { createUseStyles, useTheme } from 'react-jss';
 import classNames from 'classnames';
 
-import type { WirePlaceChatClient, ChatLine } from 'wireplace/WirePlaceClient';
-import type { Theme } from 'themes';
+import { WirePlaceChatClient, ChatLine } from 'wireplace/WirePlaceClient';
+import Input from 'components/ui/Input';
+import { Theme } from 'themes';
 
 type Props = {
   client: WirePlaceChatClient;
@@ -84,11 +85,11 @@ const Chat = (props: Props) => {
       {messageArea}
       <div className={classes.footer}>
         <form onSubmit={handleSubmit}>
-          <input
+          <Input
             className={classes.input}
             value={message}
             placeholder="Type something"
-            onChange={(evt) => setMessage(evt.target.value)}
+            onChange={setMessage}
           />
         </form>
       </div>
@@ -102,6 +103,7 @@ const useStyles = createUseStyles<Theme>((theme) => ({
     flexDirection: 'column',
     height: '100%',
     justifyContent: 'flex-end',
+    pointerEvents: 'none',
     position: 'relative',
     width: 300,
   },
@@ -110,10 +112,12 @@ const useStyles = createUseStyles<Theme>((theme) => ({
     padding: theme.spacing.normal,
   },
   messages: {
+    maxHeight: 500,
     overflowX: 'hidden',
     overflowY: 'scroll',
     paddingLeft: theme.spacing.normal,
     paddingRight: theme.spacing.normal,
+    pointerEvents: 'all',
     '&::-webkit-scrollbar-thumb': {
       background: 'rgba(0, 0, 0, 0.3)',
       borderRadius: theme.spacing.narrow,
@@ -142,13 +146,7 @@ const useStyles = createUseStyles<Theme>((theme) => ({
     paddingTop: theme.spacing.narrow,
   },
   input: {
-    background: 'rgba(0, 0, 0, 0.5)',
-    border: 0,
-    borderRadius: theme.spacing.narrow,
-    boxSizing: 'border-box',
-    color: '#ddd',
-    outline: 0,
-    padding: theme.spacing.normal,
+    pointerEvents: 'all',
     width: '100%',
   },
   username: {
