@@ -3,6 +3,7 @@ import { WirePlaceScene } from 'wireplace-scene';
 
 import WirePlaceClient from 'wireplace/WirePlaceClient';
 import WirePlaceRuntime from 'wireplace/WirePlaceRuntime';
+import TypedEventsEmitter from 'wireplace/TypedEventsEmitter';
 
 type ChildProps = {
   client: WirePlaceClient;
@@ -24,15 +25,17 @@ const ClientProvider = (props: Props) => {
 
   React.useEffect(() => {
     const scene = new WirePlaceScene();
-    const runtime = new WirePlaceRuntime(scene);
-    const newClient = new WirePlaceClient(
+    const emitter = new TypedEventsEmitter();
+    const runtime = new WirePlaceRuntime({ scene, emitter });
+    const newClient = new WirePlaceClient({
+      emitter,
       scene,
       runtime,
       username,
       token,
       hostname,
-      port
-    );
+      port,
+    });
     newClient.connect();
     setClient(newClient);
 

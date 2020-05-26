@@ -3,7 +3,8 @@ import socketClusterClient from 'socketcluster-client';
 import type { AGClientSocket } from 'socketcluster-client';
 import type { KeyboardEvent } from 'react';
 
-import WirePlaceRuntime, { Directions } from './WirePlaceRuntime';
+import TypedEventsEmitter, { Events } from 'wireplace/TypedEventsEmitter';
+import WirePlaceRuntime from './WirePlaceRuntime';
 
 export interface ChatLine {
   lineId: number;
@@ -13,6 +14,16 @@ export interface ChatLine {
 }
 
 type ChatCallback = (line: ChatLine) => void;
+
+interface WirePlaceClientProps {
+  emitter: TypedEventsEmitter;
+  scene: WirePlaceScene;
+  runtime: WirePlaceRuntime;
+  username: string;
+  token: string;
+  hostname: string;
+  port: number;
+}
 
 export interface WirePlaceChatClient {
   sendMessage: (message: string) => void;
@@ -29,15 +40,17 @@ class WirePlaceClient implements WirePlaceChatClient {
   _username: string;
   _token: string;
   _unsubscribe: () => void;
+  _ee: TypedEventsEmitter;
 
-  constructor(
-    scene: WirePlaceScene,
-    runtime: WirePlaceRuntime,
-    username: string,
-    token: string,
-    hostname: string = 'localhost',
-    port: number = 8000
-  ) {
+  constructor({
+    emitter,
+    scene,
+    runtime,
+    username,
+    token,
+    hostname = 'localhost',
+    port = 8000,
+  }: WirePlaceClientProps) {
     this.socket = socketClusterClient.create({
       hostname,
       port,
@@ -48,6 +61,7 @@ class WirePlaceClient implements WirePlaceChatClient {
     this._username = username;
     this._token = token;
     this._unsubscribe = () => {};
+    this._ee = emitter;
     (window as any).client = this;
   }
 
@@ -86,7 +100,7 @@ class WirePlaceClient implements WirePlaceChatClient {
       username,
       token,
     });
-    this.runtime.setActor(actorId);
+    this._ee.emit(Events.SET_ACTIVE_ACTOR, actorId);
     console.log(`[Client] Logged in as ${username}`);
 
     let lastSent = Date.now();
@@ -142,19 +156,19 @@ class WirePlaceClient implements WirePlaceChatClient {
   handleKeyDown = (event: KeyboardEvent) => {
     switch (event.key) {
       case 'ArrowUp': {
-        this.runtime.move(Directions.UP, true);
+        this._ee.emit(Events.MOVE_UP, true);
         break;
       }
       case 'ArrowDown': {
-        this.runtime.move(Directions.DOWN, true);
+        this._ee.emit(Events.MOVE_DOWN, true);
         break;
       }
       case 'ArrowLeft': {
-        this.runtime.move(Directions.LEFT, true);
+        this._ee.emit(Events.MOVE_LEFT, true);
         break;
       }
       case 'ArrowRight': {
-        this.runtime.move(Directions.RIGHT, true);
+        this._ee.emit(Events.MOVE_RIGHT, true);
         break;
       }
     }
@@ -163,23 +177,23 @@ class WirePlaceClient implements WirePlaceChatClient {
   handleKeyUp = (event: KeyboardEvent) => {
     switch (event.key) {
       case 'ArrowUp': {
-        this.runtime.move(Directions.UP, false);
+        this._ee.emit(Events.MOVE_UP, false);
         break;
       }
       case 'ArrowDown': {
-        this.runtime.move(Directions.DOWN, false);
+        this._ee.emit(Events.MOVE_DOWN, false);
         break;
       }
       case 'ArrowLeft': {
-        this.runtime.move(Directions.LEFT, false);
+        this._ee.emit(Events.MOVE_LEFT, false);
         break;
       }
       case 'ArrowRight': {
-        this.runtime.move(Directions.RIGHT, false);
+        this._ee.emit(Events.MOVE_RIGHT, false);
         break;
       }
       case 's': {
-        this.runtime.toggleRandom();
+        this._ee.emit(Events.TOGGLE_RANDOM_WALK);
         break;
       }
     }

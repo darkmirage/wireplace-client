@@ -1,6 +1,8 @@
 import { Clock, Vector3, Quaternion, Euler } from 'three';
 import { WirePlaceScene, Update } from 'wireplace-scene';
 
+import TypedEventsEmitter, { Events } from 'wireplace/TypedEventsEmitter';
+
 const FORWARD = new Vector3(0, 0, 1);
 const _v1 = new Vector3();
 const _v2 = new Vector3();
@@ -22,6 +24,11 @@ interface Renderer {
   cameraRight: Vector3;
 }
 
+interface WirePlaceRuntimeProps {
+  emitter: TypedEventsEmitter;
+  scene: WirePlaceScene;
+}
+
 class WirePlaceRuntime {
   tick: number;
   actorId: string | null;
@@ -30,13 +37,15 @@ class WirePlaceRuntime {
   _lastTime: number;
   _directions: Record<keyof typeof Directions, boolean>;
   _renderer: Renderer | null;
+  _ee: TypedEventsEmitter;
 
-  constructor(scene: WirePlaceScene) {
+  constructor({ scene, emitter }: WirePlaceRuntimeProps) {
     this.tick = 0;
     this.actorId = null;
     this._running = false;
     this._lastTime = 0;
     this._scene = scene;
+    this._ee = emitter;
     this._directions = {
       [Directions.UP]: false,
       [Directions.DOWN]: false,
@@ -45,6 +54,20 @@ class WirePlaceRuntime {
       [Directions.RANDOM]: false,
     };
     this._renderer = null;
+    this._registerEvents();
+  }
+
+  _registerEvents() {
+    this._ee.on(Events.MOVE_DOWN, (move) => this.move(Directions.DOWN, move));
+    this._ee.on(Events.MOVE_UP, (move) => this.move(Directions.UP, move));
+    this._ee.on(Events.MOVE_LEFT, (move) => this.move(Directions.LEFT, move));
+    this._ee.on(Events.MOVE_RIGHT, (move) => this.move(Directions.RIGHT, move));
+    this._ee.on(Events.TOGGLE_RANDOM_WALK, () => {
+      this._directions[Directions.RANDOM] = !this._directions[
+        Directions.RANDOM
+      ];
+    });
+    this._ee.on(Events.SET_ACTIVE_ACTOR, (actorId) => this.setActor(actorId));
   }
 
   setRenderer(renderer: Renderer) {
@@ -62,10 +85,6 @@ class WirePlaceRuntime {
 
   move(direction: keyof typeof Directions, start: boolean) {
     this._directions[direction] = start;
-  }
-
-  toggleRandom() {
-    this._directions[Directions.RANDOM] = !this._directions[Directions.RANDOM];
   }
 
   setActor(actorId: string) {
