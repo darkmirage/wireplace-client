@@ -91,15 +91,15 @@ class WirePlaceRuntime {
         _v.set(0, 0, 0);
 
         if (this._directions[Directions.DOWN]) {
-          _v.z += 1;
+          _v.sub(this.renderer.cameraForward);
         } else if (this._directions[Directions.UP]) {
-          _v.z -= 1;
+          _v.add(this.renderer.cameraForward);
         }
 
         if (this._directions[Directions.LEFT]) {
-          _v.x -= 1;
+          _v.sub(this.renderer.cameraRight);
         } else if (this._directions[Directions.RIGHT]) {
-          _v.x += 1;
+          _v.add(this.renderer.cameraRight);
         }
 
         if (this._directions[Directions.RANDOM]) {

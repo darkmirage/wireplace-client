@@ -15,6 +15,7 @@ import {
   PlaneBufferGeometry,
   Scene,
   WebGLRenderer,
+  Vector3,
 } from 'three';
 import { MapControls } from 'three/examples/jsm/controls/OrbitControls';
 import Stats from 'three/examples/jsm/libs/stats.module';
@@ -32,10 +33,14 @@ interface ObjectCustomData {
 }
 
 const boxGeometry = new SphereBufferGeometry(0.05, 16, 16);
+const _v1 = new Vector3();
+const _v2 = new Vector3();
 
 class WirePlaceThreeRenderer {
   domElement: HTMLDivElement;
   webGLRenderer: WebGLRenderer;
+  cameraForward: Vector3;
+  cameraRight: Vector3;
   _scene: Scene;
   _camera: PerspectiveCamera;
   _animation: AnimationRuntime;
@@ -50,6 +55,9 @@ class WirePlaceThreeRenderer {
     this._scene = new Scene();
     this._camera = new PerspectiveCamera(45);
     this._animation = new AnimationRuntime(this._scene);
+
+    this.cameraForward = new Vector3(0, 0, -1);
+    this.cameraRight = new Vector3(1, 0, 0);
 
     const controls = new MapControls(
       this._camera,
@@ -144,6 +152,16 @@ class WirePlaceThreeRenderer {
     return obj;
   }
 
+  _updateCameraDirections() {
+    this._camera.getWorldDirection(_v1);
+    _v2.copy(_v1);
+    _v1.y = 0;
+    _v1.normalize();
+    this.cameraForward.copy(_v1);
+    _v2.cross(this._camera.up).normalize();
+    this.cameraRight.copy(_v2);
+  }
+
   setDOMElement(element: HTMLDivElement) {
     this.domElement = element;
     element.appendChild(this.webGLRenderer.domElement);
@@ -181,6 +199,7 @@ class WirePlaceThreeRenderer {
     this.webGLRenderer.render(this._scene, this._camera);
     this._stats.update();
     this._controls.update();
+    this._updateCameraDirections();
   };
 }
 

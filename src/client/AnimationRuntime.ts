@@ -1,8 +1,22 @@
-import { AnimationMixer, AnimationAction, Mesh, MeshPhongMaterial, Object3D, Scene, Vector3, AnimationClip } from 'three';
+import {
+  AnimationMixer,
+  AnimationAction,
+  Mesh,
+  MeshPhongMaterial,
+  Object3D,
+  Scene,
+  Vector3,
+  AnimationClip,
+} from 'three';
 import type { Update } from 'wireplace-scene';
 
 import FBXLoader from 'loaders/FBXLoader';
-import { getAnimationIndex, loadAsset, AnimationType, AnimationTypes } from 'loaders/PreconfiguredAssets';
+import {
+  getAnimationIndex,
+  loadAsset,
+  AnimationType,
+  AnimationTypes,
+} from 'loaders/PreconfiguredAssets';
 import { getClip } from 'loaders/Mixamo';
 
 interface ObjectCustomData {
@@ -48,12 +62,12 @@ class AnimationRuntime {
       action: null,
     };
     obj.userData = data;
-    
+
     loadAsset(assetId).then((g) => {
       obj.add(g);
       data.asset = g;
-      data.mixer = new AnimationMixer(g)
-      this.startAction(obj, AnimationTypes.IDLE);     
+      data.mixer = new AnimationMixer(g);
+      this.startAction(obj, AnimationTypes.IDLE);
     });
   }
 
@@ -70,7 +84,7 @@ class AnimationRuntime {
 
     data.animationType = animationType;
 
-    let clip : AnimationClip | null;
+    let clip: AnimationClip | null;
     const index = getAnimationIndex(assetId, animationType);
     if (index === undefined) {
       clip = await getClip(animationType);
@@ -130,7 +144,6 @@ class AnimationRuntime {
       const data: ObjectCustomData = userData as any;
       const { target } = data;
       if (!child.position.equals(target.position)) {
-
         this.startAction(child, AnimationTypes.WALK);
 
         d.copy(target.position).sub(child.position);
