@@ -21,7 +21,7 @@ interface Asset {
 
 const Assets: Array<Asset> = [
   { url: '/assets/mixamo/characters/BlueBot.fbx', scale: 0.01, animations: { [AnimationTypes.IDLE] : 0 } },
-  { url: '/assets/mixamo/characters/BlueBot.fbx', scale: 0.01, animations: { [AnimationTypes.IDLE] : 0 } },
+  { url: '/assets/mixamo/characters/RedBot.fbx', scale: 0.01, animations: { [AnimationTypes.IDLE] : 0 } },
 ];
 
 function getAnimationIndex(assetId: number, type: AnimationType): number | undefined {

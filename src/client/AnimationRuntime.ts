@@ -31,7 +31,7 @@ class AnimationRuntime {
   loadAsset(obj: Object3D, u: Update) {
     let data: ObjectCustomData = obj.userData as any;
 
-    const assetId = 0;
+    const assetId = u.assetId || 0;
     if (data.assetId === assetId) {
       return;
     }
