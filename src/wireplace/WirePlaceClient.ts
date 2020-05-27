@@ -3,6 +3,7 @@ import socketClusterClient from 'socketcluster-client';
 import type { AGClientSocket } from 'socketcluster-client';
 import type { KeyboardEvent } from 'react';
 
+import logger from 'utils/logger';
 import { AnimationAction, AnimationActions } from 'types/AnimationTypes';
 import TypedEventsEmitter, { Events } from 'wireplace/TypedEventsEmitter';
 import WirePlaceRuntime from './WirePlaceRuntime';
@@ -39,7 +40,7 @@ export interface WirePlaceChatClient {
   fetchMessages: () => Promise<Array<ChatLine>>;
 }
 
-const UPDATE_FPS = 2;
+const UPDATE_FPS = 3;
 
 class WirePlaceClient implements WirePlaceChatClient {
   socket: AGClientSocket;
@@ -73,7 +74,7 @@ class WirePlaceClient implements WirePlaceChatClient {
     this._ee = emitter;
     this._userCache = {};
     this._resetCache();
-    console.log('[Client]', hostname, port);
+    logger.log('[Client]', hostname, port);
     (window as any).client = this;
   }
 
@@ -165,7 +166,7 @@ class WirePlaceClient implements WirePlaceChatClient {
   };
 
   disconnect() {
-    console.log('[Client] Disconnect');
+    logger.log('[Client] Disconnect');
     this.socket.closeAllChannels();
     this._resetCache();
   }
@@ -179,7 +180,7 @@ class WirePlaceClient implements WirePlaceChatClient {
       token,
     });
     this._ee.emit(Events.SET_ACTIVE_ACTOR, actorId);
-    console.log(`[Client] Logged in as ${username}`);
+    logger.log(`[Client] Logged in as ${username}`);
 
     this._trackMainActor(actorId);
   }
@@ -190,7 +191,7 @@ class WirePlaceClient implements WirePlaceChatClient {
     // Listen for disconnects
     (async () => {
       for await (let { code, reason } of this.socket.listener('connectAbort')) {
-        console.error('[Client] Connection aborted', code, reason);
+        logger.error('[Client] Connection aborted', code, reason);
         this._resetCache();
         this._unsubscribe();
         lastSeen = Date.now();
@@ -200,13 +201,13 @@ class WirePlaceClient implements WirePlaceChatClient {
     // Listen for reconnections
     (async () => {
       for await (let info of this.socket.listener('connect')) {
-        console.log(`[Client] Connected in ${Date.now() - lastSeen}ms`);
+        logger.log(`[Client] Connected in ${Date.now() - lastSeen}ms`);
         this._resetCache();
         await this.join();
-        console.log('[Client] Connection info:', info);
+        logger.log('[Client] Connection info:', info);
         const diffRaw = await this.socket.invoke('sync', {});
         const diff = deserializeDiff(diffRaw);
-        console.log('[Client] Initial diff:', diff);
+        logger.log('[Client] Initial diff:', diff);
         this.scene.applyDiff(diff);
       }
     })();

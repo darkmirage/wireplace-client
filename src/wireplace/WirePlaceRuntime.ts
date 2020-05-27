@@ -43,6 +43,7 @@ class WirePlaceRuntime {
   _directions: Record<keyof typeof Directions, boolean>;
   _renderer: Renderer | null;
   _ee: TypedEventsEmitter;
+  _wasMoving: boolean;
 
   constructor({ scene, emitter }: WirePlaceRuntimeProps) {
     this.tick = 0;
@@ -59,6 +60,7 @@ class WirePlaceRuntime {
       [Directions.RANDOM]: false,
     };
     this._renderer = null;
+    this._wasMoving = false;
     this._registerEvents();
   }
 
@@ -140,14 +142,17 @@ class WirePlaceRuntime {
       return;
     }
 
-    if (!this.isMoving()) {
-      // if (actor.action.type === AnimationActions.WALK) {
-      //   const action = {
-      //     type: AnimationActions.IDLE,
-      //     state: -1,
-      //   };
-      //   this._scene.updateActor(this.actorId, { action }, false);
-      // }
+    const isMoving = this.isMoving();
+
+    if (!isMoving) {
+      if (this._wasMoving) {
+        const action = {
+          type: AnimationActions.IDLE,
+          state: -1,
+        };
+
+        this._scene.updateActor(this.actorId, { action }, true);
+      }
     } else {
       const { speed } = actor;
       _v1.set(0, 0, 0);
@@ -192,17 +197,18 @@ class WirePlaceRuntime {
       _r.setFromQuaternion(_q);
       const rotation = { x: _r.x, y: _r.y, z: _r.z };
 
-      const action = {
-        type: AnimationActions.IDLE,
-        state: -1,
-      };
+      const update: Update = { position, rotation };
+      if (!this._wasMoving) {
+        update.action = {
+          type: AnimationActions.WALK,
+          state: -1,
+        };
+      }
 
-      this._scene.updateActor(
-        this.actorId,
-        { position, rotation, action },
-        true
-      );
+      this._scene.updateActor(this.actorId, update, true);
     }
+
+    this._wasMoving = isMoving;
   };
 }
 

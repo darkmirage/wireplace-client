@@ -23,8 +23,6 @@ interface AnimationMetadata {
   currentClip: AnimationClip | null;
   asset: Object3D | null;
   mixer: AnimationMixer | null;
-  networkedActionType: AnimationAction;
-  networkedActionState: number;
 }
 
 const SMOOTHING_CONSTANT = 5.0;
@@ -79,8 +77,6 @@ function initializeMetadata(u: Update): AnimationMetadata {
     currentClip: null,
     asset: null,
     mixer: null,
-    networkedActionType: AnimationActions.IDLE,
-    networkedActionState: -1,
   };
   return data;
 }
@@ -153,18 +149,6 @@ class AnimationRuntime {
     this.playClip(obj, clip);
   }
 
-  updateAction(obj: Object3D) {
-    const data = getAndAssertMetadata(obj);
-    const { networkedActionType, actionType } = data;
-    if (networkedActionType !== actionType) {
-      const clip = getClipFromMetadata(obj, networkedActionType);
-      if (!clip) {
-        return;
-      }
-      this.playClip(obj, clip);
-    }
-  }
-
   playClip(obj: Object3D, clip: AnimationClip) {
     const data = getAndAssertMetadata(obj);
     const prevClip = data.currentClip;
@@ -214,18 +198,7 @@ class AnimationRuntime {
       data.target.up.set(u.up.x, u.up.y, u.up.z);
     }
     if (u.action) {
-      if (
-        data.networkedActionType !== u.action.type ||
-        data.networkedActionState !== u.action.state
-      ) {
-        data.networkedActionType = u.action.type;
-        data.networkedActionState = u.action.state;
-        if (u.action.type !== AnimationActions.IDLE) {
-          this.updateAction(obj);
-        } else {
-          this.stopAction(obj);
-        }
-      }
+      this.startAction(obj, u.action.type);
     }
   }
 
@@ -237,22 +210,20 @@ class AnimationRuntime {
         continue;
       }
 
-      const { target } = data;
+      const { target, speed } = data;
       if (!child.position.equals(target.position)) {
         translated = true;
-        this.startAction(child, AnimationActions.WALK);
 
         _v.copy(target.position).sub(child.position);
         const distance = _v.length();
-        const progress = distance / SMOOTHING_CONSTANT;
+        const progress = Math.min(distance, speed * delta);
         _v.normalize();
         _v.multiplyScalar(progress);
         child.position.add(_v);
 
         _v.copy(target.position).sub(child.position);
-        if (_v.length() <= 0.01) {
+        if (_v.length() <= 0.001) {
           child.position.copy(target.position);
-          this.startAction(child, AnimationActions.IDLE);
         }
       }
 
