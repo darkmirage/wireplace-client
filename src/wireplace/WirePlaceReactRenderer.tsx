@@ -6,6 +6,8 @@ import WirePlaceClient from 'wireplace/WirePlaceClient';
 import hexToRGB from 'utils/hexToRGB';
 import type { Theme } from 'themes';
 
+type ActorID = string;
+
 type OverlayActor = {
   actorId: string;
   x: number;
@@ -18,6 +20,11 @@ type OverlayProps = {
   delta: number;
   actors: Array<OverlayActor>;
 };
+
+interface UserInfo {
+  actorId: ActorID;
+  username: string;
+}
 
 const v = new Vector3();
 
@@ -49,6 +56,8 @@ class WirePlaceReactRenderer {
   _domElement: HTMLDivElement;
   _getClient: () => WirePlaceClient;
   _lastTick: number;
+  _lastFetched: number;
+  _userInfo: Record<ActorID, UserInfo>;
 
   constructor(
     setOverlayContent: React.Dispatch<React.SetStateAction<React.ReactNode>>,
@@ -59,10 +68,28 @@ class WirePlaceReactRenderer {
     this._domElement = domElement;
     this._getClient = getClient;
     this._lastTick = -Infinity;
+    this._userInfo = {};
+    this._lastFetched = -Infinity;
   }
 
-  async update(tick: number, delta: number, scene: Scene, camera: Camera) {
-    const userInfo: Array<OverlayActor> = [];
+  _updateUserInfo(actors: Array<OverlayActor>) {
+    const tick = this._lastTick;
+    const now = Date.now();
+    if (now - this._lastTick < 1000) {
+      return;
+    }
+    this._getClient()
+      .fetchUsersInfo(actors.map(({ actorId }) => actorId))
+      .then((userInfo) => {
+        if (this._lastTick !== tick) {
+          return;
+        }
+        Object.assign(this._userInfo, userInfo);
+      });
+  }
+
+  update(tick: number, delta: number, scene: Scene, camera: Camera) {
+    const actorInfo: Array<OverlayActor> = [];
 
     for (const child of scene.children) {
       if (child.name) {
@@ -83,25 +110,21 @@ class WirePlaceReactRenderer {
           continue;
         }
         const color: number = child.userData.color as any; // TODO: make this type safe
-        userInfo.push({ x, y, actorId: child.name, color });
+        actorInfo.push({ x, y, actorId: child.name, color });
       }
     }
 
+    // TODO: Remove this extreme hack for rate-limiting
     this._lastTick = Math.max(this._lastTick, tick);
-    const users = await this._getClient().fetchUsersInfo(
-      userInfo.map(({ actorId }) => actorId)
-    );
-    if (this._lastTick !== tick) {
-      return;
-    }
+    this._updateUserInfo(actorInfo);
 
-    for (const ui of userInfo) {
-      if (users[ui.actorId]) {
-        ui.username = users[ui.actorId].username;
+    for (const ui of actorInfo) {
+      if (this._userInfo[ui.actorId]) {
+        ui.username = this._userInfo[ui.actorId].username;
       }
     }
 
-    const content = <Overlay delta={delta} actors={userInfo} />;
+    const content = <Overlay delta={delta} actors={actorInfo} />;
     this._setOverlayContent(content);
   }
 }
