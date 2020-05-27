@@ -5,8 +5,7 @@ import TypedEventsEmitter, { Events } from 'wireplace/TypedEventsEmitter';
 import { AnimationActions } from 'types/AnimationTypes';
 
 const FORWARD = new Vector3(0, 0, 1);
-const _v1 = new Vector3();
-const _v2 = new Vector3();
+const _v = new Vector3();
 const _q = new Quaternion();
 const _r = new Euler();
 const _clock = new Clock();
@@ -23,7 +22,8 @@ interface Renderer {
   render: (
     tick: number,
     delta: number,
-    updates: Record<string, Update>
+    updates: Record<string, Update>,
+    activeActorId: string | null
   ) => void;
   cameraForward: Vector3;
   cameraRight: Vector3;
@@ -43,7 +43,10 @@ class WirePlaceRuntime {
   _directions: Record<keyof typeof Directions, boolean>;
   _renderer: Renderer | null;
   _ee: TypedEventsEmitter;
+
   _wasMoving: boolean;
+  _lastForward: Vector3;
+  _lastRight: Vector3;
 
   constructor({ scene, emitter }: WirePlaceRuntimeProps) {
     this.tick = 0;
@@ -61,6 +64,8 @@ class WirePlaceRuntime {
     };
     this._renderer = null;
     this._wasMoving = false;
+    this._lastForward = new Vector3();
+    this._lastRight = new Vector3();
     this._registerEvents();
   }
 
@@ -131,7 +136,7 @@ class WirePlaceRuntime {
     if (this._renderer) {
       const diff = this._scene.retrieveDiff();
       const updates = diff.d;
-      this._renderer.render(tick, delta, updates);
+      this._renderer.render(tick, delta, updates, this.actorId);
     }
 
     if (!this.actorId) {
@@ -143,62 +148,63 @@ class WirePlaceRuntime {
     }
 
     const isMoving = this._isMoving();
+    const wasMoving = this._wasMoving;
+    this._wasMoving = isMoving;
 
-    if (!isMoving) {
-      if (this._wasMoving) {
-        const action = {
-          type: AnimationActions.IDLE,
-          state: -1,
-        };
+    if (!isMoving && wasMoving) {
+      const action = {
+        type: AnimationActions.IDLE,
+        state: -1,
+      };
 
-        this._scene.updateActor(this.actorId, { action }, true);
+      this._scene.updateActor(this.actorId, { action }, true);
+      return;
+    }
+
+    if (isMoving) {
+      if (!wasMoving) {
+        if (this._renderer) {
+          this._lastForward.copy(this._renderer.cameraForward);
+          this._lastRight.copy(this._renderer.cameraRight);
+        } else {
+          this._lastForward.set(0, 0, -1);
+          this._lastRight.set(1, 0, 0);
+        }
       }
-    } else {
+
       const { speed } = actor;
-      _v1.set(0, 0, 0);
-
-      if (this._renderer) {
-        _v2.copy(this._renderer.cameraForward);
-      } else {
-        _v2.set(0, 0, -1);
-      }
+      _v.set(0, 0, 0);
 
       if (this._directions[Directions.DOWN]) {
-        _v1.sub(_v2);
+        _v.sub(this._lastForward);
       } else if (this._directions[Directions.UP]) {
-        _v1.add(_v2);
-      }
-
-      if (this._renderer) {
-        _v2.copy(this._renderer.cameraRight);
-      } else {
-        _v2.set(1, 0, 0);
+        _v.add(this._lastForward);
       }
 
       if (this._directions[Directions.LEFT]) {
-        _v1.sub(_v2);
+        _v.sub(this._lastRight);
       } else if (this._directions[Directions.RIGHT]) {
-        _v1.add(_v2);
+        _v.add(this._lastRight);
       }
 
       if (this._directions[Directions.RANDOM]) {
-        _v1.x += Math.random() * 2.0 - 1.0;
-        _v1.z += Math.random() * 2.0 - 1.0;
+        _v.x += Math.random() * 2.0 - 1.0;
+        _v.z += Math.random() * 2.0 - 1.0;
       }
 
-      _v1.normalize();
-      _q.setFromUnitVectors(FORWARD, _v1);
-      _v1.multiplyScalar(speed * delta);
-      _v1.x += actor.position.x;
-      _v1.y += actor.position.y;
-      _v1.z += actor.position.z;
-      const position = { x: _v1.x, y: _v1.y, z: _v1.z };
+      _v.normalize();
+      _q.setFromUnitVectors(FORWARD, _v);
+      _v.multiplyScalar(speed * delta);
+      _v.x += actor.position.x;
+      _v.y += actor.position.y;
+      _v.z += actor.position.z;
+      const position = { x: _v.x, y: _v.y, z: _v.z };
 
       _r.setFromQuaternion(_q);
       const rotation = { x: _r.x, y: _r.y, z: _r.z };
 
       const update: Update = { position, rotation };
-      if (!this._wasMoving) {
+      if (!wasMoving) {
         update.action = {
           type: AnimationActions.WALK,
           state: -1,
@@ -207,8 +213,6 @@ class WirePlaceRuntime {
 
       this._scene.updateActor(this.actorId, update, true);
     }
-
-    this._wasMoving = isMoving;
   };
 }
 

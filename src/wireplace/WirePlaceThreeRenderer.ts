@@ -28,12 +28,9 @@ import WirePlaceReactRenderer from './WirePlaceReactRenderer';
 
 type ObjectID = string;
 
-interface ObjectCustomData {
-  target: Object3D;
-  color: number;
-}
+const TARGET_Y = 1.0;
 
-const boxGeometry = new SphereBufferGeometry(0.05, 16, 16);
+const sphereGeometry = new SphereBufferGeometry(0.05, 16, 16);
 const _v1 = new Vector3();
 const _v2 = new Vector3();
 
@@ -49,6 +46,7 @@ class WirePlaceThreeRenderer {
   _controls: OrbitControls;
   _stats: Stats;
   _reacter: WirePlaceReactRenderer;
+  _controlTarget: Object3D | null;
 
   constructor(reacter: WirePlaceReactRenderer) {
     this.domElement = document.createElement('div');
@@ -70,7 +68,7 @@ class WirePlaceThreeRenderer {
     );
     controls.enableDamping = true;
     controls.dampingFactor = 0.05;
-    controls.target.set(0, 1, 0);
+    controls.target.set(0, TARGET_Y, 0);
     controls.screenSpacePanning = false;
     controls.maxPolarAngle = Math.PI / 2 + Math.PI / 32;
     controls.minPolarAngle = Math.PI / 16;
@@ -78,6 +76,7 @@ class WirePlaceThreeRenderer {
     controls.minDistance = 0.5;
     controls.maxDistance = 10;
     this._controls = controls;
+    this._controlTarget = null;
 
     this._stats = new (Stats as any)();
     this._stats.dom.setAttribute('style', 'position: fixed; right: 0; top: 0');
@@ -149,7 +148,7 @@ class WirePlaceThreeRenderer {
     });
     material.transparent = true;
     material.opacity = 0.7;
-    const indicator = new Mesh(boxGeometry, material);
+    const indicator = new Mesh(sphereGeometry, material);
     indicator.position.y = 2;
     indicator.visible = false;
     obj.add(indicator);
@@ -171,6 +170,30 @@ class WirePlaceThreeRenderer {
     this.cameraForward.copy(_v1);
     _v2.cross(this._camera.up).normalize();
     this.cameraRight.copy(_v2);
+  }
+
+  _updateControls(targetObjectId: string | null) {
+    if (targetObjectId) {
+      if (
+        !this._controlTarget ||
+        (this._controlTarget && this._controlTarget.name !== targetObjectId)
+      ) {
+        this._controlTarget =
+          this._scene.getObjectByName(targetObjectId) || null;
+        this._controls.saveState();
+      }
+    } else if (this._controlTarget) {
+      this._controlTarget = null;
+      this._controls.reset();
+    }
+
+    if (this._controlTarget) {
+      _v1.copy(this._camera.position).sub(this._controls.target);
+
+      this._controls.target.copy(this._controlTarget.position);
+      this._controls.target.y += TARGET_Y;
+      this._camera.position.copy(this._controls.target).add(_v1);
+    }
   }
 
   setDOMElement(element: HTMLDivElement) {
@@ -201,11 +224,18 @@ class WirePlaceThreeRenderer {
       }
 
       obj = obj || this._initializeObject(objectId, u);
-      this._animation.updateCustomData(obj, u);
+      this._animation.applyUpdate(obj, u);
     }
   }
 
-  render = (tick: number, delta: number, updates: Record<ObjectID, Update>) => {
+  render = (
+    tick: number,
+    delta: number,
+    updates: Record<ObjectID, Update>,
+    activeActorId: ObjectID | null
+  ) => {
+    this._updateControls(activeActorId);
+
     const sceneDirty = Object.keys(updates).length > 0;
     const controlsDirty = this._controls.update();
 

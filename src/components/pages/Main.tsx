@@ -66,6 +66,7 @@ const useStyles = createUseStyles<Theme>((theme) => ({
     background: theme.color.background,
     bottom: 0,
     left: 0,
+    overflow: 'hidden',
     position: 'absolute',
     right: 0,
     top: 0,

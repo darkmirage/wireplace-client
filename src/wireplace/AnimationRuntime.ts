@@ -141,14 +141,6 @@ class AnimationRuntime {
     data.actionType = actionType;
   }
 
-  stopAction(obj: Object3D) {
-    const clip = getClipFromMetadata(obj, AnimationActions.IDLE);
-    if (!clip) {
-      throw new Error('Missing idle animation');
-    }
-    this.playClip(obj, clip);
-  }
-
   playClip(obj: Object3D, clip: AnimationClip) {
     const data = getAndAssertMetadata(obj);
     const prevClip = data.currentClip;
@@ -170,7 +162,7 @@ class AnimationRuntime {
     data.currentClip = clip;
   }
 
-  updateCustomData(obj: Object3D, u: Update) {
+  applyUpdate(obj: Object3D, u: Update) {
     const data = getAndAssertMetadata(obj);
 
     if (u.color) {
