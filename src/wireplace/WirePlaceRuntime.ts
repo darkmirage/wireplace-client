@@ -86,17 +86,17 @@ class WirePlaceRuntime {
     });
   }
 
-  setRenderer(renderer: Renderer) {
-    this._renderer = renderer;
-  }
-
-  isMoving(): boolean {
+  _isMoving(): boolean {
     return (
       this._directions[Directions.UP] !== this._directions[Directions.DOWN] ||
       this._directions[Directions.LEFT] !==
         this._directions[Directions.RIGHT] ||
       this._directions[Directions.RANDOM]
     );
+  }
+
+  setRenderer(renderer: Renderer) {
+    this._renderer = renderer;
   }
 
   move(direction: keyof typeof Directions, start: boolean) {
@@ -142,7 +142,7 @@ class WirePlaceRuntime {
       return;
     }
 
-    const isMoving = this.isMoving();
+    const isMoving = this._isMoving();
 
     if (!isMoving) {
       if (this._wasMoving) {

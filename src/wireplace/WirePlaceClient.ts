@@ -218,10 +218,7 @@ class WirePlaceClient implements WirePlaceChatClient {
     (async () => {
       const channel = this.socket.subscribe('update');
       for await (let data of channel) {
-        this.scene.applySerializedDiff(
-          data,
-          this.runtime.isMoving() ? this.runtime.actorId : null
-        );
+        this.scene.applySerializedDiff(data, this.runtime.actorId);
       }
     })();
   }
