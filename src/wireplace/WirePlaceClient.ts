@@ -1,4 +1,4 @@
-import { WirePlaceScene, deserializeDiff } from 'wireplace-scene';
+import { WirePlaceScene, deserializeDiff, Update } from 'wireplace-scene';
 import socketClusterClient from 'socketcluster-client';
 import type { AGClientSocket } from 'socketcluster-client';
 import type { KeyboardEvent } from 'react';
@@ -39,7 +39,7 @@ export interface WirePlaceChatClient {
   fetchMessages: () => Promise<Array<ChatLine>>;
 }
 
-const UPDATE_FPS = 30;
+const UPDATE_FPS = 2;
 
 class WirePlaceClient implements WirePlaceChatClient {
   socket: AGClientSocket;
@@ -89,6 +89,21 @@ class WirePlaceClient implements WirePlaceChatClient {
         actionType,
       });
     }
+  }
+
+  // This is a hack to send updates on the current actor to the server at a fixed refresh rate
+  _trackMainActor(actorId: ActorID) {
+    let update: Update = {};
+    this._unsubscribe = this.scene.onActorUpdate(actorId, (u) => {
+      Object.assign(update, u);
+    });
+
+    setInterval(() => {
+      if (Object.keys(update).length > 0) {
+        this.socket.transmit('move', update);
+        update = {};
+      }
+    }, 1000 / UPDATE_FPS);
   }
 
   sendMessage(message: string) {
@@ -166,13 +181,7 @@ class WirePlaceClient implements WirePlaceChatClient {
     this._ee.emit(Events.SET_ACTIVE_ACTOR, actorId);
     console.log(`[Client] Logged in as ${username}`);
 
-    let lastSent = Date.now();
-    this._unsubscribe = this.scene.onActorUpdate(actorId, (update) => {
-      if (Date.now() - lastSent >= 1000 / UPDATE_FPS) {
-        this.socket.transmit('move', update);
-        lastSent = Date.now();
-      }
-    });
+    this._trackMainActor(actorId);
   }
 
   async connect() {

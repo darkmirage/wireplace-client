@@ -126,70 +126,82 @@ class WirePlaceRuntime {
   };
 
   update = (tick: number, delta: number) => {
-    if (this.isMoving() && this.actorId) {
-      const actor = this._scene.getActor(this.actorId);
-      if (actor) {
-        const { speed } = actor;
-        _v1.set(0, 0, 0);
-
-        if (this._renderer) {
-          _v2.copy(this._renderer.cameraForward);
-        } else {
-          _v2.set(0, 0, -1);
-        }
-
-        if (this._directions[Directions.DOWN]) {
-          _v1.sub(_v2);
-        } else if (this._directions[Directions.UP]) {
-          _v1.add(_v2);
-        }
-
-        if (this._renderer) {
-          _v2.copy(this._renderer.cameraRight);
-        } else {
-          _v2.set(1, 0, 0);
-        }
-
-        if (this._directions[Directions.LEFT]) {
-          _v1.sub(_v2);
-        } else if (this._directions[Directions.RIGHT]) {
-          _v1.add(_v2);
-        }
-
-        if (this._directions[Directions.RANDOM]) {
-          _v1.x += Math.random() * 2.0 - 1.0;
-          _v1.z += Math.random() * 2.0 - 1.0;
-        }
-
-        _v1.normalize();
-        _q.setFromUnitVectors(FORWARD, _v1);
-        _v1.multiplyScalar(speed * delta);
-        _v1.x += actor.position.x;
-        _v1.y += actor.position.y;
-        _v1.z += actor.position.z;
-        const position = { x: _v1.x, y: _v1.y, z: _v1.z };
-
-        _r.setFromQuaternion(_q);
-        const rotation = { x: _r.x, y: _r.y, z: _r.z };
-
-        // Reset any networked actions
-        const action = {
-          type: AnimationActions.IDLE,
-          state: -1,
-        };
-
-        this._scene.updateActor(
-          this.actorId,
-          { position, rotation, action },
-          true
-        );
-      }
-    }
-
     if (this._renderer) {
       const diff = this._scene.retrieveDiff();
       const updates = diff.d;
       this._renderer.render(tick, delta, updates);
+    }
+
+    if (!this.actorId) {
+      return;
+    }
+    const actor = this._scene.getActor(this.actorId);
+    if (!actor) {
+      return;
+    }
+
+    if (!this.isMoving()) {
+      // if (actor.action.type === AnimationActions.WALK) {
+      //   const action = {
+      //     type: AnimationActions.IDLE,
+      //     state: -1,
+      //   };
+      //   this._scene.updateActor(this.actorId, { action }, false);
+      // }
+    } else {
+      const { speed } = actor;
+      _v1.set(0, 0, 0);
+
+      if (this._renderer) {
+        _v2.copy(this._renderer.cameraForward);
+      } else {
+        _v2.set(0, 0, -1);
+      }
+
+      if (this._directions[Directions.DOWN]) {
+        _v1.sub(_v2);
+      } else if (this._directions[Directions.UP]) {
+        _v1.add(_v2);
+      }
+
+      if (this._renderer) {
+        _v2.copy(this._renderer.cameraRight);
+      } else {
+        _v2.set(1, 0, 0);
+      }
+
+      if (this._directions[Directions.LEFT]) {
+        _v1.sub(_v2);
+      } else if (this._directions[Directions.RIGHT]) {
+        _v1.add(_v2);
+      }
+
+      if (this._directions[Directions.RANDOM]) {
+        _v1.x += Math.random() * 2.0 - 1.0;
+        _v1.z += Math.random() * 2.0 - 1.0;
+      }
+
+      _v1.normalize();
+      _q.setFromUnitVectors(FORWARD, _v1);
+      _v1.multiplyScalar(speed * delta);
+      _v1.x += actor.position.x;
+      _v1.y += actor.position.y;
+      _v1.z += actor.position.z;
+      const position = { x: _v1.x, y: _v1.y, z: _v1.z };
+
+      _r.setFromQuaternion(_q);
+      const rotation = { x: _r.x, y: _r.y, z: _r.z };
+
+      const action = {
+        type: AnimationActions.IDLE,
+        state: -1,
+      };
+
+      this._scene.updateActor(
+        this.actorId,
+        { position, rotation, action },
+        true
+      );
     }
   };
 }

@@ -48,10 +48,10 @@ function getAndAssertMetadata(obj: Object3D): AnimationMetadata {
   return data;
 }
 
-async function getClipFromMetadata(
+function getClipFromMetadata(
   obj: Object3D,
   actionType: AnimationAction
-): Promise<AnimationClip | null> {
+): AnimationClip | null {
   const data = getAndAssertMetadata(obj);
   if (data.assetId === null || data.asset === null) {
     return null;
@@ -60,7 +60,7 @@ async function getClipFromMetadata(
   let clip: AnimationClip | null;
   const index = getAnimationIndex(data.assetId, actionType);
   if (index === undefined) {
-    clip = await getClip(actionType);
+    clip = getClip(actionType);
   } else {
     clip = (data.asset as any).animations[index];
   }
@@ -123,7 +123,7 @@ class AnimationRuntime {
     });
   }
 
-  async startAction(obj: Object3D, actionType: AnimationAction) {
+  startAction(obj: Object3D, actionType: AnimationAction) {
     const data = getAndAssertMetadata(obj);
 
     const assetId = data.assetId;
@@ -136,7 +136,7 @@ class AnimationRuntime {
       return;
     }
 
-    const clip = await getClipFromMetadata(obj, actionType);
+    const clip = getClipFromMetadata(obj, actionType);
     if (!clip) {
       return;
     }
@@ -145,19 +145,19 @@ class AnimationRuntime {
     data.actionType = actionType;
   }
 
-  async stopAction(obj: Object3D) {
-    const clip = await getClipFromMetadata(obj, AnimationActions.IDLE);
+  stopAction(obj: Object3D) {
+    const clip = getClipFromMetadata(obj, AnimationActions.IDLE);
     if (!clip) {
       throw new Error('Missing idle animation');
     }
     this.playClip(obj, clip);
   }
 
-  async updateAction(obj: Object3D) {
+  updateAction(obj: Object3D) {
     const data = getAndAssertMetadata(obj);
     const { networkedActionType, actionType } = data;
     if (networkedActionType !== actionType) {
-      const clip = await getClipFromMetadata(obj, networkedActionType);
+      const clip = getClipFromMetadata(obj, networkedActionType);
       if (!clip) {
         return;
       }

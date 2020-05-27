@@ -1,4 +1,5 @@
-import { Cache, Group, Object3D } from 'three';
+import { Cache, Group, Object3D, AnimationUtils } from 'three';
+import { SkeletonUtils } from 'three/examples/jsm/utils/SkeletonUtils';
 
 import { AnimationAction, AnimationActions } from 'types/AnimationTypes';
 
@@ -25,6 +26,50 @@ const Assets: Array<Asset> = [
   },
 ];
 
+// TODO: Build a real cache module
+// start caching-related code
+let preloaded = false;
+const assetCache: Record<number, Group> = {};
+
+async function waitForPreload() {
+  return new Promise((resolve, reject) => {
+    const check = () => {
+      if (preloaded) {
+        resolve();
+      } else {
+        setTimeout(check, 300);
+      }
+    };
+    check();
+  });
+}
+
+function loadFromCache(assetId: number): Object3D {
+  const asset = assetCache[assetId];
+  const copy = SkeletonUtils.clone(asset);
+  (copy as any).animations = AnimationUtils.arraySlice(
+    (asset as any).animations,
+    0,
+    1000
+  );
+  return copy as Object3D;
+}
+
+async function preload(assetId: number) {
+  const { url, scale } = Assets[assetId];
+  const g = await new FBXLoader().loadGroupAsync(url);
+  g.scale.set(scale, scale, scale);
+  assetCache[assetId] = g;
+}
+
+async function preloadAll() {
+  await preload(0);
+  await preload(1);
+  preloaded = true;
+}
+preloadAll();
+// end caching-related code
+
 function getAnimationIndex(
   assetId: number,
   type: AnimationAction
@@ -32,11 +77,10 @@ function getAnimationIndex(
   return Assets[assetId].animations[type];
 }
 
-async function loadAsset(assetId: number): Promise<Group> {
-  const { url, scale } = Assets[assetId];
-  const g = await new FBXLoader().loadGroupAsync(url);
-  g.scale.set(scale, scale, scale);
-  return g;
+async function loadAsset(assetId: number): Promise<Object3D> {
+  await waitForPreload();
+  const obj = loadFromCache(assetId);
+  return obj;
 }
 
 async function loadNature(filename: string): Promise<Group> {

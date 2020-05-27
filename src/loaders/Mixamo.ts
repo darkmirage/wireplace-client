@@ -23,25 +23,41 @@ const AnimationURLs: Partial<Record<AnimationAction, string>> = {
 
 const clipCache: Partial<Record<AnimationAction, AnimationClip>> = {};
 
-async function getClip(
-  animationType: AnimationAction
-): Promise<AnimationClip | null> {
+async function loadIntoCache(animationType: AnimationAction) {
+  if (clipCache[animationType]) {
+    return;
+  }
   const url = AnimationURLs[animationType];
   if (url) {
-    let clip = clipCache[animationType];
-    if (clip) {
-      return clip;
-    }
     const obj = await new FBXLoader().loadGroupAsync(url);
-    clip = (obj as any).animations[0];
+    const clip = (obj as any).animations[0];
     if (!clip) {
       throw new Error('Clip is missing from FBX: ' + url);
     }
+    clip.name = animationType;
     clip.optimize();
     clipCache[animationType] = clip;
-    return clip;
   }
-  return null;
 }
+
+function getClip(animationType: AnimationAction): AnimationClip | null {
+  return clipCache[animationType] || null;
+}
+
+async function preload() {
+  await loadIntoCache(AnimationActions.IDLE);
+  await loadIntoCache(AnimationActions.WALK);
+  await loadIntoCache(AnimationActions.WAVE);
+  await loadIntoCache(AnimationActions.CLAP);
+  await loadIntoCache(AnimationActions.BOW);
+  await loadIntoCache(AnimationActions.DANCE_SAMBA);
+  await loadIntoCache(AnimationActions.DANCE_HIP_HOP);
+  await loadIntoCache(AnimationActions.GOLF_DRIVE);
+  await loadIntoCache(AnimationActions.SALUTE);
+  await loadIntoCache(AnimationActions.CRY);
+  await loadIntoCache(AnimationActions.DIE);
+}
+
+preload();
 
 export { getClip };
