@@ -1,11 +1,12 @@
 import React from 'react';
 import { createUseStyles, useTheme } from 'react-jss';
+import { BrowserRouter, Route, Switch } from 'react-router-dom';
 
 import Main from 'components/pages/Main';
 import Welcome from 'components/pages/Welcome';
 import { Theme } from 'themes';
 
-const DEFAULT_USERNAME = null; //Date.now().toString();
+const DEFAULT_USERNAME = null;
 
 const App = () => {
   const classes = useStyles({ theme: useTheme() });
@@ -14,13 +15,28 @@ const App = () => {
   );
 
   return (
-    <div className={classes.app}>
-      {username === null ? (
-        <Welcome onEnterUsername={setUsername} />
-      ) : (
-        <Main username={username} />
-      )}
-    </div>
+    <BrowserRouter>
+      <div className={classes.app}>
+        <Switch>
+          <Route
+            path="/:username"
+            render={(props) => {
+              return <Main username={props.match.params['username']} />;
+            }}
+          />
+          <Route
+            path="/"
+            render={() => {
+              return username === null ? (
+                <Welcome onEnterUsername={setUsername} />
+              ) : (
+                <Main username={username} />
+              );
+            }}
+          />
+        </Switch>
+      </div>
+    </BrowserRouter>
   );
 };
 
