@@ -8,10 +8,11 @@ import TypedEventsEmitter, { Events } from 'wireplace/TypedEventsEmitter';
 import WirePlaceRuntime from './WirePlaceRuntime';
 
 export interface ChatLine {
+  color: number;
   lineId: number;
+  message: string;
   time: number;
   username: string;
-  message: string;
 }
 
 type ChatCallback = (line: ChatLine) => void;

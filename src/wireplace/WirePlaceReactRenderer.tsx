@@ -3,6 +3,7 @@ import { createUseStyles, useTheme } from 'react-jss';
 import { Scene, Camera, Vector3 } from 'three';
 
 import WirePlaceClient from 'wireplace/WirePlaceClient';
+import hexToRGB from 'utils/hexToRGB';
 import type { Theme } from 'themes';
 
 type OverlayActor = {
@@ -29,15 +30,11 @@ const Overlay = (props: OverlayProps) => {
         return null;
       }
 
-      const r = (color >> 16) & 255;
-      const g = (color >> 8) & 255;
-      const b = color & 255;
-
       return (
         <div
           className={classes.actor}
           key={actorId}
-          style={{ top: y, left: x, background: `rgba(${r}, ${g}, ${b}, 1.0)` }}
+          style={{ top: y, left: x, background: hexToRGB(color) }}
         >
           {username}
         </div>

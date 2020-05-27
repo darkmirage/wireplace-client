@@ -3,6 +3,7 @@ import { createUseStyles, useTheme } from 'react-jss';
 import classNames from 'classnames';
 
 import { WirePlaceChatClient, ChatLine } from 'wireplace/WirePlaceClient';
+import hexToRGB from 'utils/hexToRGB';
 import Input from 'components/ui/Input';
 import { Theme } from 'themes';
 
@@ -56,15 +57,20 @@ const Chat = (props: Props) => {
 
   let prevName = '';
   const messageElements = Object.keys(messages.m).map((lineId) => {
-    const { message, username } = messages.m[lineId];
+    const { color, message, username } = messages.m[lineId];
+
     const nameField =
       prevName === username ? null : (
-        <div className={classes.username}>{username}</div>
+        <div className={classes.username} style={{ color: hexToRGB(color) }}>
+          {username}
+        </div>
       );
     prevName = username;
+
     const className = classNames(classes.message, {
       [classes.currentUser]: username === props.username,
     });
+
     return (
       <div className={className} key={lineId}>
         {nameField}
