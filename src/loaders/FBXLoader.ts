@@ -1,6 +1,8 @@
 import { Group, Mesh, Object3D, Material, MeshPhongMaterial } from 'three';
 import { FBXLoader as ThreeFBXLoader } from 'three/examples/jsm/loaders/FBXLoader';
 
+import silentConsole from 'utils/silentConsole';
+
 const DOMAIN = 'https://wireplace.s3-us-west-1.amazonaws.com';
 
 function setMaterialProperties(m: Material) {
@@ -37,7 +39,7 @@ class FBXLoader extends ThreeFBXLoader {
       this.path = '';
     }
 
-    const group: Group = await this.loadAsync(uri);
+    const group: Group = await silentConsole<Group>(() => this.loadAsync(uri));
     setChildrenProperties(group);
     return group;
   }
