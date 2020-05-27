@@ -4,40 +4,36 @@ import classNames from 'classnames';
 
 import type { Theme } from 'themes';
 
-type Props = {
-  value?: string;
-  className?: string;
-  placeholder?: string;
-  type?: string;
-  onChange?: (value: string) => void;
+type Props = React.ComponentPropsWithoutRef<'input'> & {
+  focused?: boolean;
+  onValueChange?: (value: string) => void;
 };
 
-const Input = ({
-  type,
-  placeholder,
-  className,
-  onChange,
-  value,
-  ...rest
-}: Props) => {
-  const classes = useStyles({ theme: useTheme() });
-  const cls = classNames(className, classes.input);
-  const handleChange = onChange
-    ? (event: React.ChangeEvent<HTMLInputElement>) =>
-        onChange(event.target.value)
-    : undefined;
+const Input = React.forwardRef<HTMLInputElement, Props>(
+  ({ focused, className, onValueChange, ...rest }, ref) => {
+    const classes = useStyles({ theme: useTheme() });
+    const cls = classNames(className, classes.input);
+    const handleChange = onValueChange
+      ? (event: React.ChangeEvent<HTMLInputElement>) =>
+          onValueChange(event.target.value)
+      : undefined;
 
-  return (
-    <input
-      {...rest}
-      onChange={handleChange}
-      className={cls}
-      value={value}
-      placeholder={placeholder}
-      type={type}
-    />
-  );
-};
+    ref = ref || React.useRef<HTMLInputElement>(null);
+
+    React.useEffect(() => {
+      const r = ref as React.MutableRefObject<HTMLInputElement>;
+      if (focused) {
+        r.current?.focus();
+      } else {
+        r.current?.blur();
+      }
+    }, [focused, ref]);
+
+    return (
+      <input {...rest} ref={ref} onChange={handleChange} className={cls} />
+    );
+  }
+);
 
 const useStyles = createUseStyles<Theme>((theme) => ({
   input: {

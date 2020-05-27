@@ -3,6 +3,8 @@ import { createUseStyles, useTheme } from 'react-jss';
 
 import Chat from 'components/Chat';
 import ClientProvider from 'components/ClientProvider';
+import EventArea from 'components/ui/EventArea';
+import GlobalHotKeys from 'components/ui/GlobalHotKeys';
 import RenderView from 'components/RenderView';
 import Spinner from 'components/Spinner';
 import type { Theme } from 'themes';
@@ -19,7 +21,7 @@ const Main = (props: Props) => {
   const { username } = props;
 
   return (
-    <>
+    <GlobalHotKeys>
       <ClientProvider
         username={username}
         token="foobar"
@@ -33,19 +35,21 @@ const Main = (props: Props) => {
               <Chat client={client} username={username} />
             </div>
             <div className={classes.main}>
-              <div
+              <EventArea
+                maintainFocus
                 className={classes.eventArea}
-                tabIndex={0}
                 onKeyDown={client.handleKeyDown}
+                onKeyPress={client.handleKeyPress}
                 onKeyUp={client.handleKeyUp}
+                tabIndex={1}
               >
                 <RenderView client={client} />
-              </div>
+              </EventArea>
             </div>
           </>
         )}
       </ClientProvider>
-    </>
+    </GlobalHotKeys>
   );
 };
 

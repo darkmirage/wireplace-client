@@ -14,10 +14,11 @@ const Welcome = (props: Props) => {
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    event.stopPropagation();
     if (text) {
       props.onEnterUsername(text);
     }
-    console.log(text);
+    console.log('Username:', text);
   };
 
   return (
@@ -26,7 +27,12 @@ const Welcome = (props: Props) => {
       <div>Enter a username to chat</div>
       <div>
         <form className={classes.form} onSubmit={handleSubmit}>
-          <Input onChange={setText} placeholder="Your username" />
+          <Input
+            focused
+            onValueChange={setText}
+            placeholder="Your username"
+            tabIndex={1}
+          />
           <Input className={classes.submit} type="submit" />
         </form>
       </div>

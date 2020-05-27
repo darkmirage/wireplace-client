@@ -255,7 +255,12 @@ class WirePlaceClient implements WirePlaceChatClient {
         this._ee.emit(Events.MOVE_RIGHT, false);
         break;
       }
-      case 's': {
+    }
+  };
+
+  handleKeyPress = (event: KeyboardEvent) => {
+    switch (event.key) {
+      case 'p': {
         this._ee.emit(Events.TOGGLE_RANDOM_WALK);
         break;
       }
@@ -296,7 +301,12 @@ class WirePlaceClient implements WirePlaceChatClient {
         break;
       }
       case 'Escape': {
+        this._ee.emit(Events.FOCUS_CHAT, false);
         this._performAction(AnimationActions.IDLE);
+        break;
+      }
+      case 'Enter': {
+        this._ee.emit(Events.FOCUS_CHAT, true);
         break;
       }
     }

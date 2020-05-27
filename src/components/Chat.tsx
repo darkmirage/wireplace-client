@@ -2,6 +2,7 @@ import React from 'react';
 import { createUseStyles, useTheme } from 'react-jss';
 import classNames from 'classnames';
 
+import { Events, getGlobalEmitter } from 'wireplace/TypedEventsEmitter';
 import { WirePlaceChatClient, ChatLine } from 'wireplace/WirePlaceClient';
 import hexToRGB from 'utils/hexToRGB';
 import Input from 'components/ui/Input';
@@ -18,12 +19,20 @@ const Chat = (props: Props) => {
   const [messages, setMessages] = React.useState<{
     m: Record<string, ChatLine>;
   }>({ m: {} });
-  const ref = React.useRef<HTMLDivElement | null>(null);
+  const [focus, setFocus] = React.useState(false);
+  const messagesRef = React.useRef<HTMLDivElement>(null);
   const classes = useStyles({ theme: useTheme() });
 
   const lineIds = Object.keys(messages.m);
   const lastId = lineIds[lineIds.length - 1];
   const lastLine = messages.m[lastId];
+
+  React.useEffect(() => {
+    getGlobalEmitter().on(Events.FOCUS_CHAT, setFocus);
+    return () => {
+      getGlobalEmitter().off(Events.FOCUS_CHAT, setFocus);
+    };
+  }, [setFocus]);
 
   React.useEffect(() => {
     client.onMessage((line) => {
@@ -39,9 +48,9 @@ const Chat = (props: Props) => {
   }, [client]);
 
   React.useEffect(() => {
-    if (ref.current && lastLine) {
-      ref.current.scrollTo({
-        top: ref.current?.scrollHeight,
+    if (messagesRef.current && lastLine) {
+      messagesRef.current.scrollTo({
+        top: messagesRef.current?.scrollHeight,
         behavior: 'smooth',
       });
     }
@@ -81,7 +90,7 @@ const Chat = (props: Props) => {
 
   const messageArea =
     messageElements.length > 0 ? (
-      <div className={classes.messages} ref={ref}>
+      <div className={classes.messages} ref={messagesRef}>
         {messageElements}
       </div>
     ) : null;
@@ -92,10 +101,12 @@ const Chat = (props: Props) => {
       <div className={classes.footer}>
         <form onSubmit={handleSubmit}>
           <Input
+            focused={focus}
             className={classes.input}
             value={message}
-            placeholder="Type something"
-            onChange={setMessage}
+            placeholder={focus ? 'Type something' : 'Press enter to chat'}
+            onValueChange={setMessage}
+            tabIndex={2}
           />
         </form>
       </div>

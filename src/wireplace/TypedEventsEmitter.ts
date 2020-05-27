@@ -3,18 +3,21 @@ import { EventEmitter } from 'events';
 import { AnimationAction } from 'types/AnimationTypes';
 
 export enum Events {
-  MOVE_DOWN = 'MOVE_DOWN',
-  MOVE_LEFT = 'MOVE_LEFT',
-  MOVE_RIGHT = 'MOVE_RIGHT',
-  MOVE_UP = 'MOVE_UP',
-  SET_ACTIVE_ACTOR = 'SET_ACTIVE_ACTOR',
-  TOGGLE_RANDOM_WALK = 'TOGGLE_RANDOM_WALK',
-  PERFORM_ACTION = 'PERFORM_ACTION',
+  FOCUS_CHAT,
+  MOVE_DOWN,
+  MOVE_LEFT,
+  MOVE_RIGHT,
+  MOVE_UP,
+  PERFORM_ACTION,
+  SET_ACTIVE_ACTOR,
+  TOGGLE_RANDOM_WALK,
 }
 
-type Event = keyof typeof Events;
+type ValueOf<T> = T[keyof T];
+type Event = ValueOf<typeof Event>;
 
 interface EventPayloads {
+  [Events.FOCUS_CHAT]: boolean;
   [Events.MOVE_DOWN]: boolean;
   [Events.MOVE_LEFT]: boolean;
   [Events.MOVE_RIGHT]: boolean;
@@ -45,19 +48,25 @@ class TypedEventsEmitter implements GenericTypedEventEmitter<EventPayloads> {
     event: E,
     listener: (payload: EventPayloads[E]) => void
   ): void {
-    this._ee.on(event, listener);
+    this._ee.on(event.toString(), listener);
   }
 
   off<E extends keyof EventPayloads>(
     event: E,
     listener: (payload: EventPayloads[E]) => void
   ): void {
-    this._ee.off(event, listener);
+    this._ee.off(event.toString(), listener);
   }
 
   emit<K extends keyof EventPayloads>(event: K, payload?: EventPayloads[K]) {
-    this._ee.emit(event, payload);
+    this._ee.emit(event.toString(), payload);
   }
+}
+
+const singleton = new TypedEventsEmitter();
+
+export function getGlobalEmitter(): TypedEventsEmitter {
+  return singleton;
 }
 
 export default TypedEventsEmitter;
