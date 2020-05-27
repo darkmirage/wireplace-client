@@ -14,6 +14,7 @@ type OverlayActor = {
   y: number;
   color: number;
   username?: string;
+  distance: number;
 };
 
 type OverlayProps = {
@@ -32,7 +33,7 @@ const Overlay = (props: OverlayProps) => {
   const classes = useStyles({ theme: useTheme() });
 
   const overlays = props.actors.map(
-    ({ username, actorId, x, y, color = 0 }) => {
+    ({ distance, username, actorId, x, y, color = 0 }, i) => {
       if (!username) {
         return null;
       }
@@ -41,7 +42,12 @@ const Overlay = (props: OverlayProps) => {
         <div
           className={classes.actor}
           key={actorId}
-          style={{ top: y, left: x, background: hexToRGB(color) }}
+          style={{
+            zIndex: distance + 3,
+            top: y,
+            left: x,
+            background: hexToRGB(color),
+          }}
         >
           {username}
         </div>
@@ -110,10 +116,14 @@ class WirePlaceReactRenderer {
         ) {
           continue;
         }
+        v.copy(child.position).sub(camera.position);
+        const distance = v.length();
         const color: number = child.userData.color as any; // TODO: make this type safe
-        actorInfo.push({ x, y, actorId: child.name, color });
+        actorInfo.push({ x, y, actorId: child.name, color, distance });
       }
     }
+
+    actorInfo.sort((a, b) => b.distance - a.distance);
 
     // TODO: Remove this extreme hack for rate-limiting
     this._lastTick = Math.max(this._lastTick, tick);
