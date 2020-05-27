@@ -73,6 +73,7 @@ class WirePlaceClient implements WirePlaceChatClient {
     this._ee = emitter;
     this._userCache = {};
     this._resetCache();
+    console.log('[Client]', hostname, port);
     (window as any).client = this;
   }
 
