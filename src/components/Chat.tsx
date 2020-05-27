@@ -39,7 +39,7 @@ const Chat = (props: Props) => {
   }, [client]);
 
   React.useEffect(() => {
-    if (ref.current && lastLine && lastLine.username === props.username) {
+    if (ref.current && lastLine) {
       ref.current.scrollTo({
         top: ref.current?.scrollHeight,
         behavior: 'smooth',
