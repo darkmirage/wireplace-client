@@ -2,6 +2,7 @@ import React from 'react';
 import { createUseStyles, useTheme } from 'react-jss';
 import { Scene, Camera, Vector3 } from 'three';
 
+import WirePlaceClient from 'wireplace/WirePlaceClient';
 import type { Theme } from 'themes';
 
 type OverlayActor = {
@@ -9,6 +10,7 @@ type OverlayActor = {
   x: number;
   y: number;
   color: number;
+  username?: string;
 };
 
 type OverlayProps = {
@@ -21,38 +23,49 @@ const v = new Vector3();
 const Overlay = (props: OverlayProps) => {
   const classes = useStyles({ theme: useTheme() });
 
-  const overlays = props.actors.map(({ actorId, x, y, color = 0 }) => {
-    const r = (color >> 16) & 255;
-    const g = (color >> 8) & 255;
-    const b = color & 255;
+  const overlays = props.actors.map(
+    ({ username, actorId, x, y, color = 0 }) => {
+      if (!username) {
+        return null;
+      }
 
-    return (
-      <div
-        className={classes.actor}
-        key={actorId}
-        style={{ top: y, left: x, background: `rgba(${r}, ${g}, ${b}, 1.0)` }}
-      >
-        {actorId}
-      </div>
-    );
-  });
+      const r = (color >> 16) & 255;
+      const g = (color >> 8) & 255;
+      const b = color & 255;
+
+      return (
+        <div
+          className={classes.actor}
+          key={actorId}
+          style={{ top: y, left: x, background: `rgba(${r}, ${g}, ${b}, 1.0)` }}
+        >
+          {username}
+        </div>
+      );
+    }
+  );
   return <div className={classes.container}>{overlays}</div>;
 };
 
 class WirePlaceReactRenderer {
   _setOverlayContent: React.Dispatch<React.SetStateAction<React.ReactNode>>;
   _domElement: HTMLDivElement;
+  _getClient: () => WirePlaceClient;
+  _lastTick: number;
 
   constructor(
     setOverlayContent: React.Dispatch<React.SetStateAction<React.ReactNode>>,
-    domElement: HTMLDivElement
+    domElement: HTMLDivElement,
+    getClient: () => WirePlaceClient
   ) {
     this._setOverlayContent = setOverlayContent;
     this._domElement = domElement;
+    this._getClient = getClient;
+    this._lastTick = -Infinity;
   }
 
-  update(delta: number, scene: Scene, camera: Camera) {
-    const positions = [];
+  async update(tick: number, delta: number, scene: Scene, camera: Camera) {
+    const userInfo: Array<OverlayActor> = [];
 
     for (const child of scene.children) {
       if (child.name) {
@@ -73,11 +86,25 @@ class WirePlaceReactRenderer {
           continue;
         }
         const color: number = child.userData.color as any; // TODO: make this type safe
-        positions.push({ x, y, actorId: child.name, color });
+        userInfo.push({ x, y, actorId: child.name, color });
       }
     }
 
-    const content = <Overlay delta={delta} actors={positions} />;
+    this._lastTick = Math.max(this._lastTick, tick);
+    const users = await this._getClient().fetchUsersInfo(
+      userInfo.map(({ actorId }) => actorId)
+    );
+    if (this._lastTick !== tick) {
+      return;
+    }
+
+    for (const ui of userInfo) {
+      if (users[ui.actorId]) {
+        ui.username = users[ui.actorId].username;
+      }
+    }
+
+    const content = <Overlay delta={delta} actors={userInfo} />;
     this._setOverlayContent(content);
   }
 }

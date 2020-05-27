@@ -23,7 +23,11 @@ const RenderView = (props: Props) => {
       throw new Error('ref.current is undefined');
     }
 
-    const reacter = new WirePlaceReactRenderer(setOverlayContent, current);
+    const reacter = new WirePlaceReactRenderer(
+      setOverlayContent,
+      current,
+      () => client
+    );
     const renderer = new WirePlaceThreeRenderer(reacter);
     renderer.setDOMElement(current);
     window.addEventListener('resize', renderer.resize);

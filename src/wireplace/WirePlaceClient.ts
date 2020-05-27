@@ -15,6 +15,7 @@ export interface ChatLine {
 }
 
 type ChatCallback = (line: ChatLine) => void;
+type ActorID = string;
 
 interface WirePlaceClientProps {
   emitter: TypedEventsEmitter;
@@ -24,6 +25,11 @@ interface WirePlaceClientProps {
   token: string;
   hostname: string;
   port: number;
+}
+
+interface UserInfo {
+  actorId: ActorID;
+  username: string;
 }
 
 export interface WirePlaceChatClient {
@@ -42,6 +48,7 @@ class WirePlaceClient implements WirePlaceChatClient {
   _token: string;
   _unsubscribe: () => void;
   _ee: TypedEventsEmitter;
+  _userCache: Record<string, UserInfo>;
 
   constructor({
     emitter,
@@ -63,7 +70,14 @@ class WirePlaceClient implements WirePlaceChatClient {
     this._token = token;
     this._unsubscribe = () => {};
     this._ee = emitter;
+    this._userCache = {};
+    this._resetCache();
     (window as any).client = this;
+  }
+
+  _resetCache() {
+    this._userCache = {};
+    this.scene.clear();
   }
 
   sendMessage(message: string) {
@@ -88,16 +102,53 @@ class WirePlaceClient implements WirePlaceChatClient {
     return [];
   }
 
+  fetchUsersInfo = async (
+    actorIds: Array<ActorID>
+  ): Promise<Record<ActorID, UserInfo>> => {
+    const query: Array<ActorID> = [];
+    const result: Record<ActorID, UserInfo> = {};
+
+    for (const actorId of actorIds) {
+      const user = this._userCache[actorId];
+      if (user) {
+        result[actorId] = user;
+      } else {
+        query.push(actorId);
+      }
+    }
+
+    const additionalResults: Record<
+      ActorID,
+      UserInfo
+    > = await this.socket.invoke('user', query);
+    Object.assign(result, additionalResults);
+    Object.assign(this._userCache, additionalResults);
+
+    return result;
+  };
+
+  fetchUserInfo = async (actorId: ActorID): Promise<UserInfo | null> => {
+    if (actorId in this._userCache) {
+      return this._userCache[actorId];
+    }
+    const user = await this.socket.invoke('user', actorId);
+    if (user) {
+      this._userCache[actorId] = user;
+    }
+    return user;
+  };
+
   disconnect() {
     console.log('[Client] Disconnect');
     this.socket.closeAllChannels();
+    this._resetCache();
   }
 
   async join() {
     const username = this._username;
     const token = this._token;
 
-    const actorId: string = await this.socket.invoke('join', {
+    const actorId: ActorID = await this.socket.invoke('join', {
       username,
       token,
     });
@@ -120,7 +171,7 @@ class WirePlaceClient implements WirePlaceChatClient {
     (async () => {
       for await (let { code, reason } of this.socket.listener('connectAbort')) {
         console.error('[Client] Connection aborted', code, reason);
-        this.scene.clear();
+        this._resetCache();
         this._unsubscribe();
         lastSeen = Date.now();
       }
@@ -130,7 +181,7 @@ class WirePlaceClient implements WirePlaceChatClient {
     (async () => {
       for await (let info of this.socket.listener('connect')) {
         console.log(`[Client] Connected in ${Date.now() - lastSeen}ms`);
-        this.scene.clear();
+        this._resetCache();
         await this.join();
         console.log('[Client] Connection info:', info);
         const diffRaw = await this.socket.invoke('sync', {});

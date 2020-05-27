@@ -20,7 +20,11 @@ export enum Directions {
 }
 
 interface Renderer {
-  render: (delta: number, updates: Record<string, Update>) => void;
+  render: (
+    tick: number,
+    delta: number,
+    updates: Record<string, Update>
+  ) => void;
   cameraForward: Vector3;
   cameraRight: Vector3;
 }
@@ -185,7 +189,7 @@ class WirePlaceRuntime {
     if (this._renderer) {
       const diff = this._scene.retrieveDiff();
       const updates = diff.d;
-      this._renderer.render(delta, updates);
+      this._renderer.render(tick, delta, updates);
     }
   };
 }

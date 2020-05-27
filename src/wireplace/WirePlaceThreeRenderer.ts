@@ -85,7 +85,7 @@ class WirePlaceThreeRenderer {
 
     // TODO: find a less hacky way to achieve this
     window.addEventListener('resize', () => {
-      this._reacter.update(10, this._scene, this._camera);
+      this._reacter.update(Infinity, 0, this._scene, this._camera);
     });
 
     this._setupScene();
@@ -205,7 +205,7 @@ class WirePlaceThreeRenderer {
     }
   }
 
-  render = (delta: number, updates: Record<ObjectID, Update>) => {
+  render = (tick: number, delta: number, updates: Record<ObjectID, Update>) => {
     const sceneDirty = Object.keys(updates).length > 0;
     const controlsDirty = this._controls.update();
 
@@ -225,7 +225,7 @@ class WirePlaceThreeRenderer {
       animated ||
       !this._prevCameraPosition.equals(this._camera.position)
     ) {
-      this._reacter.update(delta, this._scene, this._camera);
+      this._reacter.update(tick, delta, this._scene, this._camera);
     }
     this._prevCameraPosition.copy(this._camera.position);
 
