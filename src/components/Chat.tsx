@@ -139,8 +139,7 @@ const useStyles = createUseStyles<Theme>((theme) => ({
     display: 'flex',
     flexDirection: 'column',
     marginTop: theme.spacing.narrow,
-    overflowWrap: 'break-word',
-    wordBreak: 'break-all',
+    overflowWrap: 'anywhere',
   },
   messageText: {
     background: 'rgba(0, 0, 0, 0.4)',

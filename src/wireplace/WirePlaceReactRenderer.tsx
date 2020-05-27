@@ -75,7 +75,7 @@ class WirePlaceReactRenderer {
   _updateUserInfo(actors: Array<OverlayActor>) {
     const tick = this._lastTick;
     const now = Date.now();
-    if (now - this._lastTick < 1000) {
+    if (now - this._lastFetched < 1000) {
       return;
     }
     this._getClient()
@@ -84,6 +84,7 @@ class WirePlaceReactRenderer {
         if (this._lastTick !== tick) {
           return;
         }
+        this._lastFetched = Date.now();
         Object.assign(this._userInfo, userInfo);
       });
   }
