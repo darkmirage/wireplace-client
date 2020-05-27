@@ -3,7 +3,7 @@ import socketClusterClient from 'socketcluster-client';
 import type { AGClientSocket } from 'socketcluster-client';
 import type { KeyboardEvent } from 'react';
 
-import { AnimationActions } from 'types/AnimationTypes';
+import { AnimationAction, AnimationActions } from 'types/AnimationTypes';
 import TypedEventsEmitter, { Events } from 'wireplace/TypedEventsEmitter';
 import WirePlaceRuntime from './WirePlaceRuntime';
 
@@ -79,6 +79,15 @@ class WirePlaceClient implements WirePlaceChatClient {
   _resetCache() {
     this._userCache = {};
     this.scene.clear();
+  }
+
+  _performAction(actionType: AnimationAction) {
+    if (this.runtime.actorId) {
+      this._ee.emit(Events.PERFORM_ACTION, {
+        actorId: this.runtime.actorId,
+        actionType,
+      });
+    }
   }
 
   sendMessage(message: string) {
@@ -250,12 +259,44 @@ class WirePlaceClient implements WirePlaceChatClient {
         break;
       }
       case '1': {
-        if (this.runtime.actorId) {
-          this._ee.emit(Events.PERFORM_ACTION, {
-            actorId: this.runtime.actorId,
-            actionType: AnimationActions.DANCE_SAMBA,
-          });
-        }
+        this._performAction(AnimationActions.WAVE);
+        break;
+      }
+      case '2': {
+        this._performAction(AnimationActions.CLAP);
+        break;
+      }
+      case '3': {
+        this._performAction(AnimationActions.BOW);
+        break;
+      }
+      case '4': {
+        this._performAction(AnimationActions.DANCE_SAMBA);
+        break;
+      }
+      case '5': {
+        this._performAction(AnimationActions.DANCE_HIP_HOP);
+        break;
+      }
+      case '6': {
+        this._performAction(AnimationActions.GOLF_DRIVE);
+        break;
+      }
+      case '7': {
+        this._performAction(AnimationActions.SALUTE);
+        break;
+      }
+      case '8': {
+        this._performAction(AnimationActions.CRY);
+        break;
+      }
+      case '9': {
+        this._performAction(AnimationActions.DIE);
+        break;
+      }
+      case 'Escape': {
+        this._performAction(AnimationActions.IDLE);
+        break;
       }
     }
   };

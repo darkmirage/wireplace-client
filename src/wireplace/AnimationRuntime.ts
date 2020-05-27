@@ -145,6 +145,14 @@ class AnimationRuntime {
     data.actionType = actionType;
   }
 
+  async stopAction(obj: Object3D) {
+    const clip = await getClipFromMetadata(obj, AnimationActions.IDLE);
+    if (!clip) {
+      throw new Error('Missing idle animation');
+    }
+    this.playClip(obj, clip);
+  }
+
   async updateAction(obj: Object3D) {
     const data = getAndAssertMetadata(obj);
     const { networkedActionType, actionType } = data;
@@ -212,7 +220,11 @@ class AnimationRuntime {
       ) {
         data.networkedActionType = u.action.type;
         data.networkedActionState = u.action.state;
-        this.updateAction(obj);
+        if (u.action.type !== AnimationActions.IDLE) {
+          this.updateAction(obj);
+        } else {
+          this.stopAction(obj);
+        }
       }
     }
   }
