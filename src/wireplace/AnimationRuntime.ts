@@ -2,8 +2,6 @@ import {
   AnimationClip,
   AnimationMixer,
   LoopRepeat,
-  Mesh,
-  MeshPhongMaterial,
   Object3D,
   Scene,
   Vector3,

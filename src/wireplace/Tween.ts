@@ -1,4 +1,4 @@
-import { Object3D, Quaternion, Vector3, Mesh, Material } from 'three';
+import { Object3D, Quaternion, Vector3 } from 'three';
 
 import getMaterial from 'utils/getMaterial';
 
