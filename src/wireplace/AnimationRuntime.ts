@@ -10,6 +10,7 @@ import {
 } from 'three';
 import type { Update } from 'wireplace-scene';
 
+import Tween, { TweenTarget } from 'wireplace/Tween';
 import { getGlobalEmitter, Events } from 'wireplace/TypedEventsEmitter';
 import { AnimationAction, AnimationActions } from 'constants/Animation';
 import { getAnimationIndex, loadAsset } from 'loaders/PreconfiguredAssets';
@@ -93,9 +94,11 @@ function initializeMetadata(u: Update): AnimationMetadata {
 
 class AnimationRuntime {
   _scene: Scene;
+  _activeTweens: Array<Tween>;
 
   constructor(scene: Scene) {
     this._scene = scene;
+    this._activeTweens = [];
   }
 
   _updateAnimation(delta: number, obj: Object3D) {
@@ -147,6 +150,12 @@ class AnimationRuntime {
       data.mixer = new AnimationMixer(g);
       this.startAction(obj, data.actionType, data.actionState);
     });
+  }
+
+  tween(obj: Object3D, target: TweenTarget, duration: number = 1000): Tween {
+    const tween = new Tween(obj, duration).to(target);
+    this._activeTweens.push(tween);
+    return tween;
   }
 
   startAction(
@@ -206,9 +215,6 @@ class AnimationRuntime {
 
     if (u.color) {
       data.color = u.color;
-      ((obj.children[0] as Mesh).material as MeshPhongMaterial).color.set(
-        u.color
-      );
     }
     if (u.assetId !== undefined) {
       this.loadAsset(obj, u);
@@ -235,6 +241,14 @@ class AnimationRuntime {
 
   update = (tick: number, delta: number): boolean => {
     let translated = false;
+    for (const t of this._activeTweens) {
+      const tween = t as Tween;
+      tween.update(delta);
+      if (tween.ended) {
+        this._activeTweens = this._activeTweens.filter((t_) => t_ !== t);
+      }
+    }
+
     for (const child of this._scene.children) {
       const data = getMetadata(child);
       if (!data) {

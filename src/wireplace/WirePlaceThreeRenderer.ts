@@ -1,6 +1,6 @@
 import {
   AmbientLight,
-  SphereBufferGeometry,
+  CircleBufferGeometry,
   Color,
   DirectionalLight,
   Fog,
@@ -24,6 +24,7 @@ import Stats from 'three/examples/jsm/libs/stats.module';
 import type { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import type { Update } from 'wireplace-scene';
 
+import getMaterial from 'utils/getMaterial';
 import { getGlobalEmitter, Events } from 'wireplace/TypedEventsEmitter';
 import disposeObject3D from 'utils/disposeObject3D';
 import { loadDefaultMap } from 'loaders/PreconfiguredAssets';
@@ -34,7 +35,6 @@ type ObjectID = string;
 
 const TARGET_Y = 1.0;
 
-const sphereGeometry = new SphereBufferGeometry(0.05, 16, 16);
 const _v1 = new Vector3();
 const _v2 = new Vector3();
 const _raycaster = new Raycaster();
@@ -103,9 +103,8 @@ class WirePlaceThreeRenderer {
       this._reacter.update(Infinity, 0, this._scene, this._camera);
     });
 
-    getGlobalEmitter().on(Events.MOUSE_MOVE, this._moveCursor);
     getGlobalEmitter().on(Events.MOUSE_UP, (coords) => {
-      this._moveCursor(coords);
+      this._clickCursor(coords);
       const { x, y, z } = this._cursor.position;
       getGlobalEmitter().emit(Events.MOVE_TO, { x, y, z });
     });
@@ -114,14 +113,18 @@ class WirePlaceThreeRenderer {
   }
 
   // x and y are in screen space
-  _moveCursor = ({ x, y }: { x: number; y: number }) => {
+  _clickCursor = ({ x, y }: { x: number; y: number }) => {
     _raycaster.setFromCamera({ x, y }, this._camera);
     const intersects = _raycaster.intersectObjects(this._floor.children);
     if (intersects.length > 0) {
+      const m = getMaterial(this._cursor);
+      if (!m) {
+        throw new Error('Cursor is missing');
+      }
+      m.opacity = 0.5;
       this._cursor.position.copy(intersects[0].point);
-      this._cursor.visible = true;
-    } else {
-      this._cursor.visible = false;
+      this._cursor.position.y = 0.01;
+      this._animation.tween(this._cursor, { opacity: 0 }, 0.8);
     }
   };
 
@@ -161,12 +164,13 @@ class WirePlaceThreeRenderer {
     this._floor.add(floor);
 
     const material = new MeshBasicMaterial({
-      color: 0xffffff,
+      color: 0xffcc00,
     });
     material.transparent = true;
-    material.opacity = 0.7;
-    const pointer = new Mesh(sphereGeometry, material);
-    pointer.visible = false; // TODO: re-enable this
+    material.opacity = 0;
+    const geometry = new CircleBufferGeometry(0.2, 20);
+    const pointer = new Mesh(geometry, material);
+    pointer.rotateX(-Math.PI / 2);
     this._cursor.add(pointer);
 
     const grid = new GridHelper(2000, 2000, 0, 0);
@@ -189,16 +193,6 @@ class WirePlaceThreeRenderer {
   _initializeObject(objectId: ObjectID, u: Update): Object3D {
     const obj = new Object3D();
     obj.name = objectId;
-
-    const material = new MeshBasicMaterial({
-      color: 0xffffff,
-    });
-    material.transparent = true;
-    material.opacity = 0.7;
-    const indicator = new Mesh(sphereGeometry, material);
-    indicator.position.y = 2;
-    indicator.visible = false;
-    obj.add(indicator);
 
     if (u.position) {
       obj.position.set(u.position.x, u.position.y, u.position.z);
