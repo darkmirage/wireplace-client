@@ -17,19 +17,23 @@ const EventArea = React.forwardRef<HTMLDivElement, Props>(
         const r = ref as React.MutableRefObject<HTMLDivElement>;
         r.current?.focus();
       }
-    }, [maintainFocus]);
+    }, [maintainFocus, ref]);
 
     React.useEffect(() => {
       if (!maintainFocus) {
         return;
       }
-      getGlobalEmitter().on(Events.FOCUS_CHAT, (chatFocused) => {
+      const handleFocus = (chatFocused: boolean) => {
         if (!chatFocused) {
           const r = ref as React.MutableRefObject<HTMLDivElement>;
           r.current?.focus();
         }
-      });
-    }, [maintainFocus]);
+      };
+      getGlobalEmitter().on(Events.FOCUS_CHAT, handleFocus);
+      return () => {
+        getGlobalEmitter().off(Events.FOCUS_CHAT, handleFocus);
+      };
+    }, [maintainFocus, ref]);
 
     return (
       <div
