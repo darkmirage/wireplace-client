@@ -60,24 +60,60 @@ const GlobalInputs = (props: Props) => {
     if (!coords) {
       return;
     }
-    // getGlobalEmitter().emit(Events.MOUSE_MOVE, coords);
+    getGlobalEmitter().emit(Events.MOUSE_MOVE, coords);
+  }
+
+  const prevXY = { x: 0, y: 0 };
+
+  function handleMouseDown(event: React.MouseEvent<any>) {
+    if (event.button !== 0) {
+      return;
+    }
+    prevXY.x = event.clientX;
+    prevXY.y = event.clientY;
   }
 
   function handleMouseUp(event: React.MouseEvent<any>) {
+    if (event.button !== 0) {
+      return;
+    }
+
+    const distance = Math.sqrt(
+      (event.clientX - prevXY.x) ** 2 + (event.clientY - prevXY.y) ** 2
+    );
     const coords = getCoordinates(event);
     if (!coords) {
       return;
     }
-    getGlobalEmitter().emit(Events.MOUSE_UP, coords);
+    if (distance < 5) {
+      getGlobalEmitter().emit(Events.MOUSE_UP, coords);
+    }
+  }
+
+  function handleTouchStart(event: React.TouchEvent<any>) {
+    if (event.touches.length !== 1) {
+      return;
+    }
+    const touch = event.changedTouches[0];
+    prevXY.x = touch.clientX;
+    prevXY.y = touch.clientY;
   }
 
   function handleTouchEnd(event: React.TouchEvent<any>) {
+    if (event.touches.length !== 0) {
+      return;
+    }
     const touch = event.changedTouches[0];
+    const distance = Math.sqrt(
+      (touch.clientX - prevXY.x) ** 2 + (touch.clientY - prevXY.y) ** 2
+    );
     const coords = getCoordinates(touch);
     if (!coords) {
       return;
     }
-    getGlobalEmitter().emit(Events.MOUSE_UP, coords);
+    if (distance < 5) {
+      getGlobalEmitter().emit(Events.MOUSE_UP, coords);
+    }
   }
 
   return (
@@ -87,7 +123,9 @@ const GlobalInputs = (props: Props) => {
       onKeyDown={handleGlobalKeyDown}
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
+      onMouseDown={handleMouseDown}
       onMouseUp={handleMouseUp}
+      onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
     >
       {props.children}
