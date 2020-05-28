@@ -32,12 +32,12 @@ let preloaded = false;
 const assetCache: Record<number, Group> = {};
 
 async function waitForPreload() {
-  return new Promise((resolve, reject) => {
+  return new Promise((resolve) => {
     const check = () => {
       if (preloaded) {
         resolve();
       } else {
-        setTimeout(check, 300);
+        setTimeout(check, 200);
       }
     };
     check();

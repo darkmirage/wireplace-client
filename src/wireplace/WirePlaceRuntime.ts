@@ -152,26 +152,22 @@ class WirePlaceRuntime {
     this._wasMoving = isMoving;
 
     if (!isMoving && wasMoving) {
-      const action = {
-        type: AnimationActions.IDLE,
-        state: -1,
-      };
-
+      this._ee.emit(Events.SET_MOVING, false);
+      const action = { type: AnimationActions.IDLE, state: -1 };
       this._scene.updateActor(this.actorId, { action }, true);
       return;
+    } else if (isMoving && !wasMoving) {
+      this._ee.emit(Events.SET_MOVING, true);
+      if (this._renderer) {
+        this._lastForward.copy(this._renderer.cameraForward);
+        this._lastRight.copy(this._renderer.cameraRight);
+      } else {
+        this._lastForward.set(0, 0, -1);
+        this._lastRight.set(1, 0, 0);
+      }
     }
 
     if (isMoving) {
-      if (!wasMoving) {
-        if (this._renderer) {
-          this._lastForward.copy(this._renderer.cameraForward);
-          this._lastRight.copy(this._renderer.cameraRight);
-        } else {
-          this._lastForward.set(0, 0, -1);
-          this._lastRight.set(1, 0, 0);
-        }
-      }
-
       const { speed } = actor;
       _v.set(0, 0, 0);
 

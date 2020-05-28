@@ -11,10 +11,11 @@ export enum Events {
   PERFORM_ACTION,
   SET_ACTIVE_ACTOR,
   TOGGLE_RANDOM_WALK,
+  SET_MOVING,
 }
 
 type ValueOf<T> = T[keyof T];
-type Event = ValueOf<typeof Event>;
+export type Event = ValueOf<typeof Event>;
 
 interface EventPayloads {
   [Events.FOCUS_CHAT]: boolean;
@@ -23,6 +24,7 @@ interface EventPayloads {
   [Events.MOVE_RIGHT]: boolean;
   [Events.MOVE_UP]: boolean;
   [Events.SET_ACTIVE_ACTOR]: string;
+  [Events.SET_MOVING]: boolean;
   [Events.TOGGLE_RANDOM_WALK]: undefined;
   [Events.PERFORM_ACTION]: {
     actorId: string;

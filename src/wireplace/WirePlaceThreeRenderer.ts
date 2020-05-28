@@ -22,6 +22,7 @@ import Stats from 'three/examples/jsm/libs/stats.module';
 import type { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import type { Update } from 'wireplace-scene';
 
+import disposeObject3D from 'utils/disposeObject3D';
 import { loadDefaultMap } from 'loaders/PreconfiguredAssets';
 import AnimationRuntime from './AnimationRuntime';
 import WirePlaceReactRenderer from './WirePlaceReactRenderer';
@@ -81,6 +82,8 @@ class WirePlaceThreeRenderer {
     this._stats = new (Stats as any)();
     this._stats.dom.setAttribute('style', 'position: fixed; right: 0; top: 0');
     document.body.appendChild(this._stats.dom);
+
+    (window as any).renderer = this;
 
     // TODO: find a less hacky way to achieve this
     window.addEventListener('resize', () => {
@@ -219,6 +222,7 @@ class WirePlaceThreeRenderer {
       if (u.deleted) {
         if (obj) {
           this._scene.remove(obj);
+          disposeObject3D(obj);
         }
         continue;
       }
