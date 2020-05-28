@@ -44,7 +44,7 @@ const GlobalInputs = (props: Props) => {
   const ref = React.useRef<HTMLDivElement>(null);
 
   function getCoordinates(
-    event: React.MouseEvent<any>
+    event: React.MouseEvent<any> | React.Touch
   ): { x: number; y: number } | null {
     const div = ref.current;
     if (!div) {
@@ -71,6 +71,15 @@ const GlobalInputs = (props: Props) => {
     getGlobalEmitter().emit(Events.MOUSE_UP, coords);
   }
 
+  function handleTouchEnd(event: React.TouchEvent<any>) {
+    const touch = event.changedTouches[0];
+    const coords = getCoordinates(touch);
+    if (!coords) {
+      return;
+    }
+    getGlobalEmitter().emit(Events.MOUSE_UP, coords);
+  }
+
   return (
     <EventArea
       ref={ref}
@@ -79,6 +88,7 @@ const GlobalInputs = (props: Props) => {
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
       onMouseUp={handleMouseUp}
+      onTouchEnd={handleTouchEnd}
     >
       {props.children}
     </EventArea>
