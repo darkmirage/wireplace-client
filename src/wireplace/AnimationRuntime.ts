@@ -1,6 +1,7 @@
 import {
   AnimationClip,
   AnimationMixer,
+  LoopRepeat,
   Mesh,
   MeshPhongMaterial,
   Object3D,
@@ -20,6 +21,7 @@ interface AnimationMetadata {
   color: number;
   speed: number;
   actionType: AnimationAction;
+  actionState: number;
   currentClip: AnimationClip | null;
   asset: Object3D | null;
   mixer: AnimationMixer | null;
@@ -74,6 +76,7 @@ function initializeMetadata(u: Update): AnimationMetadata {
     color: 0,
     speed: 1.4,
     actionType: AnimationActions.IDLE,
+    actionState: -1,
     currentClip: null,
     asset: null,
     mixer: null,
@@ -86,6 +89,27 @@ class AnimationRuntime {
 
   constructor(scene: Scene) {
     this._scene = scene;
+  }
+
+  _updateAnimation(delta: number, obj: Object3D) {
+    const data = getAndAssertMetadata(obj);
+    if (!data.mixer) {
+      return;
+    }
+
+    const { currentClip } = data;
+    if (currentClip) {
+      const action = data.mixer.clipAction(currentClip);
+      if (action.paused) {
+        console.log('paused');
+        const idleClip = getClipFromMetadata(obj, AnimationActions.IDLE);
+        if (idleClip) {
+          this.playClip(obj, idleClip);
+        }
+      }
+    }
+
+    data.mixer.update(delta);
   }
 
   loadAsset(obj: Object3D, u: Update) {
@@ -115,11 +139,15 @@ class AnimationRuntime {
       data.assetId = assetId;
       data.asset = g;
       data.mixer = new AnimationMixer(g);
-      this.startAction(obj, data.actionType);
+      this.startAction(obj, data.actionType, data.actionState);
     });
   }
 
-  startAction(obj: Object3D, actionType: AnimationAction) {
+  startAction(
+    obj: Object3D,
+    actionType: AnimationAction,
+    actionState: number = -1
+  ) {
     const data = getAndAssertMetadata(obj);
     const assetId = data.assetId;
     if (assetId === null || !data.asset || !data.mixer) {
@@ -133,11 +161,11 @@ class AnimationRuntime {
       return;
     }
 
-    this.playClip(obj, clip);
+    this.playClip(obj, clip, actionState);
     data.actionType = actionType;
   }
 
-  playClip(obj: Object3D, clip: AnimationClip) {
+  playClip(obj: Object3D, clip: AnimationClip, actionState: number = -1) {
     const data = getAndAssertMetadata(obj);
     const prevClip = data.currentClip;
 
@@ -155,6 +183,12 @@ class AnimationRuntime {
     if (prevClip !== clip) {
       action.reset();
       action.fadeIn(ANIMATION_FADE_TIME);
+      action.clampWhenFinished = true;
+      if (actionState > 0) {
+        action.setLoop(LoopRepeat, actionState);
+      } else {
+        action.setLoop(LoopRepeat, Infinity);
+      }
     }
     action.play();
 
@@ -189,7 +223,7 @@ class AnimationRuntime {
       data.target.up.set(u.up.x, u.up.y, u.up.z);
     }
     if (u.action) {
-      this.startAction(obj, u.action.type);
+      this.startAction(obj, u.action.type, u.action.state);
     }
   }
 
@@ -228,9 +262,7 @@ class AnimationRuntime {
         }
       }
 
-      if (data.mixer) {
-        data.mixer.update(delta);
-      }
+      this._updateAnimation(delta, child);
       // TODO:
       // - Update scale and up
       // - Implement proper interpolation and easing

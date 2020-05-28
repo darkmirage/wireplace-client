@@ -34,7 +34,6 @@ function disposeObject3D(obj: Object3D) {
   const mesh = obj as Mesh;
   if (mesh.isMesh) {
     mesh.geometry.dispose();
-    console.log(mesh.material);
     if (Array.isArray(mesh.material)) {
       for (const m of mesh.material) {
         disposeMaterial(m);
