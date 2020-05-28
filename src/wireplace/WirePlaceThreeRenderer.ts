@@ -16,6 +16,7 @@ import {
   Scene,
   WebGLRenderer,
   Vector3,
+  Group,
 } from 'three';
 import { MapControls } from 'three/examples/jsm/controls/OrbitControls';
 import Stats from 'three/examples/jsm/libs/stats.module';
@@ -101,24 +102,26 @@ class WirePlaceThreeRenderer {
     const distance = this._camera.position.length();
     this._scene.fog = new Fog(0xdbf7ff, distance * 1.5, distance * 5);
 
+    const bgObjs = new Group();
+
     let l1 = new DirectionalLight(0xffffff);
     l1.position.set(0, 200, 200);
     l1.castShadow = true;
     l1.intensity = 0.4;
-    this._scene.add(l1);
+    bgObjs.add(l1);
 
     const l2 = new DirectionalLight(0xffffff);
     l2.position.set(0, 200, 200);
     l2.castShadow = false;
     l2.intensity = 0.3;
-    this._scene.add(l2);
+    bgObjs.add(l2);
 
     const l3 = new AmbientLight(0xffffff, 0.1);
-    this._scene.add(l3);
+    bgObjs.add(l3);
 
     const l4 = new HemisphereLight(0xffffff, 0x444444);
     l4.position.set(0, 200, 0);
-    this._scene.add(l4);
+    bgObjs.add(l4);
 
     const floorMaterial = new MeshStandardMaterial({
       color: 0x666666,
@@ -126,7 +129,7 @@ class WirePlaceThreeRenderer {
     const floor = new Mesh(new PlaneBufferGeometry(2000, 2000), floorMaterial);
     floor.rotation.x = -Math.PI / 2;
     floor.receiveShadow = true;
-    this._scene.add(floor);
+    bgObjs.add(floor);
 
     const grid = new GridHelper(2000, 2000, 0, 0);
     if (!Array.isArray(grid.material)) {
@@ -134,10 +137,11 @@ class WirePlaceThreeRenderer {
       grid.material.transparent = true;
     }
     grid.position.setY(0.005);
-    this._scene.add(grid);
+    bgObjs.add(grid);
 
     const map = await loadDefaultMap();
-    this._scene.add(map);
+    bgObjs.add(map);
+    this._scene.add(bgObjs);
   }
 
   _getObjectById(objectId: ObjectID): Object3D | null {
@@ -221,6 +225,14 @@ class WirePlaceThreeRenderer {
     this._camera.aspect = width / height;
     this._camera.updateProjectionMatrix();
   };
+
+  getRendererPosition(objectId: string): Vector3 | null {
+    const obj = this._getObjectById(objectId);
+    if (!obj) {
+      return null;
+    }
+    return obj.position;
+  }
 
   applyUpdates(updates: Record<ObjectID, Update>) {
     for (const objectId in updates) {

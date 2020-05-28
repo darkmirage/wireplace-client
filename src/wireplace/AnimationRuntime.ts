@@ -19,7 +19,7 @@ interface AnimationMetadata {
   target: Object3D;
   color: number;
   speed: number;
-  actionType: AnimationAction | null;
+  actionType: AnimationAction;
   currentClip: AnimationClip | null;
   asset: Object3D | null;
   mixer: AnimationMixer | null;
@@ -73,7 +73,7 @@ function initializeMetadata(u: Update): AnimationMetadata {
     target: new Object3D(),
     color: 0,
     speed: 1.4,
-    actionType: null,
+    actionType: AnimationActions.IDLE,
     currentClip: null,
     asset: null,
     mixer: null,
@@ -115,20 +115,16 @@ class AnimationRuntime {
       data.assetId = assetId;
       data.asset = g;
       data.mixer = new AnimationMixer(g);
-      this.startAction(obj, AnimationActions.IDLE);
+      this.startAction(obj, data.actionType);
     });
   }
 
   startAction(obj: Object3D, actionType: AnimationAction) {
     const data = getAndAssertMetadata(obj);
-
     const assetId = data.assetId;
-    if (
-      assetId === null ||
-      data.actionType === actionType ||
-      !data.asset ||
-      !data.mixer
-    ) {
+    if (assetId === null || !data.asset || !data.mixer) {
+      // Enqueue action for when asset is loaded
+      data.actionType = actionType;
       return;
     }
 
@@ -155,8 +151,11 @@ class AnimationRuntime {
     }
 
     const action = data.mixer.clipAction(clip);
-    action.reset();
-    action.fadeIn(ANIMATION_FADE_TIME);
+
+    if (prevClip !== clip) {
+      action.reset();
+      action.fadeIn(ANIMATION_FADE_TIME);
+    }
     action.play();
 
     data.currentClip = clip;
@@ -203,6 +202,7 @@ class AnimationRuntime {
       }
 
       const { target, speed } = data;
+      _v.copy(target.position).sub(child.position);
       if (!child.position.equals(target.position)) {
         translated = true;
 

@@ -5,7 +5,8 @@ import TypedEventsEmitter, { Events } from 'wireplace/TypedEventsEmitter';
 import { AnimationActions } from 'types/AnimationTypes';
 
 const FORWARD = new Vector3(0, 0, 1);
-const _v = new Vector3();
+const _v1 = new Vector3();
+const _v2 = new Vector3();
 const _q = new Quaternion();
 const _r = new Euler();
 const _clock = new Clock();
@@ -28,6 +29,7 @@ interface Renderer {
   cameraForward: Vector3;
   cameraRight: Vector3;
   toggleCameraLock: () => void;
+  getRendererPosition: (actorId: string) => Vector3 | null;
 }
 
 interface WirePlaceRuntimeProps {
@@ -136,6 +138,25 @@ class WirePlaceRuntime {
     }
   };
 
+  moveTo(p: Vector3, r: Euler, startWalking: boolean = false) {
+    if (!this.actorId) {
+      return;
+    }
+
+    const position = { x: p.x, y: p.y, z: p.z };
+    const rotation = { x: _r.x, y: _r.y, z: _r.z };
+
+    const update: Update = { position, rotation };
+    if (startWalking) {
+      update.action = {
+        type: AnimationActions.WALK,
+        state: -1,
+      };
+    }
+
+    this._scene.updateActor(this.actorId, update, true);
+  }
+
   update = (tick: number, delta: number) => {
     if (this._renderer) {
       const diff = this._scene.retrieveDiff();
@@ -155,10 +176,19 @@ class WirePlaceRuntime {
     const wasMoving = this._wasMoving;
     this._wasMoving = isMoving;
 
+    const { actorId, speed } = actor;
+
+    let p = actor.position;
+    if (this._renderer) {
+      const renderedPosition = this._renderer.getRendererPosition(actorId);
+      p = renderedPosition || p;
+    }
+
     if (!isMoving && wasMoving) {
       this._ee.emit(Events.SET_MOVING, false);
       const action = { type: AnimationActions.IDLE, state: -1 };
-      this._scene.updateActor(this.actorId, { action }, true);
+      const position = { x: p.x, y: p.y, z: p.z };
+      this._scene.updateActor(this.actorId, { position, action }, true);
       return;
     } else if (isMoving && !wasMoving) {
       this._ee.emit(Events.SET_MOVING, true);
@@ -172,46 +202,43 @@ class WirePlaceRuntime {
     }
 
     if (isMoving) {
-      const { speed } = actor;
-      _v.set(0, 0, 0);
+      // Move randomly in a 10m x 10m square
+      if (this._directions[Directions.RANDOM]) {
+        if (tick % 100 === 0 || !wasMoving) {
+          _v1.x = Math.random() * 10.0 - 5.0;
+          _v1.z = Math.random() * 10.0 - 5.0;
+          _v2.set(p.x, p.y, p.z);
+          _v2.sub(_v1).multiplyScalar(-1).normalize();
+          _q.setFromUnitVectors(FORWARD, _v2);
+          _r.setFromQuaternion(_q);
+          this.moveTo(_v1, _r, !wasMoving);
+        }
+        return;
+      }
 
+      _v1.set(0, 0, 0);
       if (this._directions[Directions.DOWN]) {
-        _v.sub(this._lastForward);
+        _v1.sub(this._lastForward);
       } else if (this._directions[Directions.UP]) {
-        _v.add(this._lastForward);
+        _v1.add(this._lastForward);
       }
 
       if (this._directions[Directions.LEFT]) {
-        _v.sub(this._lastRight);
+        _v1.sub(this._lastRight);
       } else if (this._directions[Directions.RIGHT]) {
-        _v.add(this._lastRight);
+        _v1.add(this._lastRight);
       }
 
-      if (this._directions[Directions.RANDOM]) {
-        _v.x += Math.random() * 2.0 - 1.0;
-        _v.z += Math.random() * 2.0 - 1.0;
-      }
+      _v1.normalize();
+      _q.setFromUnitVectors(FORWARD, _v1);
+      _v1.multiplyScalar(speed * delta);
 
-      _v.normalize();
-      _q.setFromUnitVectors(FORWARD, _v);
-      _v.multiplyScalar(speed * delta);
-      _v.x += actor.position.x;
-      _v.y += actor.position.y;
-      _v.z += actor.position.z;
-      const position = { x: _v.x, y: _v.y, z: _v.z };
+      _v1.x += p.x;
+      _v1.y += p.y;
+      _v1.z += p.z;
 
       _r.setFromQuaternion(_q);
-      const rotation = { x: _r.x, y: _r.y, z: _r.z };
-
-      const update: Update = { position, rotation };
-      if (!wasMoving) {
-        update.action = {
-          type: AnimationActions.WALK,
-          state: -1,
-        };
-      }
-
-      this._scene.updateActor(this.actorId, update, true);
+      this.moveTo(_v1, _r, !wasMoving);
     }
   };
 }
