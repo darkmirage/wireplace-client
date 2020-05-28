@@ -43,6 +43,7 @@ class WirePlaceThreeRenderer {
   _scene: Scene;
   _camera: PerspectiveCamera;
   _prevCameraPosition: Vector3;
+  _cameraLocked: boolean;
   _animation: AnimationRuntime;
   _controls: OrbitControls;
   _stats: Stats;
@@ -57,6 +58,7 @@ class WirePlaceThreeRenderer {
     this._scene = new Scene();
     this._camera = new PerspectiveCamera(45);
     this._prevCameraPosition = new Vector3();
+    this._cameraLocked = false;
     this._animation = new AnimationRuntime(this._scene);
     this._reacter = reacter;
 
@@ -176,6 +178,10 @@ class WirePlaceThreeRenderer {
   }
 
   _updateControls(targetObjectId: string | null) {
+    if (!this._cameraLocked) {
+      return;
+    }
+
     if (targetObjectId) {
       if (
         !this._controlTarget ||
@@ -183,11 +189,9 @@ class WirePlaceThreeRenderer {
       ) {
         this._controlTarget =
           this._scene.getObjectByName(targetObjectId) || null;
-        this._controls.saveState();
       }
     } else if (this._controlTarget) {
       this._controlTarget = null;
-      this._controls.reset();
     }
 
     if (this._controlTarget) {
@@ -198,6 +202,10 @@ class WirePlaceThreeRenderer {
       this._camera.position.copy(this._controls.target).add(_v1);
     }
   }
+
+  toggleCameraLock = () => {
+    this._cameraLocked = !this._cameraLocked;
+  };
 
   setDOMElement(element: HTMLDivElement) {
     this.domElement = element;

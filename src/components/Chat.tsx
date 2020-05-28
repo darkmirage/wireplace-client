@@ -59,6 +59,7 @@ const Chat = (props: Props) => {
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (message) {
+      getGlobalEmitter().emit(Events.FOCUS_CHAT, false);
       client.sendMessage(message);
     }
     setMessage('');
@@ -102,7 +103,8 @@ const Chat = (props: Props) => {
         <form onSubmit={handleSubmit}>
           <Input
             focused={focus}
-            className={classes.input}
+            className={focus ? classes.inputFocused : classes.input}
+            onBlur={() => getGlobalEmitter().emit(Events.FOCUS_CHAT, false)}
             value={message}
             placeholder={focus ? 'Type something' : 'Press enter to chat'}
             onValueChange={setMessage}
@@ -162,6 +164,12 @@ const useStyles = createUseStyles<Theme>((theme) => ({
     paddingTop: theme.spacing.narrow,
   },
   input: {
+    background: 'rgba(0, 0, 0, 0.25)',
+    pointerEvents: 'all',
+    width: '100%',
+  },
+  inputFocused: {
+    background: 'rgba(0, 0, 0, 0.5)',
     pointerEvents: 'all',
     width: '100%',
   },

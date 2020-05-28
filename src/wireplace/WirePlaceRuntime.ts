@@ -27,6 +27,7 @@ interface Renderer {
   ) => void;
   cameraForward: Vector3;
   cameraRight: Vector3;
+  toggleCameraLock: () => void;
 }
 
 interface WirePlaceRuntimeProps {
@@ -88,6 +89,9 @@ class WirePlaceRuntime {
         };
         this._scene.updateActor(this.actorId, { action }, true);
       }
+    });
+    this._ee.on(Events.SET_CAMERA_TRACKING_MODE, () => {
+      this._renderer?.toggleCameraLock();
     });
   }
 

@@ -13,6 +13,10 @@ function handleGlobalKeyPress(event: React.KeyboardEvent<any>) {
       getGlobalEmitter().emit(Events.FOCUS_CHAT, true);
       break;
     }
+    case '`': {
+      getGlobalEmitter().emit(Events.SET_CAMERA_TRACKING_MODE);
+      break;
+    }
   }
 }
 

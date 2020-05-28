@@ -10,8 +10,9 @@ export enum Events {
   MOVE_UP,
   PERFORM_ACTION,
   SET_ACTIVE_ACTOR,
-  TOGGLE_RANDOM_WALK,
+  SET_CAMERA_TRACKING_MODE,
   SET_MOVING,
+  TOGGLE_RANDOM_WALK,
 }
 
 type ValueOf<T> = T[keyof T];
@@ -24,6 +25,7 @@ interface EventPayloads {
   [Events.MOVE_RIGHT]: boolean;
   [Events.MOVE_UP]: boolean;
   [Events.SET_ACTIVE_ACTOR]: string;
+  [Events.SET_CAMERA_TRACKING_MODE]: void;
   [Events.SET_MOVING]: boolean;
   [Events.TOGGLE_RANDOM_WALK]: undefined;
   [Events.PERFORM_ACTION]: {
