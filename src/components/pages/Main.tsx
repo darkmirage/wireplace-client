@@ -4,7 +4,7 @@ import { createUseStyles, useTheme } from 'react-jss';
 import Chat from 'components/Chat';
 import ClientProvider from 'components/ClientProvider';
 import EventArea from 'components/ui/EventArea';
-import GlobalHotKeys from 'components/ui/GlobalHotKeys';
+import GlobalInputs from 'components/ui/GlobalInputs';
 import RenderView from 'components/RenderView';
 import Spinner from 'components/Spinner';
 import type { Theme } from 'themes';
@@ -21,7 +21,7 @@ const Main = (props: Props) => {
   const { username } = props;
 
   return (
-    <GlobalHotKeys>
+    <GlobalInputs>
       <ClientProvider
         username={username}
         token="foobar"
@@ -49,7 +49,7 @@ const Main = (props: Props) => {
           </>
         )}
       </ClientProvider>
-    </GlobalHotKeys>
+    </GlobalInputs>
   );
 };
 

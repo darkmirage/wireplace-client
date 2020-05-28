@@ -4,6 +4,7 @@ import classNames from 'classnames';
 
 import { Events, getGlobalEmitter } from 'wireplace/TypedEventsEmitter';
 import { WirePlaceChatClient, ChatLine } from 'wireplace/WirePlaceClient';
+import PreventPropagation from 'components/ui/PreventPropagation';
 import hexToRGB from 'utils/hexToRGB';
 import Input from 'components/ui/Input';
 import { Theme } from 'themes';
@@ -101,15 +102,17 @@ const Chat = (props: Props) => {
       {messageArea}
       <div className={classes.footer}>
         <form onSubmit={handleSubmit}>
-          <Input
-            focused={focus}
-            className={focus ? classes.inputFocused : classes.input}
-            onBlur={() => getGlobalEmitter().emit(Events.FOCUS_CHAT, false)}
-            value={message}
-            placeholder={focus ? 'Type something' : 'Press enter to chat'}
-            onValueChange={setMessage}
-            tabIndex={2}
-          />
+          <PreventPropagation>
+            <Input
+              focused={focus}
+              className={focus ? classes.inputFocused : classes.input}
+              onBlur={() => getGlobalEmitter().emit(Events.FOCUS_CHAT, false)}
+              value={message}
+              placeholder={focus ? 'Type something' : 'Press enter to chat'}
+              onValueChange={setMessage}
+              tabIndex={2}
+            />
+          </PreventPropagation>
         </form>
       </div>
     </div>

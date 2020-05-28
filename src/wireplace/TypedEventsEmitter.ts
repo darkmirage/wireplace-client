@@ -4,25 +4,45 @@ import { AnimationAction } from 'types/AnimationTypes';
 
 export enum Events {
   FOCUS_CHAT,
+  MOUSE_LEAVE,
+  MOUSE_MOVE,
+  MOUSE_UP,
   MOVE_DOWN,
   MOVE_LEFT,
   MOVE_RIGHT,
+  MOVE_TO,
   MOVE_UP,
   PERFORM_ACTION,
   SET_ACTIVE_ACTOR,
   SET_CAMERA_TRACKING_MODE,
   SET_MOVING,
   TOGGLE_RANDOM_WALK,
+  WINDOW_RESIZE,
 }
 
 type ValueOf<T> = T[keyof T];
 export type Event = ValueOf<typeof Event>;
 
+type PointerEvent = {
+  x: number;
+  y: number;
+};
+
+type XYZ = {
+  x: number;
+  y: number;
+  z: number;
+};
+
 interface EventPayloads {
   [Events.FOCUS_CHAT]: boolean;
+  [Events.MOUSE_LEAVE]: void;
+  [Events.MOUSE_MOVE]: PointerEvent;
+  [Events.MOUSE_UP]: PointerEvent;
   [Events.MOVE_DOWN]: boolean;
   [Events.MOVE_LEFT]: boolean;
   [Events.MOVE_RIGHT]: boolean;
+  [Events.MOVE_TO]: XYZ;
   [Events.MOVE_UP]: boolean;
   [Events.SET_ACTIVE_ACTOR]: string;
   [Events.SET_CAMERA_TRACKING_MODE]: void;
@@ -33,6 +53,7 @@ interface EventPayloads {
     actionType: AnimationAction;
     loop?: boolean;
   };
+  [Events.WINDOW_RESIZE]: void;
 }
 
 interface GenericTypedEventEmitter<P> {

@@ -17,12 +17,14 @@ import {
   WebGLRenderer,
   Vector3,
   Group,
+  Raycaster,
 } from 'three';
 import { MapControls } from 'three/examples/jsm/controls/OrbitControls';
 import Stats from 'three/examples/jsm/libs/stats.module';
 import type { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import type { Update } from 'wireplace-scene';
 
+import { getGlobalEmitter, Events } from 'wireplace/TypedEventsEmitter';
 import disposeObject3D from 'utils/disposeObject3D';
 import { loadDefaultMap } from 'loaders/PreconfiguredAssets';
 import AnimationRuntime from './AnimationRuntime';
@@ -35,6 +37,7 @@ const TARGET_Y = 1.0;
 const sphereGeometry = new SphereBufferGeometry(0.05, 16, 16);
 const _v1 = new Vector3();
 const _v2 = new Vector3();
+const _raycaster = new Raycaster();
 
 class WirePlaceThreeRenderer {
   domElement: HTMLDivElement;
@@ -50,6 +53,8 @@ class WirePlaceThreeRenderer {
   _stats: Stats;
   _reacter: WirePlaceReactRenderer;
   _controlTarget: Object3D | null;
+  _cursor: Object3D;
+  _floor: Object3D;
 
   constructor(reacter: WirePlaceReactRenderer) {
     this.domElement = document.createElement('div');
@@ -82,6 +87,11 @@ class WirePlaceThreeRenderer {
     this._controls = controls;
     this._controlTarget = null;
 
+    this._cursor = new Group();
+    this._floor = new Group();
+    this._scene.add(this._floor);
+    this._scene.add(this._cursor);
+
     this._stats = new (Stats as any)();
     this._stats.dom.setAttribute('style', 'position: fixed; right: 0; top: 0');
     document.body.appendChild(this._stats.dom);
@@ -89,12 +99,31 @@ class WirePlaceThreeRenderer {
     (window as any).renderer = this;
 
     // TODO: find a less hacky way to achieve this
-    window.addEventListener('resize', () => {
+    getGlobalEmitter().on(Events.WINDOW_RESIZE, () => {
       this._reacter.update(Infinity, 0, this._scene, this._camera);
+    });
+
+    getGlobalEmitter().on(Events.MOUSE_MOVE, this._moveCursor);
+    getGlobalEmitter().on(Events.MOUSE_UP, (coords) => {
+      this._moveCursor(coords);
+      const { x, y, z } = this._cursor.position;
+      getGlobalEmitter().emit(Events.MOVE_TO, { x, y, z });
     });
 
     this._setupScene();
   }
+
+  // x and y are in screen space
+  _moveCursor = ({ x, y }: { x: number; y: number }) => {
+    _raycaster.setFromCamera({ x, y }, this._camera);
+    const intersects = _raycaster.intersectObjects(this._floor.children);
+    if (intersects.length > 0) {
+      this._cursor.position.copy(intersects[0].point);
+      this._cursor.visible = true;
+    } else {
+      this._cursor.visible = false;
+    }
+  };
 
   async _setupScene() {
     this._scene.background = new Color(0xdbf7ff);
@@ -129,7 +158,16 @@ class WirePlaceThreeRenderer {
     const floor = new Mesh(new PlaneBufferGeometry(2000, 2000), floorMaterial);
     floor.rotation.x = -Math.PI / 2;
     floor.receiveShadow = true;
-    bgObjs.add(floor);
+    this._floor.add(floor);
+
+    const material = new MeshBasicMaterial({
+      color: 0xffffff,
+    });
+    material.transparent = true;
+    material.opacity = 0.7;
+    const pointer = new Mesh(sphereGeometry, material);
+    pointer.visible = false; // TODO: re-enable this
+    this._cursor.add(pointer);
 
     const grid = new GridHelper(2000, 2000, 0, 0);
     if (!Array.isArray(grid.material)) {
@@ -270,18 +308,14 @@ class WirePlaceThreeRenderer {
     if (controlsDirty) {
       this._updateCameraDirections();
     }
+    const cameraDirty = !this._prevCameraPosition.equals(this._camera.position);
+    this._prevCameraPosition.copy(this._camera.position);
 
     const animated = this._animation.update(delta);
 
-    if (
-      sceneDirty ||
-      controlsDirty ||
-      animated ||
-      !this._prevCameraPosition.equals(this._camera.position)
-    ) {
+    if (sceneDirty || controlsDirty || animated || cameraDirty) {
       this._reacter.update(tick, delta, this._scene, this._camera);
     }
-    this._prevCameraPosition.copy(this._camera.position);
 
     this.webGLRenderer.render(this._scene, this._camera);
     this._stats.update();

@@ -95,6 +95,10 @@ class WirePlaceRuntime {
     this._ee.on(Events.SET_CAMERA_TRACKING_MODE, () => {
       this._renderer?.toggleCameraLock();
     });
+    this._ee.on(Events.MOVE_TO, ({ x, y, z }) => {
+      _v1.set(x, y, z);
+      this.moveTo(_v1, true);
+    });
   }
 
   _isMoving(): boolean {
@@ -138,13 +142,39 @@ class WirePlaceRuntime {
     }
   };
 
-  moveTo(p: Vector3, r: Euler, startWalking: boolean = false) {
+  moveTo(dest: Vector3, startWalking: boolean = false) {
     if (!this.actorId) {
       return;
     }
 
-    const position = { x: p.x, y: p.y, z: p.z };
-    const rotation = { x: _r.x, y: _r.y, z: _r.z };
+    const actor = this._scene.getActor(this.actorId);
+    if (!actor) {
+      return;
+    }
+
+    const { actorId } = actor;
+
+    let p = actor.position;
+    if (this._renderer) {
+      const renderedPosition = this._renderer.getRendererPosition(actorId);
+      p = renderedPosition || p;
+    }
+
+    _v2.set(p.x, p.y, p.z);
+    _v2.sub(dest).multiplyScalar(-1).normalize();
+    _q.setFromUnitVectors(FORWARD, _v2);
+    _r.setFromQuaternion(_q);
+
+    this.translate(dest, _r, startWalking);
+  }
+
+  translate(dest: Vector3, r: Euler, startWalking: boolean = false) {
+    if (!this.actorId) {
+      return;
+    }
+
+    const position = { x: dest.x, y: dest.y, z: dest.z };
+    const rotation = { x: r.x, y: r.y, z: r.z };
 
     const update: Update = { position, rotation };
     if (startWalking) {
@@ -211,7 +241,7 @@ class WirePlaceRuntime {
           _v2.sub(_v1).multiplyScalar(-1).normalize();
           _q.setFromUnitVectors(FORWARD, _v2);
           _r.setFromQuaternion(_q);
-          this.moveTo(_v1, _r, !wasMoving);
+          this.translate(_v1, _r, !wasMoving);
         }
         return;
       }
@@ -238,7 +268,7 @@ class WirePlaceRuntime {
       _v1.z += p.z;
 
       _r.setFromQuaternion(_q);
-      this.moveTo(_v1, _r, !wasMoving);
+      this.translate(_v1, _r, !wasMoving);
     }
   };
 }
