@@ -1,5 +1,5 @@
 import { AnimationClip } from 'three';
-import { AnimationAction, AnimationActions } from 'types/AnimationTypes';
+import { AnimationAction, AnimationActions } from 'constants/Animation';
 import FBXLoader from './FBXLoader';
 
 const AnimationURLs: Partial<Record<AnimationAction, string>> = {

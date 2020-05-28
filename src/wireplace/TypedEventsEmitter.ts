@@ -1,8 +1,10 @@
 import { EventEmitter } from 'events';
 
-import { AnimationAction } from 'types/AnimationTypes';
+import { AnimationAction } from 'constants/Animation';
+import { ActorID } from 'wireplace-scene';
 
 export enum Events {
+  ANIMATION_STOPPED,
   FOCUS_CHAT,
   MOUSE_LEAVE,
   MOUSE_MOVE,
@@ -35,6 +37,7 @@ type XYZ = {
 };
 
 interface EventPayloads {
+  [Events.ANIMATION_STOPPED]: ActorID;
   [Events.FOCUS_CHAT]: boolean;
   [Events.MOUSE_LEAVE]: void;
   [Events.MOUSE_MOVE]: PointerEvent;
@@ -44,12 +47,12 @@ interface EventPayloads {
   [Events.MOVE_RIGHT]: boolean;
   [Events.MOVE_TO]: XYZ;
   [Events.MOVE_UP]: boolean;
-  [Events.SET_ACTIVE_ACTOR]: string;
+  [Events.SET_ACTIVE_ACTOR]: ActorID;
   [Events.SET_CAMERA_TRACKING_MODE]: void;
   [Events.SET_MOVING]: boolean;
   [Events.TOGGLE_RANDOM_WALK]: undefined;
   [Events.PERFORM_ACTION]: {
-    actorId: string;
+    actorId: ActorID;
     actionType: AnimationAction;
     loop?: boolean;
   };

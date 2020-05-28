@@ -10,7 +10,8 @@ import {
 } from 'three';
 import type { Update } from 'wireplace-scene';
 
-import { AnimationAction, AnimationActions } from 'types/AnimationTypes';
+import { getGlobalEmitter, Events } from 'wireplace/TypedEventsEmitter';
+import { AnimationAction, AnimationActions } from 'constants/Animation';
 import { getAnimationIndex, loadAsset } from 'loaders/PreconfiguredAssets';
 import { getClip } from 'loaders/Mixamo';
 
@@ -25,6 +26,10 @@ interface AnimationMetadata {
   currentClip: AnimationClip | null;
   asset: Object3D | null;
   mixer: AnimationMixer | null;
+
+  // Frame when the actor last moved
+  lastTickMoved: number;
+  onStop: ((actorId: string) => void) | null;
 }
 
 const SMOOTHING_CONSTANT = 5.0;
@@ -69,7 +74,7 @@ function getClipFromMetadata(
 }
 
 function initializeMetadata(u: Update): AnimationMetadata {
-  const data = {
+  const data: AnimationMetadata = {
     assetId: null,
     animateable: true,
     target: new Object3D(),
@@ -80,6 +85,8 @@ function initializeMetadata(u: Update): AnimationMetadata {
     currentClip: null,
     asset: null,
     mixer: null,
+    lastTickMoved: 0,
+    onStop: null,
   };
   return data;
 }
@@ -101,7 +108,6 @@ class AnimationRuntime {
     if (currentClip) {
       const action = data.mixer.clipAction(currentClip);
       if (action.paused) {
-        console.log('paused');
         const idleClip = getClipFromMetadata(obj, AnimationActions.IDLE);
         if (idleClip) {
           this.playClip(obj, idleClip);
@@ -227,7 +233,7 @@ class AnimationRuntime {
     }
   }
 
-  update = (delta: number): boolean => {
+  update = (tick: number, delta: number): boolean => {
     let translated = false;
     for (const child of this._scene.children) {
       const data = getMetadata(child);
@@ -238,6 +244,9 @@ class AnimationRuntime {
       const { target, speed } = data;
       _v.copy(target.position).sub(child.position);
       if (!child.position.equals(target.position)) {
+        data.lastTickMoved = tick;
+        data.onStop = () =>
+          getGlobalEmitter().emit(Events.ANIMATION_STOPPED, child.name);
         translated = true;
 
         _v.copy(target.position).sub(child.position);
@@ -248,9 +257,12 @@ class AnimationRuntime {
         child.position.add(_v);
 
         _v.copy(target.position).sub(child.position);
-        if (_v.length() <= 0.001) {
+        if (_v.length() <= 0.005) {
           child.position.copy(target.position);
         }
+      } else if (data.onStop && tick - data.lastTickMoved > 30) {
+        data.onStop(child.name);
+        data.onStop = null;
       }
 
       if (!child.quaternion.equals(target.quaternion)) {

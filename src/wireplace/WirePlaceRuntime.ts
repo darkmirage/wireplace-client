@@ -2,7 +2,7 @@ import { Clock, Vector3, Quaternion, Euler } from 'three';
 import { WirePlaceScene, Update } from 'wireplace-scene';
 
 import TypedEventsEmitter, { Events } from 'wireplace/TypedEventsEmitter';
-import { AnimationActions } from 'types/AnimationTypes';
+import { AnimationActions } from 'constants/Animation';
 
 const FORWARD = new Vector3(0, 0, 1);
 const _v1 = new Vector3();
@@ -98,6 +98,14 @@ class WirePlaceRuntime {
     this._ee.on(Events.MOVE_TO, ({ x, y, z }) => {
       _v1.set(x, y, z);
       this.moveTo(_v1, true);
+    });
+    this._ee.on(Events.ANIMATION_STOPPED, (actorId) => {
+      if (actorId !== this.actorId) {
+        return;
+      }
+      this._ee.emit(Events.SET_MOVING, false);
+      const action = { type: AnimationActions.IDLE, state: -1 };
+      this._scene.updateActor(actorId, { action }, true);
     });
   }
 
@@ -214,13 +222,7 @@ class WirePlaceRuntime {
       p = renderedPosition || p;
     }
 
-    if (!isMoving && wasMoving) {
-      this._ee.emit(Events.SET_MOVING, false);
-      const action = { type: AnimationActions.IDLE, state: -1 };
-      const position = { x: p.x, y: p.y, z: p.z };
-      this._scene.updateActor(this.actorId, { position, action }, true);
-      return;
-    } else if (isMoving && !wasMoving) {
+    if (isMoving && !wasMoving) {
       this._ee.emit(Events.SET_MOVING, true);
       if (this._renderer) {
         this._lastForward.copy(this._renderer.cameraForward);
@@ -241,7 +243,7 @@ class WirePlaceRuntime {
           _v2.sub(_v1).multiplyScalar(-1).normalize();
           _q.setFromUnitVectors(FORWARD, _v2);
           _r.setFromQuaternion(_q);
-          this.translate(_v1, _r, !wasMoving);
+          this.translate(_v1, _r, true);
         }
         return;
       }

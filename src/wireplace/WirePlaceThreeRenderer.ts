@@ -311,7 +311,7 @@ class WirePlaceThreeRenderer {
     const cameraDirty = !this._prevCameraPosition.equals(this._camera.position);
     this._prevCameraPosition.copy(this._camera.position);
 
-    const animated = this._animation.update(delta);
+    const animated = this._animation.update(tick, delta);
 
     if (sceneDirty || controlsDirty || animated || cameraDirty) {
       this._reacter.update(tick, delta, this._scene, this._camera);

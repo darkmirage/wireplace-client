@@ -1,7 +1,7 @@
 import { Cache, Group, Object3D, AnimationUtils } from 'three';
 import { SkeletonUtils } from 'three/examples/jsm/utils/SkeletonUtils';
 
-import { AnimationAction, AnimationActions } from 'types/AnimationTypes';
+import { AnimationAction, AnimationActions } from 'constants/Animation';
 
 import FBXLoader from './FBXLoader';
 

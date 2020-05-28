@@ -4,7 +4,7 @@ import type { AGClientSocket } from 'socketcluster-client';
 import type { KeyboardEvent } from 'react';
 
 import logger from 'utils/logger';
-import { AnimationAction, AnimationActions } from 'types/AnimationTypes';
+import { AnimationAction, AnimationActions } from 'constants/Animation';
 import TypedEventsEmitter, { Events } from 'wireplace/TypedEventsEmitter';
 import WirePlaceRuntime from './WirePlaceRuntime';
 
