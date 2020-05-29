@@ -83,11 +83,12 @@ class WirePlaceClient implements WirePlaceChatClient {
     this.scene.clear();
   }
 
-  _performAction(actionType: AnimationAction) {
+  _performAction(actionType: AnimationAction, actionState: number = 1) {
     if (this.runtime.actorId) {
       this._ee.emit(Events.PERFORM_ACTION, {
         actorId: this.runtime.actorId,
         actionType,
+        actionState,
       });
     }
   }
@@ -272,11 +273,11 @@ class WirePlaceClient implements WirePlaceChatClient {
         break;
       }
       case '1': {
-        this._performAction(AnimationActions.WAVE);
+        this._performAction(AnimationActions.WAVE, 3);
         break;
       }
       case '2': {
-        this._performAction(AnimationActions.CLAP);
+        this._performAction(AnimationActions.CLAP, 2);
         break;
       }
       case '3': {
@@ -284,11 +285,11 @@ class WirePlaceClient implements WirePlaceChatClient {
         break;
       }
       case '4': {
-        this._performAction(AnimationActions.DANCE_CHICKEN);
+        this._performAction(AnimationActions.DANCE_CHICKEN, 2);
         break;
       }
       case '5': {
-        this._performAction(AnimationActions.DANCE_YMCA);
+        this._performAction(AnimationActions.DANCE_YMCA, 2);
         break;
       }
       case '6': {
@@ -308,7 +309,7 @@ class WirePlaceClient implements WirePlaceChatClient {
         break;
       }
       case 'Escape': {
-        this._performAction(AnimationActions.IDLE);
+        this._performAction(AnimationActions.IDLE, -1);
         break;
       }
     }

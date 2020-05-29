@@ -1,4 +1,5 @@
 import {
+  AnimationAction as ThreeAnimationAction,
   AnimationClip,
   AnimationMixer,
   LoopRepeat,
@@ -22,13 +23,15 @@ interface AnimationMetadata {
   speed: number;
   actionType: AnimationAction;
   actionState: number;
-  currentClip: AnimationClip | null;
+  playing: {
+    actionType: AnimationAction;
+    clip: AnimationClip;
+  } | null;
   asset: Object3D | null;
   mixer: AnimationMixer | null;
 
   // Frame when the actor last moved
   lastTickMoved: number;
-  onStop: ((actorId: string) => void) | null;
 }
 
 const SMOOTHING_CONSTANT = 5.0;
@@ -72,7 +75,22 @@ function getClipFromMetadata(
   return clip;
 }
 
-function initializeMetadata(u: Update): AnimationMetadata {
+function getThreeAnimationActionFromMetadata(
+  obj: Object3D,
+  actionType: AnimationAction
+): ThreeAnimationAction | null {
+  const data = getAndAssertMetadata(obj);
+  if (data.assetId === null || !data.asset || !data.mixer) {
+    return null;
+  }
+  const clip = getClipFromMetadata(obj, actionType);
+  if (!clip) {
+    return null;
+  }
+  return data.mixer.clipAction(clip);
+}
+
+function initializeMetadata(obj: Object3D, u: Update): AnimationMetadata {
   const data: AnimationMetadata = {
     assetId: null,
     animateable: true,
@@ -81,11 +99,10 @@ function initializeMetadata(u: Update): AnimationMetadata {
     speed: 1.4,
     actionType: AnimationActions.IDLE,
     actionState: -1,
-    currentClip: null,
+    playing: null,
     asset: null,
     mixer: null,
     lastTickMoved: 0,
-    onStop: null,
   };
   return data;
 }
@@ -105,14 +122,11 @@ class AnimationRuntime {
       return;
     }
 
-    const { currentClip } = data;
-    if (currentClip) {
-      const action = data.mixer.clipAction(currentClip);
+    const { playing } = data;
+    if (playing) {
+      const action = data.mixer.clipAction(playing.clip);
       if (action.paused) {
-        const idleClip = getClipFromMetadata(obj, AnimationActions.IDLE);
-        if (idleClip) {
-          this.playClip(obj, idleClip);
-        }
+        this.startAction(obj, AnimationActions.IDLE);
       }
     }
 
@@ -122,7 +136,7 @@ class AnimationRuntime {
   loadAsset(obj: Object3D, u: Update) {
     let data = getMetadata(obj);
     if (!data) {
-      data = initializeMetadata(u);
+      data = initializeMetadata(obj, u);
       obj.userData = data;
     }
 
@@ -162,50 +176,55 @@ class AnimationRuntime {
     actionState: number = -1
   ) {
     const data = getAndAssertMetadata(obj);
-    const assetId = data.assetId;
-    if (assetId === null || !data.asset || !data.mixer) {
-      // Enqueue action for when asset is loaded
-      data.actionType = actionType;
+    const { playing, mixer } = data;
+    if (!mixer) {
+      return;
+    }
+    const action = getThreeAnimationActionFromMetadata(obj, actionType);
+
+    if (!action) {
       return;
     }
 
-    const clip = getClipFromMetadata(obj, actionType);
-    if (!clip) {
-      return;
-    }
-
-    this.playClip(obj, clip, actionState);
-    data.actionType = actionType;
-  }
-
-  playClip(obj: Object3D, clip: AnimationClip, actionState: number = -1) {
-    const data = getAndAssertMetadata(obj);
-    const prevClip = data.currentClip;
-
-    if (!data.mixer) {
-      return;
-    }
-
-    if (prevClip && prevClip !== clip) {
-      const prevAction = data.mixer.clipAction(prevClip);
-      prevAction.fadeOut(ANIMATION_FADE_TIME);
-    }
-
-    const action = data.mixer.clipAction(clip);
-
-    if (prevClip !== clip) {
-      action.reset();
-      action.fadeIn(ANIMATION_FADE_TIME);
-      action.clampWhenFinished = true;
-      if (actionState > 0) {
-        action.setLoop(LoopRepeat, actionState);
+    if (playing) {
+      if (playing.clip !== action.getClip()) {
+        const prevAction = getThreeAnimationActionFromMetadata(
+          obj,
+          playing.actionType
+        );
+        if (prevAction) {
+          prevAction.fadeOut(ANIMATION_FADE_TIME);
+        }
       } else {
-        action.setLoop(LoopRepeat, Infinity);
+        return;
       }
     }
-    action.play();
 
-    data.currentClip = clip;
+    action.reset();
+    action.clampWhenFinished = true;
+    if (actionState > 0) {
+      action.setLoop(LoopRepeat, actionState);
+    } else {
+      action.setLoop(LoopRepeat, Infinity);
+    }
+
+    action.fadeIn(ANIMATION_FADE_TIME);
+    action.play();
+    data.playing = { clip: action.getClip(), actionType };
+  }
+
+  resumeAction(obj: Object3D, actionType: AnimationActions) {
+    const action = getThreeAnimationActionFromMetadata(obj, actionType);
+    if (action && action.paused) {
+      action.timeScale = 1;
+    }
+  }
+
+  pauseAction(obj: Object3D, actionType: AnimationActions) {
+    const action = getThreeAnimationActionFromMetadata(obj, actionType);
+    if (action && !action.paused) {
+      action.halt(ANIMATION_FADE_TIME);
+    }
   }
 
   applyUpdate(obj: Object3D, u: Update) {
@@ -247,49 +266,51 @@ class AnimationRuntime {
       }
     }
 
-    for (const child of this._scene.children) {
-      const data = getMetadata(child);
+    for (const obj of this._scene.children) {
+      const data = getMetadata(obj);
       if (!data) {
         continue;
       }
 
       const { target, speed, actionType } = data;
-      _v.copy(target.position).sub(child.position);
-      if (!child.position.equals(target.position)) {
+      _v.copy(target.position).sub(obj.position);
+      if (!obj.position.equals(target.position)) {
         data.lastTickMoved = tick;
-        data.onStop = () => {
-          if (actionType === AnimationActions.WALK) {
-            getGlobalEmitter().emit(Events.ANIMATION_STOPPED, child.name);
-          }
-        };
         translated = true;
 
-        _v.copy(target.position).sub(child.position);
+        _v.copy(target.position).sub(obj.position);
         const distance = _v.length();
         const progress = Math.min(distance, speed * delta);
         _v.normalize();
         _v.multiplyScalar(progress);
-        child.position.add(_v);
+        obj.position.add(_v);
 
-        _v.copy(target.position).sub(child.position);
+        _v.copy(target.position).sub(obj.position);
         if (_v.length() <= 0.005) {
-          child.position.copy(target.position);
-        }
-      } else if (data.onStop && tick - data.lastTickMoved > 20) {
-        data.onStop(child.name);
-        data.onStop = null;
-      }
-
-      if (!child.quaternion.equals(target.quaternion)) {
-        translated = true;
-        if (target.quaternion.angleTo(child.quaternion) < 0.01) {
-          child.quaternion.copy(target.quaternion);
+          obj.position.copy(target.position);
         } else {
-          child.quaternion.slerp(target.quaternion, 1 / SMOOTHING_CONSTANT);
+          this.resumeAction(obj, AnimationActions.WALK);
+        }
+      } else if (tick - data.lastTickMoved > 20) {
+        getGlobalEmitter().emit(Events.ANIMATION_STOPPED, {
+          actorId: obj.name,
+          actionType: AnimationActions.WALK,
+        });
+        data.lastTickMoved = Infinity;
+      } else if (actionType === AnimationActions.WALK) {
+        this.pauseAction(obj, AnimationActions.WALK);
+      }
+
+      if (!obj.quaternion.equals(target.quaternion)) {
+        translated = true;
+        if (target.quaternion.angleTo(obj.quaternion) < 0.01) {
+          obj.quaternion.copy(target.quaternion);
+        } else {
+          obj.quaternion.slerp(target.quaternion, 1 / SMOOTHING_CONSTANT);
         }
       }
 
-      this._updateAnimation(delta, child);
+      this._updateAnimation(delta, obj);
       // TODO:
       // - Update scale and up
       // - Implement proper interpolation and easing

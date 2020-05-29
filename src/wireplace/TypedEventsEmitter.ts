@@ -37,7 +37,7 @@ type XYZ = {
 };
 
 interface EventPayloads {
-  [Events.ANIMATION_STOPPED]: ActorID;
+  [Events.ANIMATION_STOPPED]: { actorId: ActorID; actionType: AnimationAction };
   [Events.FOCUS_CHAT]: boolean;
   [Events.MOUSE_LEAVE]: void;
   [Events.MOUSE_MOVE]: PointerEvent;
@@ -54,7 +54,7 @@ interface EventPayloads {
   [Events.PERFORM_ACTION]: {
     actorId: ActorID;
     actionType: AnimationAction;
-    loop?: boolean;
+    actionState: number;
   };
   [Events.WINDOW_RESIZE]: void;
 }
