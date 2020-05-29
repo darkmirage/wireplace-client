@@ -44,6 +44,26 @@ const Assets: Array<Asset> = [
     scale: 0.01,
     animations: { [AnimationActions.IDLE]: 0 },
   },
+  {
+    url: '/assets/synty/office/SK_Chr_Boss_Female_01.fbx',
+    scale: 0.01,
+    animations: {},
+  },
+  {
+    url: '/assets/synty/office/SK_Chr_Cleaner_Male_01.fbx',
+    scale: 0.01,
+    animations: {},
+  },
+  {
+    url: '/assets/synty/office/SK_Chr_Business_Male_04.fbx',
+    scale: 0.01,
+    animations: {},
+  },
+  {
+    url: '/assets/synty/office/SK_Chr_Business_Female_02.fbx',
+    scale: 0.01,
+    animations: {},
+  },
 ];
 
 // TODO: Build a real cache module
