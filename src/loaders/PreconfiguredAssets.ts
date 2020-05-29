@@ -15,6 +15,11 @@ interface Asset {
 
 const Assets: Array<Asset> = [
   {
+    url: '/assets/synty/office/SK_Chr_Developer_Female_01.fbx',
+    scale: 0.01,
+    animations: { [AnimationActions.IDLE]: 0 },
+  },
+  {
     url: '/assets/synty/office/SK_Chr_Business_Male_02.fbx',
     scale: 0.01,
     animations: { [AnimationActions.IDLE]: 0 },
@@ -28,6 +33,11 @@ const Assets: Array<Asset> = [
     url: '/assets/synty/office/SK_Chr_Business_Female_03.fbx',
     scale: 0.01,
     animations: { [AnimationActions.IDLE]: 0 },
+  },
+  {
+    url: '/assets/synty/office/SK_Chr_Security_Male_01.fbx',
+    scale: 0.01,
+    animations: {},
   },
   {
     url: '/assets/synty/office/SK_Chr_Business_Male_01.fbx',
@@ -73,9 +83,11 @@ async function preload(assetId: number) {
 }
 
 async function preloadAll() {
-  await preload(0);
-  await preload(1);
-  await preload(2);
+  const promises = [];
+  for (let i = 0; i < Object.keys(Assets).length; i += 1) {
+    promises.push(preload(i));
+  }
+  await Promise.allSettled(promises);
   preloaded = true;
 }
 preloadAll();

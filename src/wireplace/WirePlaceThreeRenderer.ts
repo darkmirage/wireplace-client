@@ -33,6 +33,7 @@ import WirePlaceReactRenderer from './WirePlaceReactRenderer';
 
 type ObjectID = string;
 
+const DEFAULT_CAMERA_LOCKED = true;
 const TARGET_Y = 1.0;
 
 const _v1 = new Vector3();
@@ -64,7 +65,7 @@ class WirePlaceThreeRenderer {
     this._scene = new Scene();
     this._camera = new PerspectiveCamera(45);
     this._prevCameraPosition = new Vector3();
-    this._cameraLocked = false;
+    this._cameraLocked = DEFAULT_CAMERA_LOCKED;
     this._animation = new AnimationRuntime(this._scene);
     this._reacter = reacter;
 
@@ -130,7 +131,7 @@ class WirePlaceThreeRenderer {
 
   async _setupScene() {
     this._scene.background = new Color(0xdbf7ff);
-    this._camera.position.set(0, 5, 4);
+    this._camera.position.set(0, 6, 5);
     const distance = this._camera.position.length();
     this._scene.fog = new Fog(0xdbf7ff, distance * 1.5, distance * 5);
 
