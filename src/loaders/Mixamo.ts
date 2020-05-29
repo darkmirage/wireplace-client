@@ -3,26 +3,26 @@ import { AnimationAction, AnimationActions } from 'constants/Animation';
 import FBXLoader from './FBXLoader';
 
 const AnimationURLs: Partial<Record<AnimationAction, string>> = {
-  [AnimationActions.ANGRY]: '/assets/mixamo/animations/synty/Angry.fbx',
-  [AnimationActions.BOW]: '/assets/mixamo/animations/synty/Bow.fbx',
-  [AnimationActions.CLAP]: '/assets/mixamo/animations/synty/Clapping.fbx',
-  [AnimationActions.CRY]: '/assets/mixamo/animations/synty/Crying.fbx',
+  [AnimationActions.ANGRY]: '/mixamo/animations/synty/Angry.fbx',
+  [AnimationActions.BOW]: '/mixamo/animations/synty/Bow.fbx',
+  [AnimationActions.CLAP]: '/mixamo/animations/synty/Clapping.fbx',
+  [AnimationActions.CRY]: '/mixamo/animations/synty/Crying.fbx',
   [AnimationActions.DANCE_HIP_HOP_2]:
-    '/assets/mixamo/animations/synty/DanceHipHop2.fbx',
+    '/mixamo/animations/synty/DanceHipHop2.fbx',
   [AnimationActions.DANCE_HIP_HOP]:
-    '/assets/mixamo/animations/synty/DanceHipHop.fbx',
+    '/mixamo/animations/synty/DanceHipHop.fbx',
   [AnimationActions.DANCE_CHICKEN]:
-    '/assets/mixamo/animations/synty/DanceChicken.fbx',
+    '/mixamo/animations/synty/DanceChicken.fbx',
   [AnimationActions.DANCE_YMCA]:
-    '/assets/mixamo/animations/synty/DanceYmca.fbx',
-  [AnimationActions.DIE]: '/assets/mixamo/animations/synty/Dying.fbx',
-  [AnimationActions.EXCITED]: '/assets/mixamo/animations/synty/Excited.fbx',
+    '/mixamo/animations/synty/DanceYmca.fbx',
+  [AnimationActions.DIE]: '/mixamo/animations/synty/Dying.fbx',
+  [AnimationActions.EXCITED]: '/mixamo/animations/synty/Excited.fbx',
   [AnimationActions.GOLF_DRIVE]:
-    '/assets/mixamo/animations/synty/GolfDrive.fbx',
-  [AnimationActions.IDLE]: '/assets/mixamo/animations/synty/Idle.fbx',
-  [AnimationActions.SALUTE]: '/assets/mixamo/animations/synty/Salute.fbx',
-  [AnimationActions.WALK]: '/assets/mixamo/animations/synty/Walking.fbx',
-  [AnimationActions.WAVE]: '/assets/mixamo/animations/synty/Waving.fbx',
+    '/mixamo/animations/synty/GolfDrive.fbx',
+  [AnimationActions.IDLE]: '/mixamo/animations/synty/Idle.fbx',
+  [AnimationActions.SALUTE]: '/mixamo/animations/synty/Salute.fbx',
+  [AnimationActions.WALK]: '/mixamo/animations/synty/Walking.fbx',
+  [AnimationActions.WAVE]: '/mixamo/animations/synty/Waving.fbx',
 };
 
 const clipCache: Partial<Record<AnimationAction, AnimationClip>> = {};

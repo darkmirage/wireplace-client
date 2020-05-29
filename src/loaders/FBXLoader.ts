@@ -2,7 +2,7 @@ import { Group, Mesh, Object3D, Material, MeshPhongMaterial } from 'three';
 import { FBXLoader as ThreeFBXLoader } from 'three/examples/jsm/loaders/FBXLoader';
 import path from 'path';
 
-const DOMAIN = 'https://wireplace.s3-us-west-1.amazonaws.com';
+const DOMAIN = 'https://wireplace-assets.s3-us-west-1.amazonaws.com';
 
 function setMaterialProperties(m: Material) {
   m.transparent = false;

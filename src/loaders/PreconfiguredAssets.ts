@@ -15,52 +15,52 @@ interface Asset {
 
 const Assets: Array<Asset> = [
   {
-    url: '/assets/synty/office/SK_Chr_Developer_Female_01.fbx',
+    url: '/synty/office/SK_Chr_Developer_Female_01.fbx',
     scale: 0.01,
     animations: { [AnimationActions.IDLE]: 0 },
   },
   {
-    url: '/assets/synty/office/SK_Chr_Business_Male_02.fbx',
+    url: '/synty/office/SK_Chr_Business_Male_02.fbx',
     scale: 0.01,
     animations: { [AnimationActions.IDLE]: 0 },
   },
   {
-    url: '/assets/synty/office/SK_Chr_Business_Female_01.fbx',
+    url: '/synty/office/SK_Chr_Business_Female_01.fbx',
     scale: 0.01,
     animations: { [AnimationActions.IDLE]: 0 },
   },
   {
-    url: '/assets/synty/office/SK_Chr_Business_Female_03.fbx',
+    url: '/synty/office/SK_Chr_Business_Female_03.fbx',
     scale: 0.01,
     animations: { [AnimationActions.IDLE]: 0 },
   },
   {
-    url: '/assets/synty/office/SK_Chr_Security_Male_01.fbx',
+    url: '/synty/office/SK_Chr_Security_Male_01.fbx',
     scale: 0.01,
     animations: {},
   },
   {
-    url: '/assets/synty/office/SK_Chr_Business_Male_01.fbx',
+    url: '/synty/office/SK_Chr_Business_Male_01.fbx',
     scale: 0.01,
     animations: { [AnimationActions.IDLE]: 0 },
   },
   {
-    url: '/assets/synty/office/SK_Chr_Boss_Female_01.fbx',
+    url: '/synty/office/SK_Chr_Boss_Female_01.fbx',
     scale: 0.01,
     animations: {},
   },
   {
-    url: '/assets/synty/office/SK_Chr_Cleaner_Male_01.fbx',
+    url: '/synty/office/SK_Chr_Cleaner_Male_01.fbx',
     scale: 0.01,
     animations: {},
   },
   {
-    url: '/assets/synty/office/SK_Chr_Business_Male_04.fbx',
+    url: '/synty/office/SK_Chr_Business_Male_04.fbx',
     scale: 0.01,
     animations: {},
   },
   {
-    url: '/assets/synty/office/SK_Chr_Business_Female_02.fbx',
+    url: '/synty/office/SK_Chr_Business_Female_02.fbx',
     scale: 0.01,
     animations: {},
   },
@@ -128,7 +128,7 @@ async function loadAsset(assetId: number): Promise<Object3D> {
 
 async function loadNature(filename: string): Promise<Group> {
   const g = await new FBXLoader().loadGroupAsync(
-    `/assets/nature/${filename}.fbx`
+    `/nature/${filename}.fbx`
   );
   g.scale.set(0.003, 0.003, 0.003);
   return g;
