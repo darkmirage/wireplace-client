@@ -1,7 +1,7 @@
 import React from 'react';
 import { createUseStyles, useTheme } from 'react-jss';
 
-import Chat from 'components/Chat';
+import TextChat from 'components/chat/TextChat';
 import ClientProvider from 'components/ClientProvider';
 import EventArea from 'components/ui/EventArea';
 import GlobalInputs from 'components/ui/GlobalInputs';
@@ -32,7 +32,7 @@ const Main = (props: Props) => {
         {({ client }) => (
           <>
             <div className={classes.panel}>
-              <Chat client={client} username={username} />
+              <TextChat client={client} username={username} />
             </div>
             <div className={classes.main}>
               <EventArea

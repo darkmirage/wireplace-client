@@ -14,7 +14,7 @@ type Props = {
   username: string;
 };
 
-const Chat = (props: Props) => {
+const TextChat = (props: Props) => {
   const { client } = props;
   const [message, setMessage] = React.useState<string>('');
   const [messages, setMessages] = React.useState<{
@@ -60,8 +60,9 @@ const Chat = (props: Props) => {
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (message) {
-      getGlobalEmitter().emit(Events.FOCUS_CHAT, false);
       client.sendMessage(message);
+    } else {
+      getGlobalEmitter().emit(Events.FOCUS_CHAT, false);
     }
     setMessage('');
   };
@@ -186,4 +187,4 @@ const useStyles = createUseStyles<Theme>((theme) => ({
   },
 }));
 
-export default Chat;
+export default TextChat;
