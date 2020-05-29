@@ -15,12 +15,22 @@ interface Asset {
 
 const Assets: Array<Asset> = [
   {
-    url: '/assets/mixamo/characters/BlueBot.fbx',
+    url: '/assets/synty/office/SK_Chr_Business_Male_02.fbx',
     scale: 0.01,
     animations: { [AnimationActions.IDLE]: 0 },
   },
   {
-    url: '/assets/mixamo/characters/RedBot.fbx',
+    url: '/assets/synty/office/SK_Chr_Business_Female_01.fbx',
+    scale: 0.01,
+    animations: { [AnimationActions.IDLE]: 0 },
+  },
+  {
+    url: '/assets/synty/office/SK_Chr_Business_Female_03.fbx',
+    scale: 0.01,
+    animations: { [AnimationActions.IDLE]: 0 },
+  },
+  {
+    url: '/assets/synty/office/SK_Chr_Business_Male_01.fbx',
     scale: 0.01,
     animations: { [AnimationActions.IDLE]: 0 },
   },
@@ -65,6 +75,7 @@ async function preload(assetId: number) {
 async function preloadAll() {
   await preload(0);
   await preload(1);
+  await preload(2);
   preloaded = true;
 }
 preloadAll();

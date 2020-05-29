@@ -284,11 +284,11 @@ class WirePlaceClient implements WirePlaceChatClient {
         break;
       }
       case '4': {
-        this._performAction(AnimationActions.DANCE_SAMBA);
+        this._performAction(AnimationActions.DANCE_CHICKEN);
         break;
       }
       case '5': {
-        this._performAction(AnimationActions.DANCE_HIP_HOP);
+        this._performAction(AnimationActions.DANCE_YMCA);
         break;
       }
       case '6': {

@@ -253,12 +253,15 @@ class AnimationRuntime {
         continue;
       }
 
-      const { target, speed } = data;
+      const { target, speed, actionType } = data;
       _v.copy(target.position).sub(child.position);
       if (!child.position.equals(target.position)) {
         data.lastTickMoved = tick;
-        data.onStop = () =>
-          getGlobalEmitter().emit(Events.ANIMATION_STOPPED, child.name);
+        data.onStop = () => {
+          if (actionType === AnimationActions.WALK) {
+            getGlobalEmitter().emit(Events.ANIMATION_STOPPED, child.name);
+          }
+        };
         translated = true;
 
         _v.copy(target.position).sub(child.position);
@@ -272,7 +275,7 @@ class AnimationRuntime {
         if (_v.length() <= 0.005) {
           child.position.copy(target.position);
         }
-      } else if (data.onStop && tick - data.lastTickMoved > 30) {
+      } else if (data.onStop && tick - data.lastTickMoved > 20) {
         data.onStop(child.name);
         data.onStop = null;
       }
