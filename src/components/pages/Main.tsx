@@ -9,7 +9,7 @@ import RenderView from 'components/RenderView';
 import Spinner from 'components/Spinner';
 import type { Theme } from 'themes';
 
-const HOSTNAME = 'localhost';
+const HOSTNAME = '13.57.59.82';
 const PORT = 8000;
 
 type Props = {
