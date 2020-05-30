@@ -142,15 +142,16 @@ class OverlayRenderer {
 
 const useStyles = createUseStyles<Theme>((theme) => ({
   container: {
-    position: 'absolute',
-    zIndex: theme.zIndices.middle,
-    display: 'flex',
     alignItems: 'center',
+    display: 'flex',
     height: '100%',
     justifyContent: 'center',
     outline: 'none',
-    width: '100%',
     pointerEvents: 'none',
+    position: 'absolute',
+    top: 0,
+    width: '100%',
+    zIndex: theme.zIndices.middle,
   },
   actor: {
     borderRadius: theme.spacing.normal,
