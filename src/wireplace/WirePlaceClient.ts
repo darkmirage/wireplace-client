@@ -1,10 +1,8 @@
 import { WirePlaceScene, deserializeDiff, Update } from 'wireplace-scene';
 import socketClusterClient from 'socketcluster-client';
 import type { AGClientSocket } from 'socketcluster-client';
-import type { KeyboardEvent } from 'react';
 
 import logger from 'utils/logger';
-import { AnimationAction, AnimationActions } from 'constants/Animation';
 import TypedEventsEmitter, { Events } from 'wireplace/TypedEventsEmitter';
 import WirePlaceRuntime from './WirePlaceRuntime';
 
@@ -81,16 +79,6 @@ class WirePlaceClient implements WirePlaceChatClient {
   _resetCache() {
     this._userCache = {};
     this.scene.clear();
-  }
-
-  _performAction(actionType: AnimationAction, actionState: number = 1) {
-    if (this.runtime.actorId) {
-      this._ee.emit(Events.PERFORM_ACTION, {
-        actorId: this.runtime.actorId,
-        actionType,
-        actionState,
-      });
-    }
   }
 
   // This is a hack to send updates on the current actor to the server at a fixed refresh rate
@@ -223,97 +211,6 @@ class WirePlaceClient implements WirePlaceChatClient {
       }
     })();
   }
-
-  handleKeyDown = (event: KeyboardEvent) => {
-    switch (event.key) {
-      case 'ArrowUp': {
-        this._ee.emit(Events.MOVE_UP, true);
-        break;
-      }
-      case 'ArrowDown': {
-        this._ee.emit(Events.MOVE_DOWN, true);
-        break;
-      }
-      case 'ArrowLeft': {
-        this._ee.emit(Events.MOVE_LEFT, true);
-        break;
-      }
-      case 'ArrowRight': {
-        this._ee.emit(Events.MOVE_RIGHT, true);
-        break;
-      }
-    }
-  };
-
-  handleKeyUp = (event: KeyboardEvent) => {
-    switch (event.key) {
-      case 'ArrowUp': {
-        this._ee.emit(Events.MOVE_UP, false);
-        break;
-      }
-      case 'ArrowDown': {
-        this._ee.emit(Events.MOVE_DOWN, false);
-        break;
-      }
-      case 'ArrowLeft': {
-        this._ee.emit(Events.MOVE_LEFT, false);
-        break;
-      }
-      case 'ArrowRight': {
-        this._ee.emit(Events.MOVE_RIGHT, false);
-        break;
-      }
-    }
-  };
-
-  handleKeyPress = (event: KeyboardEvent) => {
-    switch (event.key) {
-      case 'p': {
-        this._ee.emit(Events.TOGGLE_RANDOM_WALK);
-        break;
-      }
-      case '1': {
-        this._performAction(AnimationActions.WAVE, 3);
-        break;
-      }
-      case '2': {
-        this._performAction(AnimationActions.CLAP, 2);
-        break;
-      }
-      case '3': {
-        this._performAction(AnimationActions.BOW);
-        break;
-      }
-      case '4': {
-        this._performAction(AnimationActions.DANCE_CHICKEN, 2);
-        break;
-      }
-      case '5': {
-        this._performAction(AnimationActions.DANCE_YMCA, 2);
-        break;
-      }
-      case '6': {
-        this._performAction(AnimationActions.GOLF_DRIVE);
-        break;
-      }
-      case '7': {
-        this._performAction(AnimationActions.SALUTE);
-        break;
-      }
-      case '8': {
-        this._performAction(AnimationActions.CRY);
-        break;
-      }
-      case '9': {
-        this._performAction(AnimationActions.DIE);
-        break;
-      }
-      case 'Escape': {
-        this._performAction(AnimationActions.IDLE, -1);
-        break;
-      }
-    }
-  };
 }
 
 export default WirePlaceClient;

@@ -83,18 +83,15 @@ class WirePlaceRuntime {
       ];
     });
     this._ee.on(Events.SET_ACTIVE_ACTOR, (actorId) => this.setActor(actorId));
-    this._ee.on(
-      Events.PERFORM_ACTION,
-      ({ actorId, actionType, actionState }) => {
-        if (this.actorId === actorId) {
-          const action = {
-            type: actionType,
-            state: actionState,
-          };
-          this._scene.updateActor(this.actorId, { action }, true);
-        }
+    this._ee.on(Events.PERFORM_ACTION, ({ actionType, actionState }) => {
+      if (this.actorId) {
+        const action = {
+          type: actionType,
+          state: actionState || 1,
+        };
+        this._scene.updateActor(this.actorId, { action }, true);
       }
-    );
+    });
     this._ee.on(Events.SET_CAMERA_TRACKING_MODE, () => {
       this._renderer?.toggleCameraLock();
     });

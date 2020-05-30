@@ -52,9 +52,8 @@ interface EventPayloads {
   [Events.SET_MOVING]: boolean;
   [Events.TOGGLE_RANDOM_WALK]: undefined;
   [Events.PERFORM_ACTION]: {
-    actorId: ActorID;
     actionType: AnimationAction;
-    actionState: number;
+    actionState?: number;
   };
   [Events.WINDOW_RESIZE]: void;
 }

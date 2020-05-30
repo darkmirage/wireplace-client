@@ -1,5 +1,6 @@
 import React from 'react';
 
+import { AnimationActions } from 'constants/Animation';
 import { getGlobalEmitter, Events } from 'wireplace/TypedEventsEmitter';
 import EventArea from './EventArea';
 
@@ -17,14 +18,120 @@ function handleGlobalKeyPress(event: React.KeyboardEvent<any>) {
       getGlobalEmitter().emit(Events.SET_CAMERA_TRACKING_MODE);
       break;
     }
+    case 'p': {
+      getGlobalEmitter().emit(Events.TOGGLE_RANDOM_WALK);
+      break;
+    }
+    case '1': {
+      getGlobalEmitter().emit(Events.PERFORM_ACTION, {
+        actionType: AnimationActions.WAVE,
+        actionState: 3,
+      });
+      break;
+    }
+    case '2': {
+      getGlobalEmitter().emit(Events.PERFORM_ACTION, {
+        actionType: AnimationActions.CLAP,
+        actionState: 2,
+      });
+      break;
+    }
+    case '3': {
+      getGlobalEmitter().emit(Events.PERFORM_ACTION, {
+        actionType: AnimationActions.BOW,
+      });
+      break;
+    }
+    case '4': {
+      getGlobalEmitter().emit(Events.PERFORM_ACTION, {
+        actionType: AnimationActions.DANCE_CHICKEN,
+        actionState: 2,
+      });
+      break;
+    }
+    case '5': {
+      getGlobalEmitter().emit(Events.PERFORM_ACTION, {
+        actionType: AnimationActions.DANCE_YMCA,
+        actionState: 2,
+      });
+      break;
+    }
+    case '6': {
+      getGlobalEmitter().emit(Events.PERFORM_ACTION, {
+        actionType: AnimationActions.GOLF_DRIVE,
+      });
+      break;
+    }
+    case '7': {
+      getGlobalEmitter().emit(Events.PERFORM_ACTION, {
+        actionType: AnimationActions.SALUTE,
+      });
+      break;
+    }
+    case '8': {
+      getGlobalEmitter().emit(Events.PERFORM_ACTION, {
+        actionType: AnimationActions.CRY,
+      });
+      break;
+    }
+    case '9': {
+      getGlobalEmitter().emit(Events.PERFORM_ACTION, {
+        actionType: AnimationActions.DIE,
+      });
+      break;
+    }
+    case 'Escape': {
+      getGlobalEmitter().emit(Events.PERFORM_ACTION, {
+        actionType: AnimationActions.IDLE,
+        actionState: -1,
+      });
+      break;
+    }
   }
 }
 
 function handleGlobalKeyDown(event: React.KeyboardEvent<any>) {
   switch (event.key) {
+    case 'ArrowUp': {
+      getGlobalEmitter().emit(Events.MOVE_UP, true);
+      break;
+    }
+    case 'ArrowDown': {
+      getGlobalEmitter().emit(Events.MOVE_DOWN, true);
+      break;
+    }
+    case 'ArrowLeft': {
+      getGlobalEmitter().emit(Events.MOVE_LEFT, true);
+      break;
+    }
+    case 'ArrowRight': {
+      getGlobalEmitter().emit(Events.MOVE_RIGHT, true);
+      break;
+    }
     case 'Escape': {
       // Note: browser never fires KeyPress event for Escape key
       getGlobalEmitter().emit(Events.FOCUS_CHAT, false);
+      break;
+    }
+  }
+}
+
+function handleGlobalKeyUp(event: React.KeyboardEvent<any>) {
+  switch (event.key) {
+    case 'ArrowUp': {
+      getGlobalEmitter().emit(Events.MOVE_UP, false);
+      break;
+    }
+    case 'ArrowDown': {
+      getGlobalEmitter().emit(Events.MOVE_DOWN, false);
+      break;
+    }
+    case 'ArrowLeft': {
+      getGlobalEmitter().emit(Events.MOVE_LEFT, false);
+      break;
+    }
+    case 'ArrowRight': {
+      getGlobalEmitter().emit(Events.MOVE_RIGHT, false);
       break;
     }
   }
@@ -121,12 +228,15 @@ const GlobalInputs = (props: Props) => {
       ref={ref}
       onKeyPress={handleGlobalKeyPress}
       onKeyDown={handleGlobalKeyDown}
+      onKeyUp={handleGlobalKeyUp}
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
       onMouseDown={handleMouseDown}
       onMouseUp={handleMouseUp}
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
+      tabIndex={1}
+      maintainFocus
     >
       {props.children}
     </EventArea>

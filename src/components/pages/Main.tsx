@@ -3,7 +3,6 @@ import { createUseStyles, useTheme } from 'react-jss';
 
 import TextChat from 'components/chat/TextChat';
 import ClientProvider from 'components/ClientProvider';
-import EventArea from 'components/ui/EventArea';
 import GlobalInputs from 'components/ui/GlobalInputs';
 import RenderView from 'components/RenderView';
 import Spinner from 'components/Spinner';
@@ -35,16 +34,7 @@ const Main = (props: Props) => {
               <TextChat client={client} username={username} />
             </div>
             <div className={classes.main}>
-              <EventArea
-                maintainFocus
-                className={classes.eventArea}
-                onKeyDown={client.handleKeyDown}
-                onKeyPress={client.handleKeyPress}
-                onKeyUp={client.handleKeyUp}
-                tabIndex={1}
-              >
-                <RenderView client={client} />
-              </EventArea>
+              <RenderView client={client} />
             </div>
           </>
         )}
