@@ -9,16 +9,12 @@ const AnimationURLs: Partial<Record<AnimationAction, string>> = {
   [AnimationActions.CRY]: '/mixamo/animations/synty/Crying.fbx',
   [AnimationActions.DANCE_HIP_HOP_2]:
     '/mixamo/animations/synty/DanceHipHop2.fbx',
-  [AnimationActions.DANCE_HIP_HOP]:
-    '/mixamo/animations/synty/DanceHipHop.fbx',
-  [AnimationActions.DANCE_CHICKEN]:
-    '/mixamo/animations/synty/DanceChicken.fbx',
-  [AnimationActions.DANCE_YMCA]:
-    '/mixamo/animations/synty/DanceYmca.fbx',
+  [AnimationActions.DANCE_HIP_HOP]: '/mixamo/animations/synty/DanceHipHop.fbx',
+  [AnimationActions.DANCE_CHICKEN]: '/mixamo/animations/synty/DanceChicken.fbx',
+  [AnimationActions.DANCE_YMCA]: '/mixamo/animations/synty/DanceYmca.fbx',
   [AnimationActions.DIE]: '/mixamo/animations/synty/Dying.fbx',
   [AnimationActions.EXCITED]: '/mixamo/animations/synty/Excited.fbx',
-  [AnimationActions.GOLF_DRIVE]:
-    '/mixamo/animations/synty/GolfDrive.fbx',
+  [AnimationActions.GOLF_DRIVE]: '/mixamo/animations/synty/GolfDrive.fbx',
   [AnimationActions.IDLE]: '/mixamo/animations/synty/Idle.fbx',
   [AnimationActions.SALUTE]: '/mixamo/animations/synty/Salute.fbx',
   [AnimationActions.WALK]: '/mixamo/animations/synty/Walking.fbx',

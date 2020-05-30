@@ -1,6 +1,12 @@
-import { Group, Mesh, Object3D, Material, MeshPhongMaterial } from 'three';
+import {
+  Group,
+  Mesh,
+  Object3D,
+  Material,
+  MeshPhongMaterial,
+  LoaderUtils,
+} from 'three';
 import { FBXLoader as ThreeFBXLoader } from 'three/examples/jsm/loaders/FBXLoader';
-import path from 'path';
 
 const DOMAIN = 'https://wireplace-assets.s3-us-west-1.amazonaws.com';
 
@@ -26,15 +32,12 @@ function setChildrenProperties(parent: Object3D) {
 }
 
 class FBXLoader extends ThreeFBXLoader {
-  constructor() {
-    super();
-    this.setPath(DOMAIN);
-  }
-
   async loadGroupAsync(p: string): Promise<Group> {
-    const dir = path.dirname(p);
-    const resourceDir = path.join(DOMAIN, dir, 'textures/');
-    this.setResourcePath(resourceDir);
+    if (p.startsWith('/')) {
+      p = DOMAIN + p;
+    }
+    const base = LoaderUtils.extractUrlBase(p);
+    this.setResourcePath(base + 'textures/');
     const group = await this.loadAsync(p);
     setChildrenProperties(group);
     return group;

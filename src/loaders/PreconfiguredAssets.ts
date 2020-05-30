@@ -127,9 +127,7 @@ async function loadAsset(assetId: number): Promise<Object3D> {
 }
 
 async function loadNature(filename: string): Promise<Group> {
-  const g = await new FBXLoader().loadGroupAsync(
-    `/nature/${filename}.fbx`
-  );
+  const g = await new FBXLoader().loadGroupAsync(`/nature/${filename}.fbx`);
   g.scale.set(0.003, 0.003, 0.003);
   return g;
 }
