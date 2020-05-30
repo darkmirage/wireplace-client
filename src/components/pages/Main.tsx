@@ -9,7 +9,7 @@ import Spinner from 'components/Spinner';
 import type { Theme } from 'themes';
 
 const HOSTNAME = 'server.wireplace.net';
-const PORT = 8000;
+const PORT = 8080;
 
 type Props = {
   username: string;
