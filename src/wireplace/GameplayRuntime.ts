@@ -37,7 +37,7 @@ interface WirePlaceRuntimeProps {
   scene: WirePlaceScene;
 }
 
-class WirePlaceRuntime {
+class GameplayRuntime {
   tick: number;
   actorId: string | null;
   _scene: WirePlaceScene;
@@ -275,4 +275,4 @@ class WirePlaceRuntime {
   };
 }
 
-export default WirePlaceRuntime;
+export default GameplayRuntime;

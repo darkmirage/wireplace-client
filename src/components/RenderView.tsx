@@ -2,8 +2,8 @@ import React from 'react';
 import { createUseStyles } from 'react-jss';
 
 import type WirePlaceClient from 'wireplace/WirePlaceClient';
-import WirePlaceThreeRenderer from 'wireplace/WirePlaceThreeRenderer';
-import WirePlaceReactRenderer from 'wireplace/WirePlaceReactRenderer';
+import OverlayRenderer from 'wireplace/OverlayRenderer';
+import ThreeRenderer from 'wireplace/ThreeRenderer';
 
 type Props = {
   client: WirePlaceClient;
@@ -23,12 +23,12 @@ const RenderView = (props: Props) => {
       throw new Error('ref.current is undefined');
     }
 
-    const reacter = new WirePlaceReactRenderer(
+    const reacter = new OverlayRenderer(
       setOverlayContent,
       current,
       () => client
     );
-    const renderer = new WirePlaceThreeRenderer(reacter);
+    const renderer = new ThreeRenderer(reacter);
     renderer.setDOMElement(current);
     window.addEventListener('resize', renderer.resize);
     client.runtime.startLoop();

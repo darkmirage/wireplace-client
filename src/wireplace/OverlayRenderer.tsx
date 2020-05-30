@@ -57,7 +57,7 @@ const Overlay = (props: OverlayProps) => {
   return <div className={classes.container}>{overlays}</div>;
 };
 
-class WirePlaceReactRenderer {
+class OverlayRenderer {
   _setOverlayContent: React.Dispatch<React.SetStateAction<React.ReactNode>>;
   _domElement: HTMLDivElement;
   _getClient: () => WirePlaceClient;
@@ -167,4 +167,4 @@ const useStyles = createUseStyles<Theme>((theme) => ({
   },
 }));
 
-export default WirePlaceReactRenderer;
+export default OverlayRenderer;

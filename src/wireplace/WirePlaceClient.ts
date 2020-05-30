@@ -4,7 +4,7 @@ import type { AGClientSocket } from 'socketcluster-client';
 
 import logger from 'utils/logger';
 import TypedEventsEmitter, { Events } from 'wireplace/TypedEventsEmitter';
-import WirePlaceRuntime from './WirePlaceRuntime';
+import GameplayRuntime from './GameplayRuntime';
 
 export interface ChatLine {
   color: number;
@@ -20,7 +20,7 @@ type ActorID = string;
 interface WirePlaceClientProps {
   emitter: TypedEventsEmitter;
   scene: WirePlaceScene;
-  runtime: WirePlaceRuntime;
+  runtime: GameplayRuntime;
   username: string;
   token: string;
   hostname: string;
@@ -43,7 +43,7 @@ const UPDATE_FPS = 3;
 class WirePlaceClient implements WirePlaceChatClient {
   socket: AGClientSocket;
   scene: WirePlaceScene;
-  runtime: WirePlaceRuntime;
+  runtime: GameplayRuntime;
   _username: string;
   _token: string;
   _unsubscribe: () => void;

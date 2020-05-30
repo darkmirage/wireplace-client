@@ -24,12 +24,12 @@ import Stats from 'three/examples/jsm/libs/stats.module';
 import type { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import type { Update } from 'wireplace-scene';
 
-import getMaterial from 'utils/getMaterial';
 import { getGlobalEmitter, Events } from 'wireplace/TypedEventsEmitter';
-import disposeObject3D from 'utils/disposeObject3D';
 import { loadDefaultMap } from 'loaders/PreconfiguredAssets';
 import AnimationRuntime from './AnimationRuntime';
-import WirePlaceReactRenderer from './WirePlaceReactRenderer';
+import disposeObject3D from 'utils/disposeObject3D';
+import getMaterial from 'utils/getMaterial';
+import OverlayRenderer from './OverlayRenderer';
 
 type ObjectID = string;
 
@@ -40,7 +40,7 @@ const _v1 = new Vector3();
 const _v2 = new Vector3();
 const _raycaster = new Raycaster();
 
-class WirePlaceThreeRenderer {
+class ThreeRenderer {
   domElement: HTMLDivElement;
   webGLRenderer: WebGLRenderer;
   cameraForward: Vector3;
@@ -52,12 +52,12 @@ class WirePlaceThreeRenderer {
   _animation: AnimationRuntime;
   _controls: OrbitControls;
   _stats: Stats;
-  _reacter: WirePlaceReactRenderer;
+  _reacter: OverlayRenderer;
   _controlTarget: Object3D | null;
   _cursor: Object3D;
   _floor: Object3D;
 
-  constructor(reacter: WirePlaceReactRenderer) {
+  constructor(reacter: OverlayRenderer) {
     this.domElement = document.createElement('div');
     this.webGLRenderer = new WebGLRenderer({ antialias: true });
     this.webGLRenderer.shadowMap.enabled = true;
@@ -317,4 +317,4 @@ class WirePlaceThreeRenderer {
   };
 }
 
-export default WirePlaceThreeRenderer;
+export default ThreeRenderer;

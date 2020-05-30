@@ -2,7 +2,7 @@ import React from 'react';
 import { WirePlaceScene } from 'wireplace-scene';
 
 import WirePlaceClient from 'wireplace/WirePlaceClient';
-import WirePlaceRuntime from 'wireplace/WirePlaceRuntime';
+import GameplayRuntime from 'wireplace/GameplayRuntime';
 import { getGlobalEmitter } from 'wireplace/TypedEventsEmitter';
 
 type ChildProps = {
@@ -26,7 +26,7 @@ const ClientProvider = (props: Props) => {
   React.useEffect(() => {
     const scene = new WirePlaceScene();
     const emitter = getGlobalEmitter();
-    const runtime = new WirePlaceRuntime({ scene, emitter });
+    const runtime = new GameplayRuntime({ scene, emitter });
     const newClient = new WirePlaceClient({
       emitter,
       scene,
