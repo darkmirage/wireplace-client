@@ -4,9 +4,11 @@ import { createUseStyles } from 'react-jss';
 import type WirePlaceClient from 'wireplace/WirePlaceClient';
 import OverlayRenderer from 'wireplace/OverlayRenderer';
 import ThreeRenderer from 'wireplace/ThreeRenderer';
+import SpatialAudioManager from 'wireplace/SpatialAudioManager';
 
 type Props = {
   client: WirePlaceClient;
+  sam: SpatialAudioManager;
 };
 
 const RenderView = (props: Props) => {
@@ -15,7 +17,7 @@ const RenderView = (props: Props) => {
   const [overlayContent, setOverlayContent] = React.useState<React.ReactNode>(
     null
   );
-  const { client } = props;
+  const { client, sam } = props;
 
   React.useEffect(() => {
     const { current } = ref;
@@ -28,7 +30,7 @@ const RenderView = (props: Props) => {
       current,
       () => client
     );
-    const renderer = new ThreeRenderer(reacter);
+    const renderer = new ThreeRenderer(reacter, sam);
     renderer.setDOMElement(current);
     window.addEventListener('resize', renderer.resize);
     client.runtime.startLoop();
@@ -37,7 +39,7 @@ const RenderView = (props: Props) => {
       client.runtime.stopLoop();
       window.removeEventListener('resize', renderer.resize);
     };
-  }, [client]);
+  }, [client, sam]);
 
   return (
     <>

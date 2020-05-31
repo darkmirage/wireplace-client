@@ -7,7 +7,7 @@ import {
   Scene,
   Vector3,
 } from 'three';
-import type { Update } from 'wireplace-scene';
+import { Update, ActorID } from 'wireplace-scene';
 
 import Tween, { TweenTarget } from 'wireplace/Tween';
 import { getGlobalEmitter, Events } from 'wireplace/TypedEventsEmitter';
@@ -256,8 +256,8 @@ class AnimationRuntime {
     }
   }
 
-  update = (tick: number, delta: number): boolean => {
-    let translated = false;
+  update = (tick: number, delta: number): Set<ActorID> | null => {
+    const updated = new Set<ActorID>();
     for (const t of this._activeTweens) {
       const tween = t as Tween;
       tween.update(delta);
@@ -276,7 +276,7 @@ class AnimationRuntime {
       _v.copy(target.position).sub(obj.position);
       if (!obj.position.equals(target.position)) {
         data.lastTickMoved = tick;
-        translated = true;
+        updated.add(obj.name);
 
         _v.copy(target.position).sub(obj.position);
         const distance = _v.length();
@@ -302,7 +302,7 @@ class AnimationRuntime {
       }
 
       if (!obj.quaternion.equals(target.quaternion)) {
-        translated = true;
+        updated.add(obj.name);
         if (target.quaternion.angleTo(obj.quaternion) < 0.01) {
           obj.quaternion.copy(target.quaternion);
         } else {
@@ -315,7 +315,7 @@ class AnimationRuntime {
       // - Update scale and up
       // - Implement proper interpolation and easing
     }
-    return translated;
+    return updated.size === 0 ? null : updated;
   };
 }
 

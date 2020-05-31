@@ -4,6 +4,8 @@ import { WirePlaceScene, Update } from 'wireplace-scene';
 import TypedEventsEmitter, { Events } from 'wireplace/TypedEventsEmitter';
 import { AnimationActions } from 'constants/Animation';
 
+import { IRenderer } from './IRenderer';
+
 const FORWARD = new Vector3(0, 0, 1);
 const _v1 = new Vector3();
 const _v2 = new Vector3();
@@ -19,19 +21,6 @@ export enum Directions {
   RANDOM = 'RANDOM',
 }
 
-interface Renderer {
-  render: (
-    tick: number,
-    delta: number,
-    updates: Record<string, Update>,
-    activeActorId: string | null
-  ) => void;
-  cameraForward: Vector3;
-  cameraRight: Vector3;
-  toggleCameraLock: () => void;
-  getRendererPosition: (actorId: string) => Vector3 | null;
-}
-
 interface WirePlaceRuntimeProps {
   emitter: TypedEventsEmitter;
   scene: WirePlaceScene;
@@ -44,7 +33,7 @@ class GameplayRuntime {
   _running: boolean;
   _lastTime: number;
   _directions: Record<keyof typeof Directions, boolean>;
-  _renderer: Renderer | null;
+  _renderer: IRenderer | null;
   _ee: TypedEventsEmitter;
 
   _wasMoving: boolean;
@@ -118,7 +107,7 @@ class GameplayRuntime {
     );
   }
 
-  setRenderer(renderer: Renderer) {
+  setRenderer(renderer: IRenderer) {
     this._renderer = renderer;
   }
 
@@ -164,8 +153,8 @@ class GameplayRuntime {
 
     let p = actor.position;
     if (this._renderer) {
-      const renderedPosition = this._renderer.getRendererPosition(actorId);
-      p = renderedPosition || p;
+      const pose = this._renderer.getRendererPose(actorId);
+      p = pose ? pose.position : p;
     }
 
     _v2.set(p.x, p.y, p.z);
@@ -218,8 +207,8 @@ class GameplayRuntime {
 
     let p = actor.position;
     if (this._renderer) {
-      const renderedPosition = this._renderer.getRendererPosition(actorId);
-      p = renderedPosition || p;
+      const pose = this._renderer.getRendererPose(actorId);
+      p = pose ? pose.position : p;
     }
 
     if (isMoving && !wasMoving) {

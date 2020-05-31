@@ -29,7 +29,9 @@ import { loadDefaultMap } from 'loaders/PreconfiguredAssets';
 import AnimationRuntime from './AnimationRuntime';
 import disposeObject3D from 'utils/disposeObject3D';
 import getMaterial from 'utils/getMaterial';
+import SpatialAudioManager from './SpatialAudioManager';
 import OverlayRenderer from './OverlayRenderer';
+import { IRenderer, IPose } from './IRenderer';
 
 type ObjectID = string;
 
@@ -40,11 +42,12 @@ const _v1 = new Vector3();
 const _v2 = new Vector3();
 const _raycaster = new Raycaster();
 
-class ThreeRenderer {
+class ThreeRenderer implements IRenderer {
   domElement: HTMLDivElement;
   webGLRenderer: WebGLRenderer;
   cameraForward: Vector3;
   cameraRight: Vector3;
+  _sam: SpatialAudioManager;
   _scene: Scene;
   _camera: PerspectiveCamera;
   _prevCameraPosition: Vector3;
@@ -57,7 +60,7 @@ class ThreeRenderer {
   _cursor: Object3D;
   _floor: Object3D;
 
-  constructor(reacter: OverlayRenderer) {
+  constructor(reacter: OverlayRenderer, sam: SpatialAudioManager) {
     this.domElement = document.createElement('div');
     this.webGLRenderer = new WebGLRenderer({ antialias: true });
     this.webGLRenderer.shadowMap.enabled = true;
@@ -68,6 +71,7 @@ class ThreeRenderer {
     this._cameraLocked = DEFAULT_CAMERA_LOCKED;
     this._animation = new AnimationRuntime(this._scene);
     this._reacter = reacter;
+    this._sam = sam;
 
     this.cameraForward = new Vector3(0, 0, -1);
     this.cameraRight = new Vector3(1, 0, 0);
@@ -96,8 +100,6 @@ class ThreeRenderer {
     this._stats = new (Stats as any)();
     this._stats.dom.setAttribute('style', 'position: fixed; right: 0; top: 0');
     document.body.appendChild(this._stats.dom);
-
-    (window as any).renderer = this;
 
     // TODO: find a less hacky way to achieve this
     getGlobalEmitter().on(Events.WINDOW_RESIZE, () => {
@@ -259,12 +261,12 @@ class ThreeRenderer {
     this._camera.updateProjectionMatrix();
   };
 
-  getRendererPosition(objectId: string): Vector3 | null {
+  getRendererPose(objectId: string): IPose | null {
     const obj = this._getObjectById(objectId);
     if (!obj) {
       return null;
     }
-    return obj.position;
+    return obj;
   }
 
   applyUpdates(updates: Record<ObjectID, Update>) {
@@ -307,6 +309,10 @@ class ThreeRenderer {
     this._prevCameraPosition.copy(this._camera.position);
 
     const animated = this._animation.update(tick, delta);
+
+    if (animated && activeActorId) {
+      this._sam.updateEnvironment(tick, delta, activeActorId, animated, this);
+    }
 
     if (sceneDirty || controlsDirty || animated || cameraDirty) {
       this._reacter.update(tick, delta, this._scene, this._camera);

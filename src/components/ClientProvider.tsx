@@ -1,12 +1,13 @@
 import React from 'react';
-import { WirePlaceScene } from 'wireplace-scene';
+import { WirePlaceScene, ActorID } from 'wireplace-scene';
 
-import WirePlaceClient from 'wireplace/WirePlaceClient';
+import { getGlobalEmitter, Events } from 'wireplace/TypedEventsEmitter';
 import GameplayRuntime from 'wireplace/GameplayRuntime';
-import { getGlobalEmitter } from 'wireplace/TypedEventsEmitter';
+import WirePlaceClient from 'wireplace/WirePlaceClient';
 
 type ChildProps = {
   client: WirePlaceClient;
+  actorId: ActorID;
 };
 
 type Props = {
@@ -22,10 +23,15 @@ const ClientProvider = (props: Props) => {
   const { hostname, port, username, token } = props;
 
   let [client, setClient] = React.useState<WirePlaceClient | null>(null);
+  let [actorId, setActorId] = React.useState<ActorID | null>(null);
+  const emitter = getGlobalEmitter();
+
+  React.useEffect(() => {
+    emitter.on(Events.SET_ACTIVE_ACTOR, setActorId);
+  }, [emitter]);
 
   React.useEffect(() => {
     const scene = new WirePlaceScene();
-    const emitter = getGlobalEmitter();
     const runtime = new GameplayRuntime({ scene, emitter });
     const newClient = new WirePlaceClient({
       emitter,
@@ -40,9 +46,13 @@ const ClientProvider = (props: Props) => {
     setClient(newClient);
 
     return () => newClient.disconnect();
-  }, [hostname, port, username, token]);
+  }, [hostname, port, username, token, emitter]);
 
-  return <>{client ? props.children({ client }) : props.spinner}</>;
+  return (
+    <>
+      {client && actorId ? props.children({ client, actorId }) : props.spinner}
+    </>
+  );
 };
 
 ClientProvider.defaultProps = {
