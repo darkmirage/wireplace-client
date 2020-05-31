@@ -32,8 +32,16 @@ import getMaterial from 'utils/getMaterial';
 import SpatialAudioManager from './SpatialAudioManager';
 import OverlayRenderer from './OverlayRenderer';
 import { IRenderer, IPose } from './IRenderer';
+import logger from 'utils/logger';
 
 type ObjectID = string;
+
+const isHighResolution = () => {
+  return (
+    window.devicePixelRatio > 1 ||
+    Math.max(window.screen.width, window.screen.height) > 1920
+  );
+};
 
 const DEFAULT_CAMERA_LOCKED = true;
 const TARGET_Y = 1.0;
@@ -62,7 +70,9 @@ class ThreeRenderer implements IRenderer {
 
   constructor(reacter: OverlayRenderer, sam: SpatialAudioManager) {
     this.domElement = document.createElement('div');
-    this.webGLRenderer = new WebGLRenderer({ antialias: true });
+    const antialias = !isHighResolution();
+    logger.log('[Renderer] Anti-alias:', antialias);
+    this.webGLRenderer = new WebGLRenderer({ antialias });
     this.webGLRenderer.shadowMap.enabled = true;
     this.webGLRenderer.shadowMap.type = PCFSoftShadowMap;
     this._scene = new Scene();
