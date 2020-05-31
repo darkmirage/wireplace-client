@@ -133,7 +133,7 @@ class ThreeRenderer implements IRenderer {
 
   async _setupScene() {
     this._scene.background = new Color(0xdbf7ff);
-    this._camera.position.set(0, 6, 5);
+    this._camera.position.set(0, 4, 5);
     const distance = this._camera.position.length();
     this._scene.fog = new Fog(0xdbf7ff, distance * 1.5, distance * 5);
 
