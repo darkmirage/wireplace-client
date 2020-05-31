@@ -44,7 +44,7 @@ const VoiceChat = (props: Props) => {
   const handleMute = () => {
     let m = !muted;
     client.mute(m);
-    setMuted(muted);
+    setMuted(m);
   };
 
   if (!connected) {

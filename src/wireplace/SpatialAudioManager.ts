@@ -33,10 +33,11 @@ class SpatialAudioManager {
     output.connect(context.destination);
 
     panner.distanceModel = 'exponential';
-    panner.refDistance = 2;
-    panner.coneOuterAngle = 180;
+    panner.refDistance = 5;
+    panner.coneOuterAngle = 250;
     panner.coneInnerAngle = 120;
-    panner.rolloffFactor = 5;
+    panner.coneOuterGain = 0.3;
+    panner.rolloffFactor = 4;
 
     const audioActor = { actorId, analyser, panner, output };
     this._soundActors[actorId] = audioActor;
@@ -72,7 +73,7 @@ class SpatialAudioManager {
     }
     let p = listenerPose.position;
     let q = listenerPose.quaternion;
-    _v.set(1, 0, 0).applyQuaternion(q);
+    _v.set(0, 0, 1).applyQuaternion(q);
     listener.positionX.setValueAtTime(p.x, currentTime);
     listener.positionY.setValueAtTime(p.y, currentTime);
     listener.positionZ.setValueAtTime(p.z, currentTime);
@@ -90,7 +91,7 @@ class SpatialAudioManager {
       const { panner } = soundActor;
       p = pose.position;
       q = pose.quaternion;
-      _v.set(1, 0, 0).applyQuaternion(q);
+      _v.set(0, 0, 1).applyQuaternion(q);
       panner.positionX.setValueAtTime(p.x, currentTime);
       panner.positionY.setValueAtTime(p.y, currentTime);
       panner.positionZ.setValueAtTime(p.z, currentTime);
