@@ -1,17 +1,15 @@
 import React from 'react';
 import { createUseStyles, useTheme } from 'react-jss';
 
-import TextChat from 'components/chat/TextChat';
+import { HOSTNAME, PORT } from 'constants/ServerConfigs';
+import { Theme } from 'themes';
 import ClientProvider from 'components/ClientProvider';
 import GlobalInputs from 'components/ui/GlobalInputs';
 import RenderView from 'components/RenderView';
-import Spinner from 'components/ui/Spinner';
-import VoiceChat from 'components/chat/VoiceChat';
-import type { Theme } from 'themes';
 import SpatialAudioManager from 'wireplace/SpatialAudioManager';
-
-const HOSTNAME = 'server.wireplace.net';
-const PORT = 8080;
+import Spinner from 'components/ui/Spinner';
+import TextChat from 'components/chat/TextChat';
+import VoiceChat from 'components/chat/VoiceChat';
 
 type Props = {
   username: string;
