@@ -16,13 +16,17 @@ interface IAudioTrack {
 
 class AudioClient {
   sam: SpatialAudioManager;
+  connected: boolean;
   _agora: IAgoraRTCClient;
   _local: ILocalAudioTrack | null;
+  _fetchToken: () => Promise<string>;
 
-  constructor(sam: SpatialAudioManager) {
+  constructor(sam: SpatialAudioManager, fetchToken: () => Promise<string>) {
     this.sam = sam;
+    this.connected = false;
     this._agora = AgoraRTC.createClient({ mode: 'rtc', codec: 'vp8' });
     this._local = null;
+    this._fetchToken = fetchToken;
 
     this._agora.on('user-published', async (user, mediaType) => {
       await this._agora.subscribe(user);
@@ -43,17 +47,27 @@ class AudioClient {
   }
 
   async join(actorId: ActorID, channel: string = 'wireplace') {
+    const token = await this._fetchToken();
     this._local = await AgoraRTC.createMicrophoneAudioTrack();
-    await this._agora.join(AGORA_APP_ID, 'wireplace', null, actorId);
+    await this._agora.join(AGORA_APP_ID, 'wireplace', token, actorId);
     this._agora.publish([this._local]);
+    this.connected = true;
   }
 
   async leave() {
+    if (!this.connected) {
+      return;
+    }
     if (this._local) {
       this._local.close();
     }
-    this._agora.leave();
+    await this._agora.leave();
+    this.connected = false;
   }
+
+  mute = (muted: boolean = true) => {
+    this._local?.setMute(muted);
+  };
 }
 
 export default AudioClient;

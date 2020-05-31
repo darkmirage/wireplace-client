@@ -123,19 +123,18 @@ const TextChat = (props: Props) => {
 const useStyles = createUseStyles<Theme>((theme) => ({
   root: {
     display: 'flex',
+    flex: 1,
     flexDirection: 'column',
-    height: '100%',
     justifyContent: 'flex-end',
     pointerEvents: 'none',
     position: 'relative',
-    width: 300,
+    overflow: 'hidden',
   },
   footer: {
     marginRight: theme.spacing.normal,
     padding: theme.spacing.normal,
   },
   messages: {
-    maxHeight: 500,
     overflowX: 'hidden',
     overflowY: 'scroll',
     paddingLeft: theme.spacing.normal,

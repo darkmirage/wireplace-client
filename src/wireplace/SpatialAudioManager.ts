@@ -67,6 +67,9 @@ class SpatialAudioManager {
       return;
     }
     let { listener } = this._context;
+    if (!listener) {
+      return;
+    }
     let p = listenerPose.position;
     let q = listenerPose.quaternion;
     _v.set(1, 0, 0).applyQuaternion(q);

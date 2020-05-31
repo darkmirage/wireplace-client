@@ -167,12 +167,25 @@ class WirePlaceClient implements WirePlaceChatClient {
     const actorId: ActorID = await this.socket.invoke('join', {
       username,
       token,
+      channel: 'wireplace',
     });
     this._ee.emit(Events.SET_ACTIVE_ACTOR, actorId);
     logger.log(`[Client] Logged in as ${username}`);
 
     this._trackMainActor(actorId);
   }
+
+  joinAudio = async (): Promise<string> => {
+    const username = this._username;
+    const token = this._token;
+    const audioToken: ActorID = await this.socket.invoke('joinAudio', {
+      username,
+      token,
+      channel: 'wireplace',
+    });
+    logger.log(`[Client] Joined audio with token: ${audioToken}`);
+    return audioToken;
+  };
 
   async connect() {
     let lastSeen = Date.now();

@@ -6,7 +6,7 @@ import ClientProvider from 'components/ClientProvider';
 import GlobalInputs from 'components/ui/GlobalInputs';
 import RenderView from 'components/RenderView';
 import Spinner from 'components/ui/Spinner';
-import { VoiceChatProvider } from 'components/chat/VoiceChatProvider';
+import VoiceChat from 'components/chat/VoiceChat';
 import type { Theme } from 'themes';
 import SpatialAudioManager from 'wireplace/SpatialAudioManager';
 
@@ -35,7 +35,7 @@ const Main = (props: Props) => {
           {({ client, actorId }) => (
             <>
               <div className={classes.panel}>
-                <VoiceChatProvider actorId={actorId} sam={sam} />
+                <VoiceChat actorId={actorId} sam={sam} client={client} />
                 <TextChat client={client} username={username} />
               </div>
               <div className={classes.main}>
@@ -72,11 +72,13 @@ const useStyles = createUseStyles<Theme>((theme) => ({
   },
   panel: {
     bottom: 0,
-    left: 0,
+    display: 'flex',
+    flexDirection: 'column',
     height: '100%',
-    maxWidth: '100%',
+    left: 0,
     pointerEvents: 'none',
     position: 'absolute',
+    width: 300,
     zIndex: theme.zIndices.middle,
   },
 }));
