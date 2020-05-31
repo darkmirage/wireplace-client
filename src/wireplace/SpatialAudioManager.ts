@@ -6,9 +6,12 @@ import { IRenderer } from './IRenderer';
 interface SpatialAudioActor {
   actorId: ActorID;
   analyser: AnalyserNode;
-  panner: PannerNode;
+  panner: PannerNode | null;
   output: GainNode;
 }
+
+const REF_DISTANCE = 5.0;
+const ROLL_OFF_FACTOR = 4.0;
 
 const _v = new Vector3();
 
@@ -21,23 +24,33 @@ class SpatialAudioManager {
     this._context = new AudioContext();
   }
 
-  addActor(actorId: ActorID, input: AudioNode): SpatialAudioActor {
+  addActor(
+    actorId: ActorID,
+    input: AudioNode,
+    trueSpatial: boolean = false
+  ): SpatialAudioActor {
     const { context } = input;
     this._context = context;
-    const panner = new PannerNode(context);
     const analyser = new AnalyserNode(context);
     const output = new GainNode(context);
     input.connect(analyser);
-    analyser.connect(panner);
-    panner.connect(output);
+
     output.connect(context.destination);
 
-    panner.distanceModel = 'exponential';
-    panner.refDistance = 5;
-    panner.coneOuterAngle = 250;
-    panner.coneInnerAngle = 120;
-    panner.coneOuterGain = 0.3;
-    panner.rolloffFactor = 4;
+    let panner = null;
+    if (trueSpatial) {
+      panner = new PannerNode(context);
+      panner.distanceModel = 'exponential';
+      panner.refDistance = REF_DISTANCE;
+      panner.coneOuterAngle = 250;
+      panner.coneInnerAngle = 120;
+      panner.coneOuterGain = 0.3;
+      panner.rolloffFactor = ROLL_OFF_FACTOR;
+      analyser.connect(panner);
+      panner.connect(output);
+    } else {
+      analyser.connect(output);
+    }
 
     const audioActor = { actorId, analyser, panner, output };
     this._soundActors[actorId] = audioActor;
@@ -62,8 +75,8 @@ class SpatialAudioManager {
     animated: Set<ActorID>,
     renderer: IRenderer
   ) => {
-    const { currentTime } = this._context;
     const listenerPose = renderer.getRendererPose(activeActorId);
+    const { currentTime } = this._context;
     if (!listenerPose) {
       return;
     }
@@ -71,15 +84,15 @@ class SpatialAudioManager {
     if (!listener) {
       return;
     }
-    let p = listenerPose.position;
-    let q = listenerPose.quaternion;
-    _v.set(0, 0, 1).applyQuaternion(q);
-    listener.positionX.setValueAtTime(p.x, currentTime);
-    listener.positionY.setValueAtTime(p.y, currentTime);
-    listener.positionZ.setValueAtTime(p.z, currentTime);
-    listener.forwardX.setValueAtTime(_v.x, currentTime);
-    listener.forwardY.setValueAtTime(_v.y, currentTime);
-    listener.forwardZ.setValueAtTime(_v.z, currentTime);
+    const p1 = listenerPose.position;
+    const q1 = listenerPose.quaternion;
+    _v.set(0, 0, 1).applyQuaternion(q1);
+    listener.positionX.value = p1.x;
+    listener.positionY.value = p1.y;
+    listener.positionZ.value = p1.z;
+    listener.forwardX.value = _v.x;
+    listener.forwardY.value = _v.y;
+    listener.forwardZ.value = _v.z;
 
     animated.forEach((actorId) => {
       const pose = renderer.getRendererPose(actorId);
@@ -88,16 +101,26 @@ class SpatialAudioManager {
         return;
       }
 
-      const { panner } = soundActor;
-      p = pose.position;
-      q = pose.quaternion;
-      _v.set(0, 0, 1).applyQuaternion(q);
-      panner.positionX.setValueAtTime(p.x, currentTime);
-      panner.positionY.setValueAtTime(p.y, currentTime);
-      panner.positionZ.setValueAtTime(p.z, currentTime);
-      panner.orientationX.setValueAtTime(_v.x, currentTime);
-      panner.orientationY.setValueAtTime(_v.y, currentTime);
-      panner.orientationZ.setValueAtTime(_v.z, currentTime);
+      const p2 = pose.position;
+      const q2 = pose.quaternion;
+      const { panner, output } = soundActor;
+      if (panner) {
+        _v.set(0, 0, 1).applyQuaternion(q2);
+        panner.positionX.value = p2.x;
+        panner.positionY.value = p2.y;
+        panner.positionZ.value = p2.z;
+        panner.orientationX.value = _v.x;
+        panner.orientationY.value = _v.y;
+        panner.orientationZ.value = _v.z;
+      } else {
+        _v.copy(p1).sub(p2);
+        const d = _v.length();
+        const gain = Math.pow(
+          Math.max(d, REF_DISTANCE) / REF_DISTANCE,
+          -ROLL_OFF_FACTOR
+        );
+        output.gain.setValueAtTime(gain, currentTime);
+      }
     });
   };
 }
