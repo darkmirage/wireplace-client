@@ -17,11 +17,11 @@ const _v = new Vector3();
 
 class SpatialAudioManager {
   _soundActors: Record<ActorID, SpatialAudioActor>;
-  _context: BaseAudioContext;
+  _context: BaseAudioContext | null;
 
   constructor() {
     this._soundActors = {};
-    this._context = new AudioContext();
+    this._context = null;
   }
 
   addActor(
@@ -76,6 +76,9 @@ class SpatialAudioManager {
     renderer: IRenderer
   ) => {
     const listenerPose = renderer.getRendererPose(activeActorId);
+    if (!this._context) {
+      return;
+    }
     const { currentTime } = this._context;
     if (!listenerPose) {
       return;
