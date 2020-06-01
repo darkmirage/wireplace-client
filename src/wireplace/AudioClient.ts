@@ -17,7 +17,7 @@ interface IAudioTrack {
 class AudioClient {
   sam: SpatialAudioManager;
   connected: boolean;
-  _agora: IAgoraRTCClient;
+  _agora: IAgoraRTCClient | null;
   _local: ILocalAudioTrack | null;
   _fetchToken: () => Promise<string>;
 
@@ -27,15 +27,18 @@ class AudioClient {
     this._agora = AgoraRTC.createClient({ mode: 'rtc', codec: 'vp8' });
     this._local = null;
     this._fetchToken = fetchToken;
+  }
 
+  async join(actorId: ActorID, roomId: string) {
+    this._agora = AgoraRTC.createClient({ mode: 'rtc', codec: 'vp8' });
     this._agora.on('user-published', async (user, mediaType) => {
-      await this._agora.subscribe(user);
+      await this._agora?.subscribe(user);
       const actorId = user.uid as ActorID;
 
       const remoteAudioTrack = user.audioTrack;
       if (remoteAudioTrack) {
         const source = ((remoteAudioTrack as any) as IAudioTrack)._source;
-        const { output } = sam.addActor(actorId, source.outputNode);
+        const { output } = this.sam.addActor(actorId, source.outputNode);
         source.outputNode = output;
       }
     });
@@ -44,9 +47,7 @@ class AudioClient {
       const actorId = user.uid as ActorID;
       this.sam.removeActor(actorId);
     });
-  }
 
-  async join(actorId: ActorID, roomId: string) {
     const token = await this._fetchToken();
     this._local = await AgoraRTC.createMicrophoneAudioTrack();
     await this._agora.join(AGORA_APP_ID, roomId, token, actorId);
@@ -61,7 +62,7 @@ class AudioClient {
     if (this._local) {
       this._local.close();
     }
-    await this._agora.leave();
+    await this._agora?.leave();
     this.connected = false;
   }
 

@@ -43,6 +43,7 @@ const useStyles = createUseStyles<Theme>((theme) => ({
     borderRadius: theme.spacing.narrow,
     boxSizing: 'border-box',
     color: '#ddd',
+    display: 'box',
     outline: 0,
     padding: theme.spacing.normal,
     '&::placeholder': {

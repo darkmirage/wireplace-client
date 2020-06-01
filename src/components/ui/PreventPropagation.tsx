@@ -11,9 +11,11 @@ const PreventPropagation = (props: React.ComponentPropsWithoutRef<'div'>) => {
   };
   return (
     <div
+      className="PreventPropagation"
       onKeyPress={prevent}
       onMouseUp={prevent}
       onMouseDown={prevent}
+      onTouchStart={prevent}
       {...props}
     />
   );

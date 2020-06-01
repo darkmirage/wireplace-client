@@ -7,6 +7,7 @@ import SpatialAudioManager from 'wireplace/SpatialAudioManager';
 import Button from 'components/ui/Button';
 import { Theme } from 'themes';
 import PreventPropagation from 'components/ui/PreventPropagation';
+import ReactTooltip from 'react-tooltip';
 
 type Props = {
   actorId: string;
@@ -26,12 +27,17 @@ const VoiceChat = (props: Props) => {
     setClient(newClient);
   }, [props.client, sam]);
 
+  React.useEffect(() => {
+    ReactTooltip.rebuild();
+  }, [muted, client, connected]);
+
   if (!client) {
     return <div className={classes.root} />;
   }
 
   const handleJoin = () => {
     client.join(actorId, props.client.roomId).then(() => setConnected(true));
+    setConnected(true);
   };
 
   const handleExit = () => {
@@ -48,26 +54,47 @@ const VoiceChat = (props: Props) => {
     <>
       <Button
         className={classes.button}
-        label={muted ? 'Unmute' : 'Mute'}
+        label={
+          !muted ? (
+            <i className="fas fa-microphone-alt-slash"></i>
+          ) : (
+            <i className="fas fa-microphone-alt"></i>
+          )
+        }
         onClick={handleMute}
+        data-tip={muted ? 'Unmute' : 'Mute'}
+        data-for="voice"
       />
       <Button
         className={classes.button}
-        label="Leave Audio"
+        label={<i className="fas fa-sign-out-alt"></i>}
         onClick={handleExit}
+        data-tip="Exit Voice Chat"
+        data-for="voice"
       />
     </>
   ) : (
     <Button
       className={classes.button}
-      label="Join Audio"
+      label={<i className="fas fa-microphone-alt"></i>}
       onClick={handleJoin}
+      data-tip="Join Voice Chat"
+      data-for="voice"
     />
   );
 
   return (
     <PreventPropagation>
       <div className={classes.root}>{content}</div>
+      <ReactTooltip
+        className={classes.tooltip}
+        id="voice"
+        event="mouseenter"
+        eventOff="mouseleave click"
+        effect="solid"
+        place="bottom"
+        offset={{ top: 0 }}
+      />
     </PreventPropagation>
   );
 };
@@ -79,6 +106,9 @@ const useStyles = createUseStyles<Theme>((theme) => ({
   },
   button: {
     margin: theme.spacing.narrow,
+  },
+  tooltip: {
+    position: 'absolute',
   },
 }));
 

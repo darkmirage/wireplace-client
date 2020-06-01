@@ -1,12 +1,14 @@
 import React from 'react';
 import { createUseStyles, useTheme } from 'react-jss';
 import classNames from 'classnames';
+import ReactTooltip from 'react-tooltip';
 
 import { Events, getGlobalEmitter } from 'wireplace/TypedEventsEmitter';
 import { WirePlaceChatClient, ChatLine } from 'wireplace/WirePlaceClient';
 import PreventPropagation from 'components/ui/PreventPropagation';
 import hexToRGB from 'utils/hexToRGB';
 import Input from 'components/ui/Input';
+import Button from 'components/ui/Button';
 import { Theme } from 'themes';
 
 type Props = {
@@ -21,6 +23,8 @@ const TextChat = (props: Props) => {
     m: Record<string, ChatLine>;
   }>({ m: {} });
   const [focus, setFocus] = React.useState(false);
+  const [hideChat, setHideChat] = React.useState(false);
+
   const messagesRef = React.useRef<HTMLDivElement>(null);
   const classes = useStyles({ theme: useTheme() });
 
@@ -69,7 +73,7 @@ const TextChat = (props: Props) => {
 
   let prevName = '';
   const messageElements = Object.keys(messages.m).map((lineId) => {
-    const { color, message, username } = messages.m[lineId];
+    const { color, message, username, time } = messages.m[lineId];
 
     const nameField =
       prevName === username ? null : (
@@ -86,14 +90,19 @@ const TextChat = (props: Props) => {
     return (
       <div className={className} key={lineId}>
         {nameField}
-        <div className={classes.messageText}>{message}</div>
+        <div className={classes.messageText} data-tip={time}>
+          {message}
+        </div>
       </div>
     );
   });
 
   const messageArea =
     messageElements.length > 0 ? (
-      <div className={classes.messages} ref={messagesRef}>
+      <div
+        className={classNames(classes.messages, { hidden: hideChat })}
+        ref={messagesRef}
+      >
         {messageElements}
       </div>
     ) : null;
@@ -101,21 +110,45 @@ const TextChat = (props: Props) => {
   return (
     <div className={classes.root}>
       {messageArea}
-      <div className={classes.footer}>
-        <form onSubmit={handleSubmit}>
-          <PreventPropagation>
-            <Input
-              focused={focus}
-              className={focus ? classes.inputFocused : classes.input}
-              onBlur={() => getGlobalEmitter().emit(Events.FOCUS_CHAT, false)}
-              value={message}
-              placeholder={focus ? 'Type something' : 'Press enter to chat'}
-              onValueChange={setMessage}
-              tabIndex={2}
-            />
-          </PreventPropagation>
+      <PreventPropagation className={classes.footer}>
+        <Button
+          label={
+            hideChat ? (
+              <i className="fas fa-comment-alt"></i>
+            ) : (
+              <i className="far fa-comment-alt"></i>
+            )
+          }
+          onClick={() => setHideChat(!hideChat)}
+          data-tip={hideChat ? 'Show Chat' : 'Hide Chat'}
+          data-for="chat"
+        />
+        <form className={classes.form} onSubmit={handleSubmit}>
+          <Input
+            focused={focus}
+            className={classNames(classes.input, {
+              [classes.inputFocused]: focus,
+            })}
+            onBlur={() => getGlobalEmitter().emit(Events.FOCUS_CHAT, false)}
+            onFocus={() => {
+              getGlobalEmitter().emit(Events.FOCUS_CHAT, true);
+              setHideChat(false);
+            }}
+            value={message}
+            placeholder={focus ? 'Type something' : 'Press enter to chat'}
+            onValueChange={setMessage}
+            tabIndex={2}
+          />
         </form>
-      </div>
+      </PreventPropagation>
+      <ReactTooltip
+        className={classes.tooltip}
+        id="chat"
+        effect="solid"
+        place="top"
+        event="mouseenter"
+        eventOff="mouseleave click"
+      />
     </div>
   );
 };
@@ -131,7 +164,7 @@ const useStyles = createUseStyles<Theme>((theme) => ({
     overflow: 'hidden',
   },
   footer: {
-    marginRight: theme.spacing.normal,
+    display: 'flex',
     padding: theme.spacing.normal,
   },
   messages: {
@@ -140,6 +173,7 @@ const useStyles = createUseStyles<Theme>((theme) => ({
     paddingLeft: theme.spacing.normal,
     paddingRight: theme.spacing.normal,
     pointerEvents: 'all',
+    transition: '200ms',
     '&::-webkit-scrollbar-thumb': {
       background: 'rgba(0, 0, 0, 0.3)',
       borderRadius: theme.spacing.narrow,
@@ -148,6 +182,10 @@ const useStyles = createUseStyles<Theme>((theme) => ({
     '&::-webkit-scrollbar': {
       background: 'rgba(0, 0, 0, 0)',
       width: theme.spacing.normal,
+    },
+    '&.hidden': {
+      opacity: 0,
+      pointerEvents: 'none',
     },
   },
   message: {
@@ -166,24 +204,29 @@ const useStyles = createUseStyles<Theme>((theme) => ({
     paddingRight: theme.spacing.normal,
     paddingTop: theme.spacing.narrow,
   },
+  form: {
+    marginLeft: theme.spacing.narrow,
+    width: '100%',
+  },
   input: {
     background: 'rgba(0, 0, 0, 0.25)',
     pointerEvents: 'all',
+    height: '100%',
     width: '100%',
   },
   inputFocused: {
     background: 'rgba(0, 0, 0, 0.5)',
-    pointerEvents: 'all',
-    width: '100%',
   },
   username: {
     fontWeight: 'bold',
     marginBottom: theme.spacing.narrow,
     marginTop: theme.spacing.normal,
+    pointerEvents: 'none',
   },
   currentUser: {
     alignItems: 'flex-end',
   },
+  tooltip: {},
 }));
 
 export default TextChat;
