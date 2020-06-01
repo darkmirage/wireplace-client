@@ -109,13 +109,15 @@ class WirePlaceClient implements WirePlaceChatClient {
 
   onMessage(callback: ChatCallback): Function {
     const channel = this.socket.subscribe('said:' + this.roomId);
-
-    (async () => {
+    const startListeniing = async () => {
       for await (let line of channel) {
         callback(line);
       }
-    })();
-
+    };
+    this.socket
+      .invoke('getChatHistory', {})
+      .then((lines) => lines.forEach(callback))
+      .then(startListeniing);
     return () => {
       channel.unsubscribe();
     };
