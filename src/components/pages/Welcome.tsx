@@ -3,7 +3,6 @@ import { createUseStyles, useTheme } from 'react-jss';
 
 import Input from 'components/ui/Input';
 import { Theme } from 'themes';
-import logger from 'utils/logger';
 
 type Props = {
   onEnterUsername: (username: string) => void;
@@ -18,7 +17,6 @@ const Welcome = (props: Props) => {
     event.stopPropagation();
     if (text) {
       props.onEnterUsername(text);
-      logger.log('Username:', text);
     }
   };
 

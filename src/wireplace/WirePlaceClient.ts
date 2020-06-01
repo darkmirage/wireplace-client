@@ -79,7 +79,7 @@ class WirePlaceClient implements WirePlaceChatClient {
     this.runtime = runtime;
     this.scene = scene;
     this._resetCache();
-    logger.log('[Client]', hostname, port, username, roomId);
+    logger.log('[Client]', { hostname, port, username, roomId });
     (window as any).client = this;
   }
 
