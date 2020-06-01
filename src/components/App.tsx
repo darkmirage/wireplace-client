@@ -5,6 +5,7 @@ import { BrowserRouter, Route, Switch } from 'react-router-dom';
 import Main from 'components/pages/Main';
 import Welcome from 'components/pages/Welcome';
 import { Theme } from 'themes';
+import { DEFAULT_ROOM_ID } from 'constants/ServerConfigs';
 
 const DEFAULT_USERNAME = null;
 
@@ -48,7 +49,7 @@ const App = () => {
               return username === null ? (
                 <Welcome onEnterUsername={setUsername} />
               ) : (
-                <Main roomId="wireplace" username={username} />
+                <Main roomId={DEFAULT_ROOM_ID} username={username} />
               );
             }}
           />
