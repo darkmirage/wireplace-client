@@ -10,7 +10,6 @@ import SpatialAudioManager from 'wireplace/SpatialAudioManager';
 import Spinner from 'components/ui/Spinner';
 import TextChat from 'components/chat/TextChat';
 import VoiceChat from 'components/chat/VoiceChat';
-import ReactTooltip from 'react-tooltip';
 
 type Props = {
   username: string;

@@ -1,7 +1,7 @@
 import React from 'react';
 import { createUseStyles, useTheme } from 'react-jss';
 import classNames from 'classnames';
-import ReactTooltip from 'react-tooltip';
+import { formatDistanceToNow } from 'date-fns';
 
 import { Events, getGlobalEmitter } from 'wireplace/TypedEventsEmitter';
 import { WirePlaceChatClient, ChatLine } from 'wireplace/WirePlaceClient';
@@ -9,6 +9,7 @@ import PreventPropagation from 'components/ui/PreventPropagation';
 import hexToRGB from 'utils/hexToRGB';
 import Input from 'components/ui/Input';
 import Button from 'components/ui/Button';
+import Tooltip from 'components/ui/Tooltip';
 import { Theme } from 'themes';
 
 type Props = {
@@ -74,6 +75,7 @@ const TextChat = (props: Props) => {
   let prevName = '';
   const messageElements = Object.keys(messages.m).map((lineId) => {
     const { color, message, username, time } = messages.m[lineId];
+    const timestamp = formatDistanceToNow(time);
 
     const nameField =
       prevName === username ? null : (
@@ -83,16 +85,22 @@ const TextChat = (props: Props) => {
       );
     prevName = username;
 
+    const isCurrentUser = username === props.username;
     const className = classNames(classes.message, {
-      [classes.currentUser]: username === props.username,
+      [classes.currentUser]: isCurrentUser,
     });
 
     return (
       <div className={className} key={lineId}>
         {nameField}
-        <div className={classes.messageText} data-tip={time}>
-          {message}
-        </div>
+        <Tooltip
+          content={`${timestamp} ago`}
+          placement={isCurrentUser ? 'left' : 'right'}
+        >
+          <PreventPropagation className={classes.messageText}>
+            {message}
+          </PreventPropagation>
+        </Tooltip>
       </div>
     );
   });
@@ -111,18 +119,21 @@ const TextChat = (props: Props) => {
     <div className={classes.root}>
       {messageArea}
       <PreventPropagation className={classes.footer}>
-        <Button
-          label={
-            hideChat ? (
-              <i className="fas fa-comment-alt"></i>
-            ) : (
-              <i className="far fa-comment-alt"></i>
-            )
-          }
-          onClick={() => setHideChat(!hideChat)}
-          data-tip={hideChat ? 'Show Chat' : 'Hide Chat'}
-          data-for="chat"
-        />
+        <Tooltip
+          content={hideChat ? 'Show Chat' : 'Hide Chat'}
+          placement="topStart"
+        >
+          <Button
+            label={
+              hideChat ? (
+                <i className="fas fa-comment-alt"></i>
+              ) : (
+                <i className="far fa-comment-alt"></i>
+              )
+            }
+            onClick={() => setHideChat(!hideChat)}
+          />
+        </Tooltip>
         <form className={classes.form} onSubmit={handleSubmit}>
           <Input
             focused={focus}
@@ -141,14 +152,6 @@ const TextChat = (props: Props) => {
           />
         </form>
       </PreventPropagation>
-      <ReactTooltip
-        className={classes.tooltip}
-        id="chat"
-        effect="solid"
-        place="top"
-        event="mouseenter"
-        eventOff="mouseleave click"
-      />
     </div>
   );
 };

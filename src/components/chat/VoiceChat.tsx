@@ -7,7 +7,7 @@ import SpatialAudioManager from 'wireplace/SpatialAudioManager';
 import Button from 'components/ui/Button';
 import { Theme } from 'themes';
 import PreventPropagation from 'components/ui/PreventPropagation';
-import ReactTooltip from 'react-tooltip';
+import Tooltip from 'components/ui/Tooltip';
 
 type Props = {
   actorId: string;
@@ -27,17 +27,12 @@ const VoiceChat = (props: Props) => {
     setClient(newClient);
   }, [props.client, sam]);
 
-  React.useEffect(() => {
-    ReactTooltip.rebuild();
-  }, [muted, client, connected]);
-
   if (!client) {
     return <div className={classes.root} />;
   }
 
   const handleJoin = () => {
     client.join(actorId, props.client.roomId).then(() => setConnected(true));
-    setConnected(true);
   };
 
   const handleExit = () => {
@@ -52,49 +47,42 @@ const VoiceChat = (props: Props) => {
 
   const content = connected ? (
     <>
-      <Button
-        className={classes.button}
-        label={
-          !muted ? (
-            <i className="fas fa-microphone-alt-slash"></i>
-          ) : (
-            <i className="fas fa-microphone-alt"></i>
-          )
-        }
-        onClick={handleMute}
-        data-tip={muted ? 'Unmute' : 'Mute'}
-        data-for="voice"
-      />
-      <Button
-        className={classes.button}
-        label={<i className="fas fa-sign-out-alt"></i>}
-        onClick={handleExit}
-        data-tip="Exit Voice Chat"
-        data-for="voice"
-      />
+      <Tooltip content={muted ? 'Unmute' : 'Mute'} placement="bottomStart">
+        <Button
+          className={classes.button}
+          label={
+            !muted ? (
+              <i className="fas fa-microphone-alt-slash"></i>
+            ) : (
+              <i className="fas fa-microphone-alt"></i>
+            )
+          }
+          onClick={handleMute}
+        />
+      </Tooltip>
+      <Tooltip content="Exit Voice Chat" placement="bottom">
+        <Button
+          className={classes.button}
+          label={<i className="fas fa-sign-out-alt"></i>}
+          onClick={handleExit}
+        />
+      </Tooltip>
     </>
   ) : (
-    <Button
-      className={classes.button}
-      label={<i className="fas fa-microphone-alt"></i>}
-      onClick={handleJoin}
-      data-tip="Join Voice Chat"
-      data-for="voice"
-    />
+    <div>
+      <Tooltip content="Join Voice Chat" placement="bottomStart">
+        <Button
+          className={classes.button}
+          label={<i className="fas fa-microphone-alt"></i>}
+          onClick={handleJoin}
+        />
+      </Tooltip>
+    </div>
   );
 
   return (
     <PreventPropagation>
       <div className={classes.root}>{content}</div>
-      <ReactTooltip
-        className={classes.tooltip}
-        id="voice"
-        event="mouseenter"
-        eventOff="mouseleave click"
-        effect="solid"
-        place="bottom"
-        offset={{ top: 0 }}
-      />
     </PreventPropagation>
   );
 };
