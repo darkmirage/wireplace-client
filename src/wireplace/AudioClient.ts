@@ -46,10 +46,10 @@ class AudioClient {
     });
   }
 
-  async join(actorId: ActorID, channel: string = 'wireplace') {
+  async join(actorId: ActorID, roomId: string) {
     const token = await this._fetchToken();
     this._local = await AgoraRTC.createMicrophoneAudioTrack();
-    await this._agora.join(AGORA_APP_ID, 'wireplace', token, actorId);
+    await this._agora.join(AGORA_APP_ID, roomId, token, actorId);
     this._agora.publish([this._local]);
     this.connected = true;
   }

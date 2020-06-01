@@ -25,6 +25,7 @@ interface WirePlaceClientProps {
   token: string;
   hostname: string;
   port: number;
+  roomId: string;
 }
 
 interface UserInfo {
@@ -41,36 +42,42 @@ export interface WirePlaceChatClient {
 const UPDATE_FPS = 3;
 
 class WirePlaceClient implements WirePlaceChatClient {
-  socket: AGClientSocket;
-  scene: WirePlaceScene;
+  roomId: string;
   runtime: GameplayRuntime;
-  _username: string;
+  scene: WirePlaceScene;
+  socket: AGClientSocket;
+
+  _actorId: string;
+  _ee: TypedEventsEmitter;
   _token: string;
   _unsubscribe: () => void;
-  _ee: TypedEventsEmitter;
   _userCache: Record<string, UserInfo>;
+  _username: string;
 
   constructor({
     emitter,
-    scene,
+    hostname,
+    port,
+    roomId,
     runtime,
-    username,
+    scene,
     token,
-    hostname = 'localhost',
-    port = 8000,
+    username,
   }: WirePlaceClientProps) {
     this.socket = socketClusterClient.create({
       hostname,
       port,
       autoConnect: false,
     });
-    this.scene = scene;
-    this.runtime = runtime;
-    this._username = username;
+    this._actorId = username;
+    this._ee = emitter;
     this._token = token;
     this._unsubscribe = () => {};
-    this._ee = emitter;
     this._userCache = {};
+    this._username = username;
+    this.roomId = roomId;
+    this.runtime = runtime;
+    this.scene = scene;
     this._resetCache();
     logger.log('[Client]', hostname, port);
     (window as any).client = this;
@@ -82,9 +89,9 @@ class WirePlaceClient implements WirePlaceChatClient {
   }
 
   // This is a hack to send updates on the current actor to the server at a fixed refresh rate
-  _trackMainActor(actorId: ActorID) {
+  _trackMainActor() {
     let update: Update = {};
-    this._unsubscribe = this.scene.onActorUpdate(actorId, (u) => {
+    this._unsubscribe = this.scene.onActorUpdate(this._actorId, (u) => {
       Object.assign(update, u);
     });
 
@@ -101,7 +108,7 @@ class WirePlaceClient implements WirePlaceChatClient {
   }
 
   onMessage(callback: ChatCallback): Function {
-    const channel = this.socket.subscribe('said');
+    const channel = this.socket.subscribe('said:' + this.roomId);
 
     (async () => {
       for await (let line of channel) {
@@ -167,12 +174,13 @@ class WirePlaceClient implements WirePlaceChatClient {
     const actorId: ActorID = await this.socket.invoke('join', {
       username,
       token,
-      channel: 'wireplace',
+      roomId: this.roomId,
     });
+    this._actorId = actorId;
     this._ee.emit(Events.SET_ACTIVE_ACTOR, actorId);
     logger.log(`[Client] Logged in as ${username}`);
 
-    this._trackMainActor(actorId);
+    this._trackMainActor();
   }
 
   joinAudio = async (): Promise<string> => {
@@ -181,7 +189,7 @@ class WirePlaceClient implements WirePlaceChatClient {
     const audioToken: ActorID = await this.socket.invoke('joinAudio', {
       username,
       token,
-      channel: 'wireplace',
+      roomId: this.roomId,
     });
     logger.log(`[Client] Joined audio with token: ${audioToken}`);
     return audioToken;
@@ -218,7 +226,7 @@ class WirePlaceClient implements WirePlaceChatClient {
     this.socket.connect();
 
     (async () => {
-      const channel = this.socket.subscribe('update');
+      const channel = this.socket.subscribe('update:' + this.roomId);
       for await (let data of channel) {
         this.scene.applySerializedDiff(data, this.runtime.actorId);
       }

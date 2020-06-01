@@ -13,11 +13,12 @@ import VoiceChat from 'components/chat/VoiceChat';
 
 type Props = {
   username: string;
+  roomId: string;
 };
 
 const Main = (props: Props) => {
   const classes = useStyles({ theme: useTheme() });
-  const { username } = props;
+  const { username, roomId } = props;
   const [sam] = React.useState<SpatialAudioManager>(new SpatialAudioManager());
 
   return (
@@ -26,6 +27,7 @@ const Main = (props: Props) => {
         <ClientProvider
           username={username}
           token="foobar"
+          roomId={roomId}
           hostname={HOSTNAME}
           port={PORT}
           spinner={<Spinner />}

@@ -16,11 +16,12 @@ type Props = {
   port: number;
   username: string;
   token: string;
+  roomId: string;
   spinner: React.ReactNode | null;
 };
 
 const ClientProvider = (props: Props) => {
-  const { hostname, port, username, token } = props;
+  const { hostname, port, username, token, roomId } = props;
 
   let [client, setClient] = React.useState<WirePlaceClient | null>(null);
   let [actorId, setActorId] = React.useState<ActorID | null>(null);
@@ -35,18 +36,19 @@ const ClientProvider = (props: Props) => {
     const runtime = new GameplayRuntime({ scene, emitter });
     const newClient = new WirePlaceClient({
       emitter,
-      scene,
-      runtime,
-      username,
-      token,
       hostname,
       port,
+      roomId,
+      runtime,
+      scene,
+      token,
+      username,
     });
     newClient.connect();
     setClient(newClient);
 
     return () => newClient.disconnect();
-  }, [hostname, port, username, token, emitter]);
+  }, [hostname, port, username, token, emitter, roomId]);
 
   return (
     <>

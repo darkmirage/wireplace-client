@@ -19,9 +19,27 @@ const App = () => {
       <div className={classes.app}>
         <Switch>
           <Route
-            path="/:username"
+            path="/:roomId/:username"
             render={(props) => {
-              return <Main username={props.match.params['username']} />;
+              return (
+                <Main
+                  roomId={props.match.params['roomId']}
+                  username={props.match.params['username']}
+                />
+              );
+            }}
+          />
+          <Route
+            path="/:roomId"
+            render={(props) => {
+              return username === null ? (
+                <Welcome onEnterUsername={setUsername} />
+              ) : (
+                <Main
+                  roomId={props.match.params['roomId']}
+                  username={username}
+                />
+              );
             }}
           />
           <Route
@@ -30,7 +48,7 @@ const App = () => {
               return username === null ? (
                 <Welcome onEnterUsername={setUsername} />
               ) : (
-                <Main username={username} />
+                <Main roomId="wireplace" username={username} />
               );
             }}
           />

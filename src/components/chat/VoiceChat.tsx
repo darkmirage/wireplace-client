@@ -34,7 +34,7 @@ const VoiceChat = (props: Props) => {
   }
 
   const handleJoin = () => {
-    client.join(actorId).then(() => setConnected(true));
+    client.join(actorId, props.client.roomId).then(() => setConnected(true));
   };
 
   const handleExit = () => {
