@@ -14,11 +14,11 @@ function handleGlobalKeyPress(event: React.KeyboardEvent<any>) {
       getGlobalEmitter().emit(Events.FOCUS_CHAT, true);
       break;
     }
-    case '`': {
+    case ' ': {
       getGlobalEmitter().emit(Events.SET_CAMERA_TRACKING_MODE);
       break;
     }
-    case 'p': {
+    case '/': {
       getGlobalEmitter().emit(Events.TOGGLE_RANDOM_WALK);
       break;
     }

@@ -6,15 +6,12 @@ import WirePlaceClient from 'wireplace/WirePlaceClient';
 import SpatialAudioManager from 'wireplace/SpatialAudioManager';
 import Button from 'components/ui/Button';
 import { Theme } from 'themes';
+import PreventPropagation from 'components/ui/PreventPropagation';
 
 type Props = {
   actorId: string;
   sam: SpatialAudioManager;
   client: WirePlaceClient;
-};
-
-const preventPropagation = (event: React.MouseEvent<any>) => {
-  event.stopPropagation();
 };
 
 const VoiceChat = (props: Props) => {
@@ -47,32 +44,32 @@ const VoiceChat = (props: Props) => {
     setMuted(m);
   };
 
-  if (!connected) {
-    return (
-      <div className={classes.root} onMouseDown={preventPropagation}>
-        <Button
-          className={classes.button}
-          label="Join Audio"
-          onClick={handleJoin}
-        />
-      </div>
-    );
-  } else {
-    return (
-      <div className={classes.root} onMouseDown={preventPropagation}>
-        <Button
-          className={classes.button}
-          label={muted ? 'Unmute' : 'Mute'}
-          onClick={handleMute}
-        />
-        <Button
-          className={classes.button}
-          label="Leave Audio"
-          onClick={handleExit}
-        />
-      </div>
-    );
-  }
+  const content = connected ? (
+    <>
+      <Button
+        className={classes.button}
+        label={muted ? 'Unmute' : 'Mute'}
+        onClick={handleMute}
+      />
+      <Button
+        className={classes.button}
+        label="Leave Audio"
+        onClick={handleExit}
+      />
+    </>
+  ) : (
+    <Button
+      className={classes.button}
+      label="Join Audio"
+      onClick={handleJoin}
+    />
+  );
+
+  return (
+    <PreventPropagation>
+      <div className={classes.root}>{content}</div>
+    </PreventPropagation>
+  );
 };
 
 const useStyles = createUseStyles<Theme>((theme) => ({
