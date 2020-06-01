@@ -43,8 +43,8 @@ const isHighResolution = () => {
   );
 };
 
-const DEFAULT_CAMERA_LOCKED = true;
-const TARGET_Y = 1.0;
+const DEFAULT_CAMERA_LOCKED = false;
+const TARGET_Y = 1.3;
 
 const _v1 = new Vector3();
 const _v2 = new Vector3();
