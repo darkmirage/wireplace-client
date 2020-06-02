@@ -53,7 +53,10 @@ const VoiceChat = (props: Props) => {
 
   const content = connected ? (
     <>
-      <Tooltip content={muted ? 'Unmute' : 'Mute'} placement="bottom">
+      <Tooltip
+        content={muted ? 'Unmute myself' : 'Mute myself'}
+        placement="bottom"
+      >
         <Button
           icon={
             muted ? (
@@ -62,26 +65,29 @@ const VoiceChat = (props: Props) => {
               <Icon icon="microphone-slash" />
             )
           }
-          color={muted ? 'green' : 'red'}
+          color={muted ? undefined : 'red'}
           onClick={handleMute}
+          size="lg"
           loading={loading}
         />
       </Tooltip>
-      <Tooltip content="Exit Voice Chat" placement="bottom">
+      <Tooltip content="Exit voice chat" placement="bottom">
         <Button
-          icon={<Icon icon="sign-out" />}
+          icon={<Icon icon="exit" />}
           onClick={handleExit}
           loading={loading}
+          size="lg"
         />
       </Tooltip>
     </>
   ) : (
-    <Tooltip content="Join Voice Chat" placement="bottom">
+    <Tooltip content="Talk to people" placement="bottom">
       <Button
         circle
         icon={<Icon icon="microphone" />}
         onClick={handleJoin}
         loading={loading}
+        size="lg"
       />
     </Tooltip>
   );

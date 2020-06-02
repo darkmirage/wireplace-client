@@ -2,7 +2,6 @@ import React from 'react';
 import classNames from 'classnames';
 import { Button as RSButton, IconButton, IconButtonProps } from 'rsuite';
 import { createUseStyles } from 'react-jss';
-import 'rsuite/dist/styles/rsuite-dark.css';
 
 type Props = IconButtonProps;
 

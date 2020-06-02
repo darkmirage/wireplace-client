@@ -133,7 +133,7 @@ const TextChat = (props: Props) => {
       {messageArea}
       <PreventPropagation className={classes.footer}>
         <Tooltip
-          content={hideChat ? 'Show Chat' : 'Hide Chat'}
+          content={hideChat ? 'Show chatbox' : 'Hide chatbox'}
           placement="topStart"
         >
           <Button

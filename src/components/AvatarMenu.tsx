@@ -33,7 +33,7 @@ const AvatarMenu = ({ activeMenu, updateDropdown }: Props) => {
   return (
     <ButtonGroup className={classes.root}>
       <Tooltip
-        content="Change avatar"
+        content="Change how I look"
         placement="autoVerticalStart"
         trigger="hover"
       >
@@ -41,6 +41,7 @@ const AvatarMenu = ({ activeMenu, updateDropdown }: Props) => {
           active={visible}
           icon={<Icon icon="avatar" />}
           circle
+          size="lg"
           onClick={() => {
             const newVisible = !visible;
             updateDropdown(MENU_NAME, newVisible ? assets : null);

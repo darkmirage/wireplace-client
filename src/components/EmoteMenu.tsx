@@ -36,11 +36,16 @@ const EmoteMenu = ({ updateDropdown, activeMenu }: Props) => {
 
   return (
     <ButtonGroup className={classes.root}>
-      <Tooltip content="Do emote" placement="autoVerticalStart" trigger="hover">
+      <Tooltip
+        content="Express myself"
+        placement="autoVertical"
+        trigger="hover"
+      >
         <Button
           active={visible}
           icon={<Icon icon="smile-o" />}
           circle
+          size="lg"
           onClick={() => {
             const newVisible = !visible;
             updateDropdown(MENU_NAME, newVisible ? emotes : null);

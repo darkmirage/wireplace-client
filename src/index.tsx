@@ -5,6 +5,7 @@ import App from 'components/App';
 import ThemeContainer from 'components/ThemeContainer';
 
 import * as serviceWorker from './serviceWorker';
+import 'rsuite/dist/styles/rsuite-dark.css';
 
 const touchsupport =
   'ontouchstart' in window ||
