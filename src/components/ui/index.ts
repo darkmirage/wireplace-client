@@ -1,10 +1,13 @@
 import {
   Animation,
+  Avatar,
   ButtonGroup,
   ButtonToolbar,
   Icon,
   IconStack,
   InputGroup,
+  Popover,
+  SelectPicker,
 } from 'rsuite';
 
 import Button from './Button';
@@ -17,6 +20,7 @@ import Tooltip from './Tooltip';
 
 export {
   Animation,
+  Avatar,
   Button,
   ButtonGroup,
   ButtonToolbar,
@@ -26,7 +30,9 @@ export {
   IconStack,
   Input,
   InputGroup,
+  Popover,
   PreventPropagation,
+  SelectPicker,
   Spinner,
   Tooltip,
 };

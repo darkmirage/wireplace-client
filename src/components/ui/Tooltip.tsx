@@ -1,5 +1,5 @@
 import React from 'react';
-import { Popover, Whisper, WhisperProps } from 'rsuite';
+import { Tooltip as RSTooltip, Whisper, WhisperProps } from 'rsuite';
 
 type Props = WhisperProps & {
   placement?: string;
@@ -15,7 +15,7 @@ const Tooltip = ({
   children,
   ...rest
 }: Props) => {
-  const speaker = <Popover title={title}>{content}</Popover>;
+  const speaker = <RSTooltip>{content}</RSTooltip>;
 
   return (
     <Whisper

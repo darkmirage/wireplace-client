@@ -3,22 +3,35 @@ import { createUseStyles, useTheme } from 'react-jss';
 
 import { Events, getGlobalEmitter } from 'wireplace/TypedEventsEmitter';
 import { Assets } from 'loaders/PreconfiguredAssets';
-import { Button, ButtonGroup, Icon, Tooltip } from 'components/ui';
+import { Button, ButtonGroup, Icon, Popover, Tooltip } from 'components/ui';
 import { Theme } from 'themes';
 
 const AvatarMenu = () => {
   const classes = useStyles({ theme: useTheme() });
+  const [visible, setVisible] = React.useState<boolean>(false);
 
   const assets = Assets.map(({ name }, i) => {
+    let color = 'orange';
+    if (name[0] === 'M') {
+      color = 'green';
+    } else if (name[0] === 'F') {
+      color = 'cyan';
+    }
     return (
-      <Button
-        key={name}
-        color="blue"
-        className={classes.button}
-        onClick={() => getGlobalEmitter().emit(Events.SET_ACTIVE_ASSET, i)}
-      >
-        {name}
-      </Button>
+      <div>
+        <Button
+          key={name}
+          className={classes.button}
+          onClick={() => {
+            getGlobalEmitter().emit(Events.SET_ACTIVE_ASSET, i);
+            setVisible(false);
+          }}
+          circle
+          color={color as any}
+        >
+          {name}
+        </Button>
+      </div>
     );
   });
 
@@ -29,18 +42,16 @@ const AvatarMenu = () => {
         placement="autoVerticalStart"
         trigger="hover"
       >
-        <div>
-          <Tooltip
-            title="Change avatar"
-            content={<div className={classes.popover}>{assets}</div>}
-            placement="autoVerticalStart"
-            trigger="focus"
-            enterable
-          >
-            <Button icon={<Icon icon="avatar" />} circle></Button>
-          </Tooltip>
-        </div>
+        <Button
+          active={visible}
+          icon={<Icon icon="avatar" />}
+          circle
+          onClick={() => setVisible(!visible)}
+        />
       </Tooltip>
+      <Popover className={classes.popover} visible={visible}>
+        <div className={classes.popoverContent}>{assets}</div>
+      </Popover>
     </ButtonGroup>
   );
 };
@@ -51,10 +62,17 @@ const useStyles = createUseStyles<Theme>((theme) => ({
   },
   button: {
     margin: theme.spacing.narrow,
-    minWidth: 48,
+    width: 48,
   },
   popover: {
-    maxWidth: 224,
+    position: 'absolute',
+    marginTop: 44,
+  },
+  popoverContent: {
+    display: 'flex',
+    flexWrap: 'wrap',
+    maxWidth: 400,
+    minWidth: 224,
   },
 }));
 
