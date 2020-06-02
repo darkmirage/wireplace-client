@@ -15,14 +15,15 @@ const Tooltip = ({
   children,
   ...rest
 }: Props) => {
-  const speaker = (
-    <Popover title={title} {...rest}>
-      {content}
-    </Popover>
-  );
+  const speaker = <Popover title={title}>{content}</Popover>;
 
   return (
-    <Whisper trigger={trigger} placement={placement} speaker={speaker}>
+    <Whisper
+      trigger={trigger}
+      placement={placement}
+      speaker={speaker}
+      {...rest}
+    >
       {children}
     </Whisper>
   );

@@ -16,6 +16,7 @@ export enum Events {
   MOVE_UP,
   PERFORM_ACTION,
   SET_ACTIVE_ACTOR,
+  SET_ACTIVE_ASSET,
   SET_CAMERA_TRACKING_MODE,
   SET_MOVING,
   TOGGLE_RANDOM_WALK,
@@ -48,6 +49,7 @@ interface EventPayloads {
   [Events.MOVE_TO]: XYZ;
   [Events.MOVE_UP]: boolean;
   [Events.SET_ACTIVE_ACTOR]: ActorID;
+  [Events.SET_ACTIVE_ASSET]: number;
   [Events.SET_CAMERA_TRACKING_MODE]: void;
   [Events.SET_MOVING]: boolean;
   [Events.TOGGLE_RANDOM_WALK]: undefined;

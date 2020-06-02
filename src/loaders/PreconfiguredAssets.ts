@@ -8,58 +8,69 @@ import FBXLoader from './FBXLoader';
 Cache.enabled = true;
 
 interface Asset {
+  name: string;
   url: string;
   scale: number;
   animations: Partial<Record<AnimationAction, number>>;
 }
 
-const Assets: Array<Asset> = [
+export const Assets: Array<Asset> = [
   {
-    url: '/synty/office/SK_Chr_Developer_Female_01.fbx',
-    scale: 0.01,
-    animations: { [AnimationActions.IDLE]: 0 },
-  },
-  {
-    url: '/synty/office/SK_Chr_Business_Male_02.fbx',
-    scale: 0.01,
-    animations: { [AnimationActions.IDLE]: 0 },
-  },
-  {
+    name: 'F1',
     url: '/synty/office/SK_Chr_Business_Female_01.fbx',
     scale: 0.01,
     animations: { [AnimationActions.IDLE]: 0 },
   },
   {
+    name: 'F2',
+    url: '/synty/office/SK_Chr_Developer_Female_01.fbx',
+    scale: 0.01,
+    animations: { [AnimationActions.IDLE]: 0 },
+  },
+  {
+    name: 'F3',
     url: '/synty/office/SK_Chr_Business_Female_03.fbx',
     scale: 0.01,
     animations: { [AnimationActions.IDLE]: 0 },
   },
   {
+    name: 'M1',
+    url: '/synty/office/SK_Chr_Business_Male_02.fbx',
+    scale: 0.01,
+    animations: { [AnimationActions.IDLE]: 0 },
+  },
+  {
+    name: 'T1',
     url: '/synty/office/SK_Chr_Security_Male_01.fbx',
     scale: 0.01,
     animations: {},
   },
   {
+    name: 'M2',
     url: '/synty/office/SK_Chr_Business_Male_01.fbx',
     scale: 0.01,
     animations: { [AnimationActions.IDLE]: 0 },
   },
   {
+    name: 'F4',
     url: '/synty/office/SK_Chr_Boss_Female_01.fbx',
     scale: 0.01,
     animations: {},
   },
   {
+    name: 'T2',
     url: '/synty/office/SK_Chr_Cleaner_Male_01.fbx',
     scale: 0.01,
     animations: {},
   },
   {
+    name: 'M4',
     url: '/synty/office/SK_Chr_Business_Male_04.fbx',
     scale: 0.01,
     animations: {},
   },
   {
+    name: 'F5',
     url: '/synty/office/SK_Chr_Business_Female_02.fbx',
     scale: 0.01,
     animations: {},

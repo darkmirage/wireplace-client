@@ -14,6 +14,7 @@ import RenderView from 'components/RenderView';
 import SpatialAudioManager from 'wireplace/SpatialAudioManager';
 import TextChat from 'components/chat/TextChat';
 import VoiceChat from 'components/chat/VoiceChat';
+import AvatarMenu from 'components/AvatarMenu';
 
 type Props = {
   username: string;
@@ -39,8 +40,9 @@ const Main = (props: Props) => {
           {({ client, actorId }) => (
             <>
               <div className={classes.panel}>
-                <ButtonToolbar>
+                <ButtonToolbar className={classes.toolbar}>
                   <PreventPropagation>
+                    <AvatarMenu />
                     <VoiceChat actorId={actorId} sam={sam} client={client} />
                   </PreventPropagation>
                 </ButtonToolbar>
@@ -93,6 +95,10 @@ const useStyles = createUseStyles<Theme>((theme) => ({
     panel: {
       width: '100%',
     },
+  },
+  toolbar: {
+    padding: theme.spacing.normal,
+    pointerEvents: 'auto',
   },
 }));
 

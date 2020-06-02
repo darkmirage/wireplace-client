@@ -96,6 +96,15 @@ class GameplayRuntime {
       const action = { type: AnimationActions.IDLE, state: -1 };
       this._scene.updateActor(actorId, { action }, true);
     });
+    this._ee.on(Events.SET_ACTIVE_ASSET, (assetId) => {
+      if (this.actorId) {
+        const action = {
+          type: AnimationActions.IDLE,
+          state: -1,
+        };
+        this._scene.updateActor(this.actorId, { assetId, action }, true);
+      }
+    });
   }
 
   _isMoving(): boolean {

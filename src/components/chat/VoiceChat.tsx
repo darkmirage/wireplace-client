@@ -39,7 +39,10 @@ const VoiceChat = (props: Props) => {
   };
 
   const handleExit = () => {
-    client.leave().then(() => setConnected(false));
+    client.leave().then(() => {
+      setMuted(false);
+      setConnected(false);
+    });
   };
 
   const handleMute = () => {
@@ -50,9 +53,8 @@ const VoiceChat = (props: Props) => {
 
   const content = connected ? (
     <>
-      <Tooltip content={muted ? 'Unmute' : 'Mute'} placement="bottomStart">
+      <Tooltip content={muted ? 'Unmute' : 'Mute'} placement="bottom">
         <Button
-          className={classes.button}
           icon={
             muted ? (
               <Icon icon="microphone" />
@@ -67,7 +69,6 @@ const VoiceChat = (props: Props) => {
       </Tooltip>
       <Tooltip content="Exit Voice Chat" placement="bottom">
         <Button
-          className={classes.button}
           icon={<Icon icon="sign-out" />}
           onClick={handleExit}
           loading={loading}
@@ -75,9 +76,8 @@ const VoiceChat = (props: Props) => {
       </Tooltip>
     </>
   ) : (
-    <Tooltip content="Join Voice Chat" placement="bottomStart">
+    <Tooltip content="Join Voice Chat" placement="bottom">
       <Button
-        className={classes.button}
         circle
         icon={<Icon icon="microphone" />}
         onClick={handleJoin}
@@ -91,13 +91,7 @@ const VoiceChat = (props: Props) => {
 
 const useStyles = createUseStyles<Theme>((theme) => ({
   root: {
-    padding: theme.spacing.narrow,
-    pointerEvents: 'auto',
-    userSelect: 'none',
-  },
-  button: {},
-  tooltip: {
-    position: 'absolute',
+    marginRight: theme.spacing.normal,
   },
 }));
 
