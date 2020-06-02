@@ -20,7 +20,6 @@ const EmoteMenu = ({ updateDropdown, activeMenu }: Props) => {
       <div key={type_}>
         <Button
           className={classes.button}
-          appearance="primary"
           onClick={() => {
             updateDropdown(MENU_NAME, null);
             getGlobalEmitter().emit(Events.PERFORM_ACTION, {

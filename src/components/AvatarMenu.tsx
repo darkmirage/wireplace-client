@@ -16,12 +16,6 @@ const AvatarMenu = ({ activeMenu, updateDropdown }: Props) => {
   const visible = activeMenu === MENU_NAME;
 
   const assets = Assets.map(({ name }, i) => {
-    let color = 'orange';
-    if (name[0] === 'M') {
-      color = 'green';
-    } else if (name[0] === 'F') {
-      color = 'cyan';
-    }
     return (
       <Button
         key={i}
@@ -30,8 +24,6 @@ const AvatarMenu = ({ activeMenu, updateDropdown }: Props) => {
           getGlobalEmitter().emit(Events.SET_ACTIVE_ASSET, i);
           updateDropdown(MENU_NAME, null);
         }}
-        circle
-        color={color as any}
       >
         {name}
       </Button>
