@@ -1,19 +1,16 @@
 import React from 'react';
 import { createUseStyles, useTheme } from 'react-jss';
 
-import {
-  ButtonToolbar,
-  GlobalInputs,
-  PreventPropagation,
-  Spinner,
-} from 'components/ui';
+import { GlobalInputs, PreventPropagation, Spinner } from 'components/ui';
 import { HOSTNAME, PORT } from 'constants/ServerConfigs';
 import { Theme } from 'themes';
 import AvatarMenu from 'components/AvatarMenu';
 import ClientProvider from 'components/ClientProvider';
+import EmoteMenu from 'components/EmoteMenu';
 import RenderView from 'components/RenderView';
 import SpatialAudioManager from 'wireplace/SpatialAudioManager';
 import TextChat from 'components/chat/TextChat';
+import TopToolbar from 'components/TopToolbar';
 import VoiceChat from 'components/chat/VoiceChat';
 
 type Props = {
@@ -40,12 +37,15 @@ const Main = (props: Props) => {
           {({ client, actorId }) => (
             <>
               <div className={classes.panel}>
-                <ButtonToolbar className={classes.toolbar}>
-                  <PreventPropagation>
-                    <AvatarMenu />
-                    <VoiceChat actorId={actorId} sam={sam} client={client} />
-                  </PreventPropagation>
-                </ButtonToolbar>
+                <TopToolbar>
+                  {(menuProps) => (
+                    <PreventPropagation>
+                      <AvatarMenu {...menuProps} />
+                      <EmoteMenu {...menuProps} />
+                      <VoiceChat actorId={actorId} sam={sam} client={client} />
+                    </PreventPropagation>
+                  )}
+                </TopToolbar>
                 <TextChat client={client} username={username} />
               </div>
               <div className={classes.main}>
@@ -95,10 +95,6 @@ const useStyles = createUseStyles<Theme>((theme) => ({
     panel: {
       width: '100%',
     },
-  },
-  toolbar: {
-    padding: theme.spacing.normal,
-    pointerEvents: 'auto',
   },
 }));
 

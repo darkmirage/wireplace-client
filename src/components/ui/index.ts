@@ -7,7 +7,6 @@ import {
   IconStack,
   InputGroup,
   Popover,
-  SelectPicker,
 } from 'rsuite';
 
 import Button from './Button';
@@ -32,7 +31,6 @@ export {
   InputGroup,
   Popover,
   PreventPropagation,
-  SelectPicker,
   Spinner,
   Tooltip,
 };

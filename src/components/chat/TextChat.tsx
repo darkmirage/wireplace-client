@@ -1,7 +1,6 @@
 import React from 'react';
 import { createUseStyles, useTheme } from 'react-jss';
 import classNames from 'classnames';
-import { formatDistanceToNow } from 'date-fns';
 
 import { Events, getGlobalEmitter } from 'wireplace/TypedEventsEmitter';
 import { WirePlaceChatClient, ChatLine } from 'wireplace/WirePlaceClient';
@@ -85,7 +84,6 @@ const TextChat = (props: Props) => {
   let prevName = '';
   const messageElements = Object.keys(messages.m).map((lineId) => {
     const { color, message, username, time } = messages.m[lineId];
-    const timestamp = formatDistanceToNow(time);
 
     const nameField =
       prevName === username ? null : (
@@ -104,7 +102,7 @@ const TextChat = (props: Props) => {
       <div className={className} key={lineId}>
         {nameField}
         <Tooltip
-          content={`${timestamp} ago`}
+          content={new Date(time).toLocaleTimeString()}
           placement={isCurrentUser ? 'left' : 'right'}
         >
           <Animation.Slide

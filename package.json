@@ -15,7 +15,6 @@
     "@types/socketcluster-client": "^15.1.2",
     "agora-rtc-sdk-ng": "^0.1.9",
     "classnames": "^2.2.6",
-    "date-fns": "^2.14.0",
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
     "react-jss": "^10.1.1",

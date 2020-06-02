@@ -1,14 +1,19 @@
 import React from 'react';
 import { createUseStyles, useTheme } from 'react-jss';
 
-import { Events, getGlobalEmitter } from 'wireplace/TypedEventsEmitter';
 import { Assets } from 'loaders/PreconfiguredAssets';
-import { Button, ButtonGroup, Icon, Popover, Tooltip } from 'components/ui';
+import { Button, ButtonGroup, Icon, Tooltip } from 'components/ui';
+import { Events, getGlobalEmitter } from 'wireplace/TypedEventsEmitter';
+import { MenuProps } from 'components/TopToolbar';
 import { Theme } from 'themes';
 
-const AvatarMenu = () => {
+type Props = MenuProps;
+
+const MENU_NAME = 'avatar';
+
+const AvatarMenu = ({ activeMenu, updateDropdown }: Props) => {
   const classes = useStyles({ theme: useTheme() });
-  const [visible, setVisible] = React.useState<boolean>(false);
+  const visible = activeMenu === MENU_NAME;
 
   const assets = Assets.map(({ name }, i) => {
     let color = 'orange';
@@ -18,20 +23,18 @@ const AvatarMenu = () => {
       color = 'cyan';
     }
     return (
-      <div>
-        <Button
-          key={name}
-          className={classes.button}
-          onClick={() => {
-            getGlobalEmitter().emit(Events.SET_ACTIVE_ASSET, i);
-            setVisible(false);
-          }}
-          circle
-          color={color as any}
-        >
-          {name}
-        </Button>
-      </div>
+      <Button
+        key={i}
+        className={classes.button}
+        onClick={() => {
+          getGlobalEmitter().emit(Events.SET_ACTIVE_ASSET, i);
+          updateDropdown(MENU_NAME, null);
+        }}
+        circle
+        color={color as any}
+      >
+        {name}
+      </Button>
     );
   });
 
@@ -46,12 +49,12 @@ const AvatarMenu = () => {
           active={visible}
           icon={<Icon icon="avatar" />}
           circle
-          onClick={() => setVisible(!visible)}
+          onClick={() => {
+            const newVisible = !visible;
+            updateDropdown(MENU_NAME, newVisible ? assets : null);
+          }}
         />
       </Tooltip>
-      <Popover className={classes.popover} visible={visible}>
-        <div className={classes.popoverContent}>{assets}</div>
-      </Popover>
     </ButtonGroup>
   );
 };
@@ -63,16 +66,6 @@ const useStyles = createUseStyles<Theme>((theme) => ({
   button: {
     margin: theme.spacing.narrow,
     width: 48,
-  },
-  popover: {
-    position: 'absolute',
-    marginTop: 44,
-  },
-  popoverContent: {
-    display: 'flex',
-    flexWrap: 'wrap',
-    maxWidth: 400,
-    minWidth: 224,
   },
 }));
 

@@ -6,12 +6,12 @@ import 'rsuite/dist/styles/rsuite-dark.css';
 
 type Props = IconButtonProps;
 
-const Button = ({ icon, className, ...rest }: Props) => {
+const Button = ({ icon, circle, className, ...rest }: Props) => {
   const classes = useStyles();
   className = classNames(className, classes.button);
 
   return icon ? (
-    <IconButton icon={icon} className={className} {...rest} />
+    <IconButton icon={icon} className={className} circle={circle} {...rest} />
   ) : (
     <RSButton className={className} {...rest} />
   );
