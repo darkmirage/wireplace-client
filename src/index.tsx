@@ -16,11 +16,11 @@ if (!touchsupport) {
 }
 
 ReactDOM.render(
-  <React.StrictMode>
+  <React.Fragment>
     <ThemeContainer>
       <App />
     </ThemeContainer>
-  </React.StrictMode>,
+  </React.Fragment>,
   document.getElementById('root')
 );
 

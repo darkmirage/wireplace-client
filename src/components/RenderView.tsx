@@ -30,7 +30,7 @@ const RenderView = (props: Props) => {
       current,
       () => client
     );
-    const renderer = new ThreeRenderer(reacter, sam);
+    const renderer = new ThreeRenderer({ reacter, sam });
     renderer.setDOMElement(current);
     window.addEventListener('resize', renderer.resize);
     client.runtime.startLoop();

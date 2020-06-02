@@ -50,6 +50,11 @@ const _v1 = new Vector3();
 const _v2 = new Vector3();
 const _raycaster = new Raycaster();
 
+type ThreeRendererProps = {
+  reacter: OverlayRenderer;
+  sam: SpatialAudioManager;
+};
+
 class ThreeRenderer implements IRenderer {
   domElement: HTMLDivElement;
   webGLRenderer: WebGLRenderer;
@@ -68,7 +73,7 @@ class ThreeRenderer implements IRenderer {
   _cursor: Object3D;
   _floor: Object3D;
 
-  constructor(reacter: OverlayRenderer, sam: SpatialAudioManager) {
+  constructor({ reacter, sam }: ThreeRendererProps) {
     this.domElement = document.createElement('div');
     const antialias = !isHighResolution();
     logger.log('[Renderer] Anti-alias:', antialias);
@@ -90,6 +95,7 @@ class ThreeRenderer implements IRenderer {
       this._camera,
       this.webGLRenderer.domElement
     );
+
     controls.enableDamping = true;
     controls.dampingFactor = 0.05;
     controls.target.set(0, TARGET_Y, 0);

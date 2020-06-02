@@ -1,10 +1,11 @@
 import React from 'react';
 import { createUseStyles, useTheme } from 'react-jss';
 import classNames from 'classnames';
+import { Input as RSInput, InputProps } from 'rsuite';
 
 import type { Theme } from 'themes';
 
-type Props = React.ComponentPropsWithoutRef<'input'> & {
+type Props = InputProps & {
   focused?: boolean;
   onValueChange?: (value: string) => void;
 };
@@ -13,10 +14,6 @@ const Input = React.forwardRef<HTMLInputElement, Props>(
   ({ focused, className, onValueChange, ...rest }, ref) => {
     const classes = useStyles({ theme: useTheme() });
     const cls = classNames(className, classes.input);
-    const handleChange = onValueChange
-      ? (event: React.ChangeEvent<HTMLInputElement>) =>
-          onValueChange(event.target.value)
-      : undefined;
 
     ref = ref || React.useRef<HTMLInputElement>(null);
 
@@ -30,31 +27,22 @@ const Input = React.forwardRef<HTMLInputElement, Props>(
     }, [focused, ref]);
 
     return (
-      <input {...rest} ref={ref} onChange={handleChange} className={cls} />
+      <RSInput
+        {...rest}
+        inputRef={ref}
+        onChange={onValueChange}
+        className={cls}
+      />
     );
   }
 );
 
 const useStyles = createUseStyles<Theme>((theme) => ({
   input: {
-    transition: '200ms',
-    background: 'rgba(0, 0, 0, 0.5)',
-    border: 0,
-    borderRadius: theme.spacing.narrow,
-    boxSizing: 'border-box',
-    color: '#ddd',
-    display: 'box',
-    outline: 0,
-    padding: theme.spacing.normal,
-    '&::placeholder': {
-      color: '#ffffff',
-      opacity: 0.4,
-    },
-    '&:hover': {
-      background: 'rgba(0, 0, 0, 0.6)',
-    },
-    '&[type="submit"]': {
-      cursor: 'pointer',
+    borderColor: 'rgba(0, 0, 0, 0.1)',
+    '&:hover, &:focus': {
+      // background: 'rgba(0, 0, 0, 0.6)',
+      borderColor: 'rgba(0, 0, 0, 0.2)',
     },
   },
 }));

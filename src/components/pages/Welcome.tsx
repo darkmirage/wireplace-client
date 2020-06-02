@@ -1,7 +1,7 @@
 import React from 'react';
 import { createUseStyles, useTheme } from 'react-jss';
 
-import Input from 'components/ui/Input';
+import { Icon, Input, InputGroup, Tooltip } from 'components/ui';
 import { Theme } from 'themes';
 
 type Props = {
@@ -12,7 +12,7 @@ const Welcome = (props: Props) => {
   const classes = useStyles({ theme: useTheme() });
   const [text, setText] = React.useState('');
 
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = (event: React.SyntheticEvent<any>) => {
     event.preventDefault();
     event.stopPropagation();
     if (text) {
@@ -26,13 +26,19 @@ const Welcome = (props: Props) => {
       <div>Enter a username to chat</div>
       <div>
         <form className={classes.form} onSubmit={handleSubmit}>
-          <Input
-            focused
-            onValueChange={setText}
-            placeholder="Your username"
-            tabIndex={1}
-          />
-          <Input className={classes.submit} type="submit" />
+          <InputGroup inside>
+            <Input
+              focused
+              onValueChange={setText}
+              placeholder="Your username"
+              tabIndex={1}
+            />
+            <Tooltip content="Enter">
+              <InputGroup.Button onClick={handleSubmit}>
+                <Icon icon="sign-in" />
+              </InputGroup.Button>
+            </Tooltip>
+          </InputGroup>
         </form>
       </div>
     </div>
@@ -51,9 +57,6 @@ const useStyles = createUseStyles<Theme>((theme) => ({
   },
   form: {
     marginTop: theme.spacing.wide,
-  },
-  submit: {
-    marginLeft: theme.spacing.normal,
   },
 }));
 

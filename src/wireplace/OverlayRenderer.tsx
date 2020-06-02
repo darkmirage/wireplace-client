@@ -5,6 +5,7 @@ import { Scene, Camera, Vector3 } from 'three';
 import WirePlaceClient from 'wireplace/WirePlaceClient';
 import hexToRGB from 'utils/hexToRGB';
 import type { Theme } from 'themes';
+import { PreventPropagation } from 'components/ui';
 
 type ActorID = string;
 
@@ -39,7 +40,7 @@ const Overlay = (props: OverlayProps) => {
       }
 
       return (
-        <div
+        <PreventPropagation
           className={classes.actor}
           key={actorId}
           style={{
@@ -50,7 +51,7 @@ const Overlay = (props: OverlayProps) => {
           }}
         >
           {username}
-        </div>
+        </PreventPropagation>
       );
     }
   );
@@ -163,6 +164,7 @@ const useStyles = createUseStyles<Theme>((theme) => ({
     paddingLeft: theme.spacing.normal,
     paddingRight: theme.spacing.normal,
     paddingTop: theme.spacing.narrow,
+    pointerEvents: 'auto',
     position: 'absolute',
     transform: 'translateX(-50%)',
   },

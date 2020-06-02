@@ -5,11 +5,15 @@ import { formatDistanceToNow } from 'date-fns';
 
 import { Events, getGlobalEmitter } from 'wireplace/TypedEventsEmitter';
 import { WirePlaceChatClient, ChatLine } from 'wireplace/WirePlaceClient';
-import PreventPropagation from 'components/ui/PreventPropagation';
+import {
+  Animation,
+  Input,
+  Button,
+  Icon,
+  Tooltip,
+  PreventPropagation,
+} from 'components/ui';
 import hexToRGB from 'utils/hexToRGB';
-import Input from 'components/ui/Input';
-import Button from 'components/ui/Button';
-import Tooltip from 'components/ui/Tooltip';
 import { Theme } from 'themes';
 
 type Props = {
@@ -24,7 +28,7 @@ const TextChat = (props: Props) => {
     m: Record<string, ChatLine>;
   }>({ m: {} });
   const [focus, setFocus] = React.useState(false);
-  const [hideChat, setHideChat] = React.useState(false);
+  const [hideChat, setHideChat] = React.useState(true);
 
   const messagesRef = React.useRef<HTMLDivElement>(null);
   const classes = useStyles({ theme: useTheme() });
@@ -32,6 +36,12 @@ const TextChat = (props: Props) => {
   const lineIds = Object.keys(messages.m);
   const lastId = lineIds[lineIds.length - 1];
   const lastLine = messages.m[lastId];
+
+  React.useEffect(() => {
+    setTimeout(() => {
+      setHideChat(false);
+    }, 2000);
+  }, []);
 
   React.useEffect(() => {
     getGlobalEmitter().on(Events.FOCUS_CHAT, setFocus);
@@ -97,9 +107,15 @@ const TextChat = (props: Props) => {
           content={`${timestamp} ago`}
           placement={isCurrentUser ? 'left' : 'right'}
         >
-          <PreventPropagation className={classes.messageText}>
-            {message}
-          </PreventPropagation>
+          <Animation.Slide
+            in
+            transitionAppear
+            placement={isCurrentUser ? 'right' : 'left'}
+          >
+            <PreventPropagation className={classes.messageText}>
+              {message}
+            </PreventPropagation>
+          </Animation.Slide>
         </Tooltip>
       </div>
     );
@@ -107,12 +123,11 @@ const TextChat = (props: Props) => {
 
   const messageArea =
     messageElements.length > 0 ? (
-      <div
-        className={classNames(classes.messages, { hidden: hideChat })}
-        ref={messagesRef}
-      >
-        {messageElements}
-      </div>
+      <Animation.Fade in={!hideChat} transitionAppear>
+        <div className={classes.messages} ref={messagesRef}>
+          {messageElements}
+        </div>
+      </Animation.Fade>
     ) : null;
 
   return (
@@ -124,14 +139,9 @@ const TextChat = (props: Props) => {
           placement="topStart"
         >
           <Button
-            label={
-              hideChat ? (
-                <i className="fas fa-comment-alt"></i>
-              ) : (
-                <i className="far fa-comment-alt"></i>
-              )
-            }
+            icon={<Icon icon="commenting-o" />}
             onClick={() => setHideChat(!hideChat)}
+            active={!hideChat}
           />
         </Tooltip>
         <form className={classes.form} onSubmit={handleSubmit}>
@@ -162,33 +172,34 @@ const useStyles = createUseStyles<Theme>((theme) => ({
     flex: 1,
     flexDirection: 'column',
     justifyContent: 'flex-end',
-    pointerEvents: 'none',
-    position: 'relative',
     overflow: 'hidden',
+    position: 'relative',
+    userSelect: 'none',
   },
   footer: {
     display: 'flex',
     padding: theme.spacing.normal,
+    pointerEvents: 'auto',
   },
   messages: {
+    maskImage:
+      'linear-gradient(rgba(0, 0, 0, 0) 0, rgba(0, 0, 0, 0) 20px, black 100px, black 100%)',
+    minHeight: 400,
     overflowX: 'hidden',
     overflowY: 'scroll',
     paddingLeft: theme.spacing.normal,
     paddingRight: theme.spacing.normal,
-    pointerEvents: 'all',
-    transition: '200ms',
+    pointerEvents: 'auto',
     '&::-webkit-scrollbar-thumb': {
       background: 'rgba(0, 0, 0, 0.3)',
       borderRadius: theme.spacing.narrow,
+      pointerEvents: 'auto',
       width: theme.spacing.normal,
     },
     '&::-webkit-scrollbar': {
       background: 'rgba(0, 0, 0, 0)',
+      pointerEvents: 'auto',
       width: theme.spacing.normal,
-    },
-    '&.hidden': {
-      opacity: 0,
-      pointerEvents: 'none',
     },
   },
   message: {
@@ -206,6 +217,8 @@ const useStyles = createUseStyles<Theme>((theme) => ({
     paddingLeft: theme.spacing.normal,
     paddingRight: theme.spacing.normal,
     paddingTop: theme.spacing.narrow,
+    pointerEvents: 'auto',
+    userSelect: 'text',
   },
   form: {
     marginLeft: theme.spacing.narrow,
@@ -213,7 +226,6 @@ const useStyles = createUseStyles<Theme>((theme) => ({
   },
   input: {
     background: 'rgba(0, 0, 0, 0.25)',
-    pointerEvents: 'all',
     height: '100%',
     width: '100%',
   },
@@ -224,7 +236,7 @@ const useStyles = createUseStyles<Theme>((theme) => ({
     fontWeight: 'bold',
     marginBottom: theme.spacing.narrow,
     marginTop: theme.spacing.normal,
-    pointerEvents: 'none',
+    userSelect: 'none',
   },
   currentUser: {
     alignItems: 'flex-end',

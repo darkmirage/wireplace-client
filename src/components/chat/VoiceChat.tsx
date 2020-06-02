@@ -4,10 +4,8 @@ import { createUseStyles, useTheme } from 'react-jss';
 import AudioClient from 'wireplace/AudioClient';
 import WirePlaceClient from 'wireplace/WirePlaceClient';
 import SpatialAudioManager from 'wireplace/SpatialAudioManager';
-import Button from 'components/ui/Button';
 import { Theme } from 'themes';
-import PreventPropagation from 'components/ui/PreventPropagation';
-import Tooltip from 'components/ui/Tooltip';
+import { Tooltip, Button, ButtonGroup, Icon } from 'components/ui';
 
 type Props = {
   actorId: string;
@@ -20,6 +18,7 @@ const VoiceChat = (props: Props) => {
   const [client, setClient] = React.useState<AudioClient | null>(null);
   const [connected, setConnected] = React.useState<boolean>(false);
   const [muted, setMuted] = React.useState<boolean>(false);
+  const [loading, setLoading] = React.useState<boolean>(false);
   const { actorId, sam } = props;
 
   React.useEffect(() => {
@@ -32,7 +31,11 @@ const VoiceChat = (props: Props) => {
   }
 
   const handleJoin = () => {
-    client.join(actorId, props.client.roomId).then(() => setConnected(true));
+    setLoading(true);
+    client.join(actorId, props.client.roomId).then(() => {
+      setConnected(true);
+      setLoading(false);
+    });
   };
 
   const handleExit = () => {
@@ -50,51 +53,49 @@ const VoiceChat = (props: Props) => {
       <Tooltip content={muted ? 'Unmute' : 'Mute'} placement="bottomStart">
         <Button
           className={classes.button}
-          label={
-            !muted ? (
-              <i className="fas fa-microphone-alt-slash"></i>
+          icon={
+            muted ? (
+              <Icon icon="microphone" />
             ) : (
-              <i className="fas fa-microphone-alt"></i>
+              <Icon icon="microphone-slash" />
             )
           }
+          color={muted ? 'green' : 'red'}
           onClick={handleMute}
+          loading={loading}
         />
       </Tooltip>
       <Tooltip content="Exit Voice Chat" placement="bottom">
         <Button
           className={classes.button}
-          label={<i className="fas fa-sign-out-alt"></i>}
+          icon={<Icon icon="sign-out" />}
           onClick={handleExit}
+          loading={loading}
         />
       </Tooltip>
     </>
   ) : (
-    <div>
-      <Tooltip content="Join Voice Chat" placement="bottomStart">
-        <Button
-          className={classes.button}
-          label={<i className="fas fa-microphone-alt"></i>}
-          onClick={handleJoin}
-        />
-      </Tooltip>
-    </div>
+    <Tooltip content="Join Voice Chat" placement="bottomStart">
+      <Button
+        className={classes.button}
+        circle
+        icon={<Icon icon="microphone" />}
+        onClick={handleJoin}
+        loading={loading}
+      />
+    </Tooltip>
   );
 
-  return (
-    <PreventPropagation>
-      <div className={classes.root}>{content}</div>
-    </PreventPropagation>
-  );
+  return <ButtonGroup className={classes.root}>{content}</ButtonGroup>;
 };
 
 const useStyles = createUseStyles<Theme>((theme) => ({
   root: {
-    pointerEvents: 'all',
     padding: theme.spacing.narrow,
+    pointerEvents: 'auto',
+    userSelect: 'none',
   },
-  button: {
-    margin: theme.spacing.narrow,
-  },
+  button: {},
   tooltip: {
     position: 'absolute',
   },

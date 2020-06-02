@@ -2,12 +2,16 @@ import React from 'react';
 import { createUseStyles, useTheme } from 'react-jss';
 
 import { HOSTNAME, PORT } from 'constants/ServerConfigs';
+import {
+  ButtonToolbar,
+  Spinner,
+  GlobalInputs,
+  PreventPropagation,
+} from 'components/ui';
 import { Theme } from 'themes';
 import ClientProvider from 'components/ClientProvider';
-import GlobalInputs from 'components/ui/GlobalInputs';
 import RenderView from 'components/RenderView';
 import SpatialAudioManager from 'wireplace/SpatialAudioManager';
-import Spinner from 'components/ui/Spinner';
 import TextChat from 'components/chat/TextChat';
 import VoiceChat from 'components/chat/VoiceChat';
 
@@ -35,7 +39,11 @@ const Main = (props: Props) => {
           {({ client, actorId }) => (
             <>
               <div className={classes.panel}>
-                <VoiceChat actorId={actorId} sam={sam} client={client} />
+                <ButtonToolbar>
+                  <PreventPropagation>
+                    <VoiceChat actorId={actorId} sam={sam} client={client} />
+                  </PreventPropagation>
+                </ButtonToolbar>
                 <TextChat client={client} username={username} />
               </div>
               <div className={classes.main}>
