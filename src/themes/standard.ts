@@ -2,8 +2,11 @@ import type { RawTheme } from './types';
 
 const standard: RawTheme = {
   color: {
-    background: '#333333',
-    panel: 'rgba(0, 0, 0, 0.2)',
+    backgroundDark: '#333333',
+    backgroundLight: '#eeeeee',
+    textDark: '#222222',
+    textLight: '#e9ebf0',
+    panel: '#292d33',
   },
   spacing: {
     narrow: 4,

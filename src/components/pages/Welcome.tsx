@@ -1,7 +1,7 @@
 import React from 'react';
 import { createUseStyles, useTheme } from 'react-jss';
 
-import { Icon, Input, InputGroup, Tooltip } from 'components/ui';
+import { Centered, Icon, Input, InputGroup, Tooltip } from 'components/ui';
 import { Theme } from 'themes';
 
 type Props = {
@@ -21,7 +21,7 @@ const Welcome = (props: Props) => {
   };
 
   return (
-    <div className={classes.root}>
+    <Centered className={classes.root}>
       <h1>WirePlace</h1>
       <div>Enter a username to chat</div>
       <div>
@@ -41,19 +41,14 @@ const Welcome = (props: Props) => {
           </InputGroup>
         </form>
       </div>
-    </div>
+    </Centered>
   );
 };
 
 const useStyles = createUseStyles<Theme>((theme) => ({
   root: {
-    alignItems: 'center',
     background: '#eeeeee',
     color: '#222222',
-    display: 'flex',
-    flexDirection: 'column',
-    height: '100%',
-    justifyContent: 'center',
   },
   form: {
     marginTop: theme.spacing.wide,

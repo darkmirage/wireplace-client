@@ -2,56 +2,46 @@ import React from 'react';
 import { createUseStyles, useTheme } from 'react-jss';
 import { BrowserRouter, Route, Switch } from 'react-router-dom';
 
+import PrivateRoute from 'components/auth/PrivateRoute';
+import AuthenticatedContainer from 'components/auth/AuthenticatedContainer';
+import Login from 'components/pages/Login';
+import Logout from 'components/pages/Logout';
 import Main from 'components/pages/Main';
-import Welcome from 'components/pages/Welcome';
+import Home from 'components/pages/Home';
 import { Theme } from 'themes';
-import { DEFAULT_ROOM_ID } from 'constants/ServerConfigs';
-
-const DEFAULT_USERNAME = null;
 
 const App = () => {
   const classes = useStyles({ theme: useTheme() });
-  const [username, setUsername] = React.useState<string | null>(
-    DEFAULT_USERNAME
-  );
 
   return (
     <BrowserRouter>
       <div className={classes.app}>
         <Switch>
-          <Route
-            path="/:roomId/:username"
-            render={(props) => {
-              return (
-                <Main
-                  roomId={props.match.params['roomId']}
-                  username={props.match.params['username']}
-                />
-              );
-            }}
+          <Route exact path="/" component={Home} />
+          <Route exact path="/login" component={Login} />
+          <Route exact path="/logout" component={Logout} />
+          <PrivateRoute
+            path="/:roomId/:userId"
+            render={(props) => (
+              <AuthenticatedContainer>
+                {({ uid }) => (
+                  <Main
+                    roomId={props.match.params['roomId']}
+                    username={props.match.params['userId']}
+                  />
+                )}
+              </AuthenticatedContainer>
+            )}
           />
-          <Route
+          <PrivateRoute
             path="/:roomId"
-            render={(props) => {
-              return username === null ? (
-                <Welcome onEnterUsername={setUsername} />
-              ) : (
-                <Main
-                  roomId={props.match.params['roomId']}
-                  username={username}
-                />
-              );
-            }}
-          />
-          <Route
-            path="/"
-            render={() => {
-              return username === null ? (
-                <Welcome onEnterUsername={setUsername} />
-              ) : (
-                <Main roomId={DEFAULT_ROOM_ID} username={username} />
-              );
-            }}
+            render={(props) => (
+              <AuthenticatedContainer>
+                {({ uid }) => (
+                  <Main roomId={props.match.params['roomId']} username={uid} />
+                )}
+              </AuthenticatedContainer>
+            )}
           />
         </Switch>
       </div>

@@ -1,7 +1,12 @@
 import React from 'react';
 import { createUseStyles, useTheme } from 'react-jss';
 
-import { GlobalInputs, PreventPropagation, Spinner } from 'components/ui';
+import {
+  Centered,
+  GlobalInputs,
+  PreventPropagation,
+  Spinner,
+} from 'components/ui';
 import { HOSTNAME, PORT } from 'constants/ServerConfigs';
 import { Theme } from 'themes';
 import AvatarMenu from 'components/AvatarMenu';
@@ -25,7 +30,7 @@ const Main = (props: Props) => {
 
   return (
     <GlobalInputs>
-      <div className={classes.root}>
+      <Centered className={classes.root}>
         <ClientProvider
           username={username}
           token="foobar"
@@ -54,24 +59,19 @@ const Main = (props: Props) => {
             </>
           )}
         </ClientProvider>
-      </div>
+      </Centered>
     </GlobalInputs>
   );
 };
 
 const useStyles = createUseStyles<Theme>((theme) => ({
   root: {
-    alignItems: 'center',
-    background: theme.color.background,
-    color: '#ddd',
-    display: 'flex',
-    height: '100%',
-    justifyContent: 'center',
+    background: theme.color.backgroundDark,
+    color: theme.color.textLight,
     outline: 'none',
-    width: '100%',
   },
   main: {
-    background: theme.color.background,
+    background: theme.color.backgroundDark,
     bottom: 0,
     left: 0,
     overflow: 'hidden',

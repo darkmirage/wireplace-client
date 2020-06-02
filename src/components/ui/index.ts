@@ -6,10 +6,14 @@ import {
   Icon,
   IconStack,
   InputGroup,
+  Loader,
+  Message,
+  Panel,
   Popover,
 } from 'rsuite';
 
 import Button from './Button';
+import Centered from './Centered';
 import EventArea from './EventArea';
 import GlobalInputs from './GlobalInputs';
 import Input from './Input';
@@ -23,12 +27,16 @@ export {
   Button,
   ButtonGroup,
   ButtonToolbar,
+  Centered,
   EventArea,
   GlobalInputs,
   Icon,
   IconStack,
   Input,
   InputGroup,
+  Loader,
+  Message,
+  Panel,
   Popover,
   PreventPropagation,
   Spinner,

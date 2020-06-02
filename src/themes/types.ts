@@ -1,6 +1,9 @@
 export type RawTheme = {
   color: {
-    background: string;
+    backgroundDark: string;
+    backgroundLight: string;
+    textDark: string;
+    textLight: string;
     panel: string;
   };
   spacing: {
