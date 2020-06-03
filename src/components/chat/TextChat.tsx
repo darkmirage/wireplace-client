@@ -37,9 +37,12 @@ const TextChat = (props: Props) => {
   const lastLine = messages.m[lastId];
 
   React.useEffect(() => {
-    setTimeout(() => {
+    const t = setTimeout(() => {
       setHideChat(false);
     }, 2000);
+    return () => {
+      clearTimeout(t);
+    };
   }, []);
 
   React.useEffect(() => {
