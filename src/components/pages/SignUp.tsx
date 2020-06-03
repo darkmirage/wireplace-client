@@ -10,7 +10,7 @@ const SignUp = (props: PageProps) => {
   const classes = useStyles({ theme: useTheme() });
   const [email, setEmail] = React.useState<string>('');
   const [message, setMessage] = React.useState<string>('');
-  const [name, setName] = React.useState<string>('');
+  const [username, setUsername] = React.useState<string>('');
   const [password, setPassword] = React.useState<string>('');
   const [loading, setLoading] = React.useState<boolean>(false);
   const [error, setError] = React.useState<string | null>(null);
@@ -25,7 +25,13 @@ const SignUp = (props: PageProps) => {
       const result = await firebase
         .auth()
         .createUserWithEmailAndPassword(email, password);
-      result.user?.sendEmailVerification({ url: 'https://www.wireplace.net/' });
+
+      const { user } = result;
+      if (!user) {
+        throw new Error('User creation error. Please try again.');
+      }
+      user.sendEmailVerification({ url: 'https://www.wireplace.net/' });
+      await user.updateProfile({ displayName: username });
       props.history.push(from, { from: '/signup' });
     } catch (e) {
       setError(e.message);
@@ -55,9 +61,9 @@ const SignUp = (props: PageProps) => {
           <h4>Closed Beta Sign Up</h4>
         </div>
         <div className={classes.row}>
-          Wireplace is currently in closed beta. Sign up for an account to get
-          on the waitlist and we promise to reach out to you as we onboard more
-          users. Thank you!{' '}
+          Wireplace is currently in closed beta. Sign up for an account to
+          reserve a username get on the waitlist. We promise to reach out to you
+          as we onboard more users. Thank you!{' '}
           <span role="img" aria-label="grin">
             😀
           </span>
@@ -65,12 +71,13 @@ const SignUp = (props: PageProps) => {
         <form onSubmit={handleSubmit}>
           <div className={classes.row}>
             <Input
-              value={name}
-              onValueChange={setName}
-              placeholder="Your name (not publicly visible)"
+              value={username}
+              onValueChange={setUsername}
+              placeholder="Your display name"
               size="lg"
               disabled={loading}
               required
+              maxLength={16}
             />
           </div>
           <div className={classes.row}>

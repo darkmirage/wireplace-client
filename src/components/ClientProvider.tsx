@@ -1,6 +1,7 @@
 import React from 'react';
 import { WirePlaceScene, ActorID } from 'wireplace-scene';
 
+import { Notification } from 'components/ui';
 import { getGlobalEmitter, Events } from 'wireplace/TypedEventsEmitter';
 import GameplayRuntime from 'wireplace/GameplayRuntime';
 import WirePlaceClient from 'wireplace/WirePlaceClient';
@@ -40,8 +41,18 @@ const ClientProvider = (props: Props) => {
       runtime,
       scene,
     });
-    newClient.connect();
-    setClient(newClient);
+    newClient.connect().then((success) => {
+      console.log('success', success);
+      if (!success) {
+        Notification.error({
+          title: 'Failed to connect',
+          description: 'Your account has not been set up for Wireplace yet.',
+          duration: 100000,
+        });
+        return;
+      }
+      setClient(newClient);
+    });
 
     return () => newClient.disconnect();
   }, [hostname, port, emitter, roomId]);

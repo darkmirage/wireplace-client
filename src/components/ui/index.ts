@@ -8,6 +8,7 @@ import {
   InputGroup,
   Loader,
   Message,
+  Notification,
   Panel,
   Popover,
 } from 'rsuite';
@@ -36,6 +37,7 @@ export {
   InputGroup,
   Loader,
   Message,
+  Notification,
   Panel,
   Popover,
   PreventPropagation,

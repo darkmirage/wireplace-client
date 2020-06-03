@@ -101,24 +101,32 @@ class WirePlaceClient implements WirePlaceChatClient {
     }, 1000 / UPDATE_FPS);
   }
 
-  async _refreshToken() {
+  async _refreshToken(): Promise<boolean> {
     const user = await this.getUserOrThrow();
-    const firebaseToken = await user.getIdToken();
-    const res = await axios.post(
-      `http://${this._hostname}:${this._port}/login`,
-      {},
-      {
-        headers: {
-          Authorization: `Bearer ${firebaseToken}`,
-        },
+    try {
+      const firebaseToken = await user.getIdToken();
+      const res = await axios.post(
+        `http://${this._hostname}:${this._port}/login`,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${firebaseToken}`,
+          },
+        }
+      );
+      const { token } = res.data;
+      if (!token) {
+        logger.error('[Client] Missing SocketCluster token');
       }
-    );
-    const { token } = res.data;
-    if (!token) {
-      logger.error('[Client] Missing SocketCluster token');
+      localStorage.setItem('socketcluster.authToken', token);
+    } catch (e) {
+      localStorage.removeItem('socketcluster.authToken');
+      logger.error('wtf');
+      logger.error(e.message);
+      return false;
     }
-    localStorage.setItem('socketcluster.authToken', token);
     logger.log(`[Client] Logged in as ${user.uid}`);
+    return true;
   }
 
   sendMessage(message: string) {
@@ -213,8 +221,11 @@ class WirePlaceClient implements WirePlaceChatClient {
     return audioToken;
   };
 
-  async connect() {
-    await this._refreshToken();
+  async connect(): Promise<boolean> {
+    const success = await this._refreshToken();
+    if (!success) {
+      return false;
+    }
     let lastSeen = Date.now();
 
     // Listen for disconnects
@@ -250,6 +261,8 @@ class WirePlaceClient implements WirePlaceChatClient {
         this.scene.applySerializedDiff(data, this.runtime.actorId);
       }
     })();
+
+    return true;
   }
 }
 
