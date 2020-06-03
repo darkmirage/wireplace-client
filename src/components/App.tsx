@@ -3,11 +3,10 @@ import { createUseStyles, useTheme } from 'react-jss';
 import { BrowserRouter, Route, Switch } from 'react-router-dom';
 
 import { Theme } from 'themes';
-import AuthenticatedContainer from 'components/auth/AuthenticatedContainer';
 import Home from 'components/pages/Home';
 import Login from 'components/pages/Login';
 import Logout from 'components/pages/Logout';
-import Main from 'components/pages/Main';
+import Room from 'components/pages/Room';
 import PrivateRoute from 'components/auth/PrivateRoute';
 import SignUp from 'components/pages/SignUp';
 
@@ -23,29 +22,8 @@ const App = () => {
           <Route exact path="/login" component={Login} />
           <Route exact path="/logout" component={Logout} />
           <Route exact path="/signup" component={SignUp} />
-          <PrivateRoute
-            path="/:roomId/:userId"
-            render={(props) => (
-              <AuthenticatedContainer>
-                {({ uid }) => (
-                  <Main
-                    roomId={props.match.params['roomId']}
-                    username={props.match.params['userId']}
-                  />
-                )}
-              </AuthenticatedContainer>
-            )}
-          />
-          <PrivateRoute
-            path="/:roomId"
-            render={(props) => (
-              <AuthenticatedContainer>
-                {({ uid }) => (
-                  <Main roomId={props.match.params['roomId']} username={uid} />
-                )}
-              </AuthenticatedContainer>
-            )}
-          />
+          <PrivateRoute path="/:roomId/:userId" component={Room} />
+          <PrivateRoute path="/:roomId" component={Room} />
         </Switch>
       </div>
     </BrowserRouter>

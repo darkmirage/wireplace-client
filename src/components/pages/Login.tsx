@@ -1,14 +1,12 @@
 import React from 'react';
 import { createUseStyles, useTheme } from 'react-jss';
 
-import { RouteComponentProps } from 'react-router-dom';
 import { Centered, Panel, Icon, Input, Message, Button } from 'components/ui';
 import { Theme } from 'themes';
 import firebase from 'firebaseApp';
+import { PageProps } from 'components/auth/PageProps';
 
-type Props = RouteComponentProps<{}, {}, { from: string }>;
-
-const Login = (props: Props) => {
+const Login = (props: PageProps) => {
   const classes = useStyles({ theme: useTheme() });
   const [email, setEmail] = React.useState<string>('');
   const [password, setPassword] = React.useState<string>('');
@@ -43,11 +41,9 @@ const Login = (props: Props) => {
     setLoading(true);
     try {
       const provider = new firebase.auth.GoogleAuthProvider();
-      const result = await firebase.auth().signInWithPopup(provider);
-      console.log(result);
+      await firebase.auth().signInWithPopup(provider);
       props.history.push(from, { from: '/login' });
     } catch (e) {
-      console.log(e);
       setError(e.message);
       setLoading(false);
     }

@@ -1,10 +1,12 @@
+import axios from 'axios';
 import { WirePlaceScene, deserializeDiff, Update } from 'wireplace-scene';
 import socketClusterClient from 'socketcluster-client';
-import type { AGClientSocket } from 'socketcluster-client';
+import { AGClientSocket } from 'socketcluster-client';
 
 import logger from 'utils/logger';
 import TypedEventsEmitter, { Events } from 'wireplace/TypedEventsEmitter';
 import GameplayRuntime from './GameplayRuntime';
+import firebase from 'firebaseApp';
 
 export interface ChatLine {
   color: number;
@@ -21,8 +23,6 @@ interface WirePlaceClientProps {
   emitter: TypedEventsEmitter;
   scene: WirePlaceScene;
   runtime: GameplayRuntime;
-  username: string;
-  token: string;
   hostname: string;
   port: number;
   roomId: string;
@@ -47,12 +47,12 @@ class WirePlaceClient implements WirePlaceChatClient {
   scene: WirePlaceScene;
   socket: AGClientSocket;
 
+  _hostname: string;
+  _port: number;
   _actorId: string;
   _ee: TypedEventsEmitter;
-  _token: string;
   _unsubscribe: () => void;
   _userCache: Record<string, UserInfo>;
-  _username: string;
 
   constructor({
     emitter,
@@ -61,25 +61,23 @@ class WirePlaceClient implements WirePlaceChatClient {
     roomId,
     runtime,
     scene,
-    token,
-    username,
   }: WirePlaceClientProps) {
     this.socket = socketClusterClient.create({
       hostname,
       port,
       autoConnect: false,
     });
-    this._actorId = username;
+    this._hostname = hostname;
+    this._port = port;
+    this._actorId = '___';
     this._ee = emitter;
-    this._token = token;
     this._unsubscribe = () => {};
     this._userCache = {};
-    this._username = username;
     this.roomId = roomId;
     this.runtime = runtime;
     this.scene = scene;
     this._resetCache();
-    logger.log('[Client]', { hostname, port, username, roomId });
+    logger.log('[Client]', { hostname, port, roomId });
     (window as any).client = this;
   }
 
@@ -101,6 +99,26 @@ class WirePlaceClient implements WirePlaceChatClient {
         update = {};
       }
     }, 1000 / UPDATE_FPS);
+  }
+
+  async _refreshToken() {
+    const user = await this.getUserOrThrow();
+    const firebaseToken = await user.getIdToken();
+    const res = await axios.post(
+      `http://${this._hostname}:${this._port}/login`,
+      {},
+      {
+        headers: {
+          Authorization: `Bearer ${firebaseToken}`,
+        },
+      }
+    );
+    const { token } = res.data;
+    if (!token) {
+      logger.error('[Client] Missing SocketCluster token');
+    }
+    localStorage.setItem('socketcluster.authToken', token);
+    logger.log(`[Client] Logged in as ${user.uid}`);
   }
 
   sendMessage(message: string) {
@@ -169,28 +187,26 @@ class WirePlaceClient implements WirePlaceChatClient {
     this._resetCache();
   }
 
-  async join() {
-    const username = this._username;
-    const token = this._token;
+  async getUserOrThrow(): Promise<firebase.User> {
+    const { currentUser } = firebase.auth();
+    if (!currentUser) {
+      throw new Error('[Client] Invalid Firebase auth');
+    }
+    return currentUser;
+  }
 
+  async join() {
     const actorId: ActorID = await this.socket.invoke('join', {
-      username,
-      token,
       roomId: this.roomId,
     });
     this._actorId = actorId;
     this._ee.emit(Events.SET_ACTIVE_ACTOR, actorId);
-    logger.log(`[Client] Logged in as ${username}`);
-
+    logger.log(`[Client] Joined #${this.roomId} as Actor ${actorId}`);
     this._trackMainActor();
   }
 
   joinAudio = async (): Promise<string> => {
-    const username = this._username;
-    const token = this._token;
     const audioToken: ActorID = await this.socket.invoke('joinAudio', {
-      username,
-      token,
       roomId: this.roomId,
     });
     logger.log(`[Client] Joined audio with token: ${audioToken}`);
@@ -198,6 +214,7 @@ class WirePlaceClient implements WirePlaceChatClient {
   };
 
   async connect() {
+    await this._refreshToken();
     let lastSeen = Date.now();
 
     // Listen for disconnects

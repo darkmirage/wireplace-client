@@ -14,14 +14,12 @@ type Props = {
   children: (props: ChildProps) => React.ReactNode;
   hostname: string;
   port: number;
-  username: string;
-  token: string;
   roomId: string;
   spinner: React.ReactNode | null;
 };
 
 const ClientProvider = (props: Props) => {
-  const { hostname, port, username, token, roomId } = props;
+  const { hostname, port, roomId } = props;
 
   let [client, setClient] = React.useState<WirePlaceClient | null>(null);
   let [actorId, setActorId] = React.useState<ActorID | null>(null);
@@ -41,14 +39,12 @@ const ClientProvider = (props: Props) => {
       roomId,
       runtime,
       scene,
-      token,
-      username,
     });
     newClient.connect();
     setClient(newClient);
 
     return () => newClient.disconnect();
-  }, [hostname, port, username, token, emitter, roomId]);
+  }, [hostname, port, emitter, roomId]);
 
   return (
     <>

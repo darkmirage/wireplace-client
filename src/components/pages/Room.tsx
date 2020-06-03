@@ -7,6 +7,7 @@ import {
   PreventPropagation,
   Spinner,
 } from 'components/ui';
+import { PageProps } from 'components/auth/PageProps';
 import { HOSTNAME, PORT } from 'constants/ServerConfigs';
 import { Theme } from 'themes';
 import AvatarMenu from 'components/AvatarMenu';
@@ -18,22 +19,18 @@ import TextChat from 'components/chat/TextChat';
 import TopToolbar from 'components/TopToolbar';
 import VoiceChat from 'components/chat/VoiceChat';
 
-type Props = {
-  username: string;
-  roomId: string;
-};
-
-const Main = (props: Props) => {
+const Room = (props: PageProps) => {
   const classes = useStyles({ theme: useTheme() });
-  const { username, roomId } = props;
+
+  const roomId = props.match.params['roomId'];
+  const username = 'test';
+
   const [sam] = React.useState<SpatialAudioManager>(new SpatialAudioManager());
 
   return (
     <GlobalInputs>
       <Centered className={classes.root}>
         <ClientProvider
-          username={username}
-          token="foobar"
           roomId={roomId}
           hostname={HOSTNAME}
           port={PORT}
@@ -98,4 +95,4 @@ const useStyles = createUseStyles<Theme>((theme) => ({
   },
 }));
 
-export default Main;
+export default Room;

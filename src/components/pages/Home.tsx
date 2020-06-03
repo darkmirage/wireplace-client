@@ -1,15 +1,14 @@
 import React from 'react';
-import { Switch, Route, RouteComponentProps } from 'react-router-dom';
+import { Switch, Route } from 'react-router-dom';
 import { createUseStyles, useTheme } from 'react-jss';
 
 import { Panel } from 'components/ui';
 import UserControls from 'components/auth/UserControls';
 import Unverified from 'components/auth/Unverified';
+import { PageProps } from 'components/auth/PageProps';
 import { Theme } from 'themes';
 
-type Props = RouteComponentProps;
-
-const Home = (props: Props) => {
+const Home = (props: PageProps) => {
   const classes = useStyles({ theme: useTheme() });
   return (
     <div>

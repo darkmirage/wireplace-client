@@ -1,12 +1,11 @@
 import React from 'react';
-import { Redirect, RouteComponentProps } from 'react-router-dom';
+import { Redirect } from 'react-router-dom';
 
 import { Message } from 'components/ui';
 import firebase from 'firebaseApp';
+import { PageProps } from './PageProps';
 
-type Props = RouteComponentProps<{}, {}, { from: string }>;
-
-const Unverified = (props: Props) => {
+const Unverified = (props: PageProps) => {
   const [verified, setVerified] = React.useState<boolean>(false);
 
   React.useEffect(() => {

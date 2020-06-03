@@ -1,14 +1,12 @@
 import React from 'react';
 import { createUseStyles, useTheme } from 'react-jss';
 
-import { RouteComponentProps } from 'react-router-dom';
 import { Centered, Panel, Icon, Input, Message, Button } from 'components/ui';
 import { Theme } from 'themes';
 import firebase from 'firebaseApp';
+import { PageProps } from 'components/auth/PageProps';
 
-type Props = RouteComponentProps<{}, {}, { from: string }>;
-
-const SignUp = (props: Props) => {
+const SignUp = (props: PageProps) => {
   const classes = useStyles({ theme: useTheme() });
   const [email, setEmail] = React.useState<string>('');
   const [message, setMessage] = React.useState<string>('');

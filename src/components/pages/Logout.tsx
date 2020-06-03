@@ -2,14 +2,12 @@ import React from 'react';
 import { createUseStyles, useTheme } from 'react-jss';
 import { Redirect } from 'react-router-dom';
 
-import { RouteComponentProps } from 'react-router-dom';
+import { PageProps } from 'components/auth/PageProps';
 import { Centered, Message, Spinner } from 'components/ui';
 import { Theme } from 'themes';
 import firebase from 'firebaseApp';
 
-type Props = RouteComponentProps;
-
-const Logout = (props: Props) => {
+const Logout = (props: PageProps) => {
   const classes = useStyles({ theme: useTheme() });
   const [loggedOut, setLoggedOut] = React.useState<boolean>(false);
   const [error, setError] = React.useState<string | null>(null);
