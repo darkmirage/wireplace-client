@@ -24,7 +24,7 @@ class AudioClient {
   constructor(sam: SpatialAudioManager, fetchToken: () => Promise<string>) {
     this.sam = sam;
     this.connected = false;
-    this._agora = AgoraRTC.createClient({ mode: 'rtc', codec: 'vp8' });
+    this._agora = null;
     this._local = null;
     this._fetchToken = fetchToken;
   }
