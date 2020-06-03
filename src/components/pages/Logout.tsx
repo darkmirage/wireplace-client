@@ -3,11 +3,7 @@ import { createUseStyles, useTheme } from 'react-jss';
 import { Redirect } from 'react-router-dom';
 
 import { RouteComponentProps } from 'react-router-dom';
-import {
-  Centered,
-  Message,
-  Spinner,
-} from 'components/ui';
+import { Centered, Message, Spinner } from 'components/ui';
 import { Theme } from 'themes';
 import firebase from 'firebaseApp';
 

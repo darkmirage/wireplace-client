@@ -1,4 +1,5 @@
 import React from 'react';
+import { Redirect } from 'react-router-dom';
 
 import firebase from 'firebaseApp';
 import { Loader } from 'components/ui';
@@ -28,6 +29,10 @@ const AuthenticatedContainer = ({ loggedOut, children, spinner }: Props) => {
 
   if (!currentUser) {
     return <>{loggedOut}</>;
+  }
+
+  if (!currentUser.emailVerified) {
+    return <Redirect to="/unverified" />;
   }
 
   return <>{children(currentUser)}</>;

@@ -13,7 +13,11 @@ const UserControls = (props: Props) => {
   const classes = useStyles({ theme: useTheme() });
   const loggedOut = (
     <div className={classes.user}>
-      <Button componentClass="a" className={classes.userButton}>
+      <Button
+        componentClass="a"
+        className={classes.userButton}
+        onClick={() => props.history.push('/signup', { from: '/' })}
+      >
         Sign up
       </Button>
       <Button

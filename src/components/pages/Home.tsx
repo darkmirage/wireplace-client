@@ -1,9 +1,10 @@
 import React from 'react';
-import { RouteComponentProps } from 'react-router-dom';
+import { Switch, Route, RouteComponentProps } from 'react-router-dom';
 import { createUseStyles, useTheme } from 'react-jss';
 
 import { Panel } from 'components/ui';
 import UserControls from 'components/auth/UserControls';
+import Unverified from 'components/auth/Unverified';
 import { Theme } from 'themes';
 
 type Props = RouteComponentProps;
@@ -35,12 +36,15 @@ const Home = (props: Props) => {
                 </p>
                 <p>
                   Runs entirely in your browser with no additional software.
-                  Perfect for conferences, meetups, and roleplaying.
+                  Perfect for conferences, celebrations, events, and games.
                 </p>
               </div>
             </div>
             <div className={classes.row}>
-              <UserControls />
+              <Switch>
+                <Route exact path="/" component={UserControls} />
+                <Route exact path="/unverified" component={Unverified} />
+              </Switch>
             </div>
           </Panel>
         </div>

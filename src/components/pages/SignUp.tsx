@@ -8,9 +8,11 @@ import firebase from 'firebaseApp';
 
 type Props = RouteComponentProps<{}, {}, { from: string }>;
 
-const Login = (props: Props) => {
+const SignUp = (props: Props) => {
   const classes = useStyles({ theme: useTheme() });
   const [email, setEmail] = React.useState<string>('');
+  const [message, setMessage] = React.useState<string>('');
+  const [name, setName] = React.useState<string>('');
   const [password, setPassword] = React.useState<string>('');
   const [loading, setLoading] = React.useState<boolean>(false);
   const [error, setError] = React.useState<string | null>(null);
@@ -22,32 +24,23 @@ const Login = (props: Props) => {
     setError(null);
     setLoading(true);
     try {
-      await firebase.auth().signInWithEmailAndPassword(email, password);
-      setLoading(false);
-      props.history.push(from, { from: '/login' });
+      const result = await firebase
+        .auth()
+        .createUserWithEmailAndPassword(email, password);
+      result.user?.sendEmailVerification();
+      props.history.push(from, { from: '/signup' });
     } catch (e) {
-      if (
-        e.code === 'auth/user-not-found' ||
-        e.code === 'auth/wrong-password'
-      ) {
-        setError('The password is invalid or the user does not exist.');
-      } else {
-        setError(e.message);
-      }
+      setError(e.message);
       setLoading(false);
     }
   };
 
   const handleGoogle = async () => {
-    setError(null);
-    setLoading(true);
     try {
       const provider = new firebase.auth.GoogleAuthProvider();
-      const result = await firebase.auth().signInWithPopup(provider);
-      console.log(result);
-      props.history.push(from, { from: '/login' });
+      await firebase.auth().signInWithPopup(provider);
+      props.history.push(from, { from: '/signup' });
     } catch (e) {
-      console.log(e);
       setError(e.message);
       setLoading(false);
     }
@@ -61,9 +54,27 @@ const Login = (props: Props) => {
     <Centered className={classes.login}>
       <Panel className={classes.panel}>
         <div className={classes.row}>
-          <h4>Wireplace Login</h4>
+          <h4>Closed Beta Sign Up</h4>
+        </div>
+        <div className={classes.row}>
+          Wireplace is currently in closed beta. Sign up for an account to get
+          on the waitlist and we promise to reach out to you as we onboard more
+          users. Thank you!{' '}
+          <span role="img" aria-label="grin">
+            😀
+          </span>
         </div>
         <form onSubmit={handleSubmit}>
+          <div className={classes.row}>
+            <Input
+              value={name}
+              onValueChange={setName}
+              placeholder="Your name (not publicly visible)"
+              size="lg"
+              disabled={loading}
+              required
+            />
+          </div>
           <div className={classes.row}>
             <Input
               value={email}
@@ -80,29 +91,26 @@ const Login = (props: Props) => {
               value={password}
               onValueChange={setPassword}
               type="password"
-              placeholder="password"
+              placeholder="Your password"
               size="lg"
               disabled={loading}
               required
             />
           </div>
           <div className={classes.row}>
-            <Button
-              className={classes.loginButton}
-              color="green"
-              type="submit"
+            <Input
+              componentClass="textarea"
+              value={message}
+              onValueChange={setMessage}
+              placeholder="What do I want to do on Wireplace?"
+              rows={4}
               size="lg"
-              loading={loading}
-            >
-              Log in
-            </Button>
-            <Button
-              appearance="subtle"
-              type="submit"
-              size="lg"
-              loading={loading}
-              onClick={() => props.history.push('/signup')}
-            >
+              disabled={loading}
+              required
+            />
+          </div>
+          <div className={classes.row}>
+            <Button type="submit" color="green" size="lg" loading={loading}>
               Sign up
             </Button>
           </div>
@@ -111,10 +119,10 @@ const Login = (props: Props) => {
               size="md"
               color="red"
               loading={loading}
-              icon={<Icon icon="google" />}
               onClick={handleGoogle}
+              icon={<Icon icon="google" />}
             >
-              Log in with Google
+              Sign up with Google
             </Button>
           </div>
           {errorMessage}
@@ -128,16 +136,13 @@ const useStyles = createUseStyles<Theme>((theme) => ({
   login: {
     background: theme.color.backgroundLight,
   },
-  loginButton: {
-    marginRight: theme.spacing.normal,
-  },
   panel: {
     color: theme.color.textDark,
-    width: 300,
+    width: 400,
   },
   row: {
     marginBottom: theme.spacing.wide,
   },
 }));
 
-export default Login;
+export default SignUp;
