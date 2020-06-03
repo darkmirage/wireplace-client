@@ -27,7 +27,7 @@ const SignUp = (props: Props) => {
       const result = await firebase
         .auth()
         .createUserWithEmailAndPassword(email, password);
-      result.user?.sendEmailVerification();
+      result.user?.sendEmailVerification({ url: 'https://www.wireplace.net/' });
       props.history.push(from, { from: '/signup' });
     } catch (e) {
       setError(e.message);
