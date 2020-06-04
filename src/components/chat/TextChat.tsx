@@ -27,7 +27,8 @@ const TextChat = (props: Props) => {
     m: Record<string, ChatLine>;
   }>({ m: {} });
   const [focus, setFocus] = React.useState(false);
-  const [hideChat, setHideChat] = React.useState(true);
+  const [fadeChat, setFadeChat] = React.useState(true);
+  const [hideChat, setHideChat] = React.useState(false);
 
   const messagesRef = React.useRef<HTMLDivElement>(null);
   const classes = useStyles({ theme: useTheme() });
@@ -38,7 +39,7 @@ const TextChat = (props: Props) => {
 
   React.useEffect(() => {
     const t = setTimeout(() => {
-      setHideChat(false);
+      setFadeChat(false);
     }, 2000);
     return () => {
       clearTimeout(t);
@@ -124,9 +125,14 @@ const TextChat = (props: Props) => {
 
   const messageArea =
     messageElements.length > 0 ? (
-      <Animation.Fade in={!hideChat} transitionAppear>
+      <Animation.Fade
+        in={!fadeChat}
+        transitionAppear
+        onExited={() => setHideChat(true)}
+        onEntering={() => setHideChat(false)}
+      >
         <div className={classes.messages} ref={messagesRef}>
-          {messageElements}
+          {hideChat ? null : messageElements}
         </div>
       </Animation.Fade>
     ) : null;
@@ -136,13 +142,13 @@ const TextChat = (props: Props) => {
       {messageArea}
       <PreventPropagation className={classes.footer}>
         <Tooltip
-          content={hideChat ? 'Show chatbox' : 'Hide chatbox'}
+          content={fadeChat ? 'Show chatbox' : 'Hide chatbox'}
           placement="topStart"
         >
           <Button
             icon={<Icon icon="commenting-o" />}
-            onClick={() => setHideChat(!hideChat)}
-            active={!hideChat}
+            onClick={() => setFadeChat(!fadeChat)}
+            active={!fadeChat}
           />
         </Tooltip>
         <form className={classes.form} onSubmit={handleSubmit}>
@@ -154,7 +160,7 @@ const TextChat = (props: Props) => {
             onBlur={() => getGlobalEmitter().emit(Events.FOCUS_CHAT, false)}
             onFocus={() => {
               getGlobalEmitter().emit(Events.FOCUS_CHAT, true);
-              setHideChat(false);
+              setFadeChat(false);
             }}
             value={message}
             placeholder={focus ? 'Type something' : 'Press enter to chat'}
