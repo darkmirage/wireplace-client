@@ -182,6 +182,7 @@ const useStyles = createUseStyles<Theme>((theme) => ({
     overflow: 'hidden',
     position: 'relative',
     userSelect: 'none',
+    touchAction: 'none',
   },
   footer: {
     display: 'flex',
@@ -248,7 +249,12 @@ const useStyles = createUseStyles<Theme>((theme) => ({
   currentUser: {
     alignItems: 'flex-end',
   },
-  tooltip: {},
+  '@media (max-width: 400px)': {
+    messages: {
+      overflow: 'hidden',
+      pointerEvents: 'none',
+    },
+  },
 }));
 
 export default TextChat;

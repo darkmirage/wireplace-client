@@ -70,6 +70,7 @@ const Home = (props: PageProps) => {
 
 const useStyles = createUseStyles<Theme>((theme) => ({
   topContainer: {
+    background: '#eeeeee',
     position: 'relative',
     width: '100%',
     height: '100vh',
@@ -78,6 +79,8 @@ const useStyles = createUseStyles<Theme>((theme) => ({
   },
   video: {
     flex: 4,
+    maskImage:
+      'radial-gradient(circle at 50%, black 0%, black 75%, transparent 92%)',
     minHeight: 0,
     overflow: 'hidden',
     objectFit: 'cover',
@@ -95,6 +98,8 @@ const useStyles = createUseStyles<Theme>((theme) => ({
     minWidth: 420,
   },
   panel: {
+    position: 'relative',
+    zIndex: theme.zIndices.top,
     color: theme.color.textDark,
     background: theme.color.backgroundLight,
     maxWidth: 500,
