@@ -105,7 +105,7 @@ const Login = (props: PageProps) => {
           <div className={classes.row}>
             <Button
               size="md"
-              color="red"
+              color="blue"
               loading={loading}
               icon={<Icon icon="google" />}
               onClick={handleGoogle}

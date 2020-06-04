@@ -2,7 +2,7 @@ import React from 'react';
 import { Switch, Route } from 'react-router-dom';
 import { createUseStyles, useTheme } from 'react-jss';
 
-import { Panel } from 'components/ui';
+import { Panel, Message } from 'components/ui';
 import UserControls from 'components/auth/UserControls';
 import Unverified from 'components/auth/Unverified';
 import { PageProps } from 'components/auth/PageProps';
@@ -43,6 +43,22 @@ const Home = (props: PageProps) => {
               <Switch>
                 <Route exact path="/" component={UserControls} />
                 <Route exact path="/unverified" component={Unverified} />
+                <Route
+                  exact
+                  path="/waitlist"
+                  component={() => (
+                    <Message
+                      type="warning"
+                      title="Please hold on"
+                      description={
+                        <>
+                          You are still on the waitlist. We will notify you as
+                          soon as more beta spots open up!
+                        </>
+                      }
+                    />
+                  )}
+                />
               </Switch>
             </div>
           </Panel>

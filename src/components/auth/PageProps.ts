@@ -7,5 +7,5 @@ export type PageProps = RouteComponentProps<
     roomId?: string;
   },
   {},
-  RouteState
+  RouteState | undefined
 >;

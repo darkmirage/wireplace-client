@@ -1,5 +1,5 @@
 import React from 'react';
-import { RouteComponentProps, withRouter } from 'react-router-dom';
+import { useHistory } from 'react-router-dom';
 import { createUseStyles, useTheme } from 'react-jss';
 
 import { DEFAULT_ROOM_ID } from 'constants/ServerConfigs';
@@ -7,16 +7,16 @@ import { Button, Loader } from 'components/ui';
 import { Theme } from 'themes';
 import AuthenticatedContainer from './AuthenticatedContainer';
 
-type Props = RouteComponentProps<{}, {}, { from: string }>;
-
-const UserControls = (props: Props) => {
+const UserControls = () => {
   const classes = useStyles({ theme: useTheme() });
+  const history = useHistory();
+
   const loggedOut = (
     <div className={classes.user}>
       <Button
         componentClass="a"
         className={classes.userButton}
-        onClick={() => props.history.push('/signup', { from: '/' })}
+        onClick={() => history.push('/signup', { from: '/' })}
       >
         Sign up
       </Button>
@@ -24,9 +24,7 @@ const UserControls = (props: Props) => {
         componentClass="a"
         className={classes.userButton}
         style={{ marginRight: 8 }}
-        onClick={() =>
-          props.history.push('/login', { from: '/' + DEFAULT_ROOM_ID })
-        }
+        onClick={() => history.push('/login', { from: '/' + DEFAULT_ROOM_ID })}
         appearance="subtle"
       >
         Log in
@@ -45,7 +43,7 @@ const UserControls = (props: Props) => {
       <Button
         componentClass="a"
         className={classes.userButton}
-        onClick={() => props.history.push('/' + DEFAULT_ROOM_ID, { from: '/' })}
+        onClick={() => history.push('/' + DEFAULT_ROOM_ID, { from: '/' })}
       >
         Enter #{DEFAULT_ROOM_ID}
       </Button>
@@ -53,7 +51,7 @@ const UserControls = (props: Props) => {
         componentClass="a"
         appearance="subtle"
         className={classes.userButton}
-        onClick={() => props.history.push('/logout', { from: '/' })}
+        onClick={() => history.push('/logout', { from: '/' })}
       >
         Log out
       </Button>
@@ -81,4 +79,4 @@ const useStyles = createUseStyles<Theme>((theme) => ({
   },
 }));
 
-export default withRouter(UserControls);
+export default UserControls;

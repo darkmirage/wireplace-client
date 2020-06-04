@@ -8,6 +8,7 @@ import Login from 'components/pages/Login';
 import Logout from 'components/pages/Logout';
 import Room from 'components/pages/Room';
 import PrivateRoute from 'components/auth/PrivateRoute';
+import Profile from 'components/pages/Profile';
 import SignUp from 'components/pages/SignUp';
 
 const App = () => {
@@ -18,10 +19,12 @@ const App = () => {
       <div className={classes.app}>
         <Switch>
           <Route exact path="/" component={Home} />
-          <Route exact path="/unverified" component={Home} />
+          <Route exact path="/waitlist" component={Home} />
           <Route exact path="/login" component={Login} />
           <Route exact path="/logout" component={Logout} />
           <Route exact path="/signup" component={SignUp} />
+          <Route exact path="/unverified" component={Home} />
+          <PrivateRoute exact path="/profile" component={Profile} />
           <PrivateRoute path="/:roomId/:userId" component={Room} />
           <PrivateRoute path="/:roomId" component={Room} />
         </Switch>

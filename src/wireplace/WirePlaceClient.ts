@@ -16,6 +16,8 @@ export interface ChatLine {
   username: string;
 }
 
+type ServerAuthResponse = 'SUCCESS' | 'NEW_USER' | 'ON_WAITLIST' | 'FAILURE';
+
 type ChatCallback = (line: ChatLine) => void;
 type ActorID = string;
 
@@ -101,12 +103,12 @@ class WirePlaceClient implements WirePlaceChatClient {
     }, 1000 / UPDATE_FPS);
   }
 
-  async _refreshToken(): Promise<boolean> {
+  async _refreshToken(): Promise<ServerAuthResponse> {
     const user = await this.getUserOrThrow();
     try {
       const firebaseToken = await user.getIdToken();
       const res = await axios.post(
-        `http://${this._hostname}:${this._port}/login`,
+        `${window.location.protocol}//${this._hostname}:${this._port}/login`,
         {},
         {
           headers: {
@@ -114,19 +116,18 @@ class WirePlaceClient implements WirePlaceChatClient {
           },
         }
       );
-      const { token } = res.data;
+      const { token, error } = res.data;
       if (!token) {
-        logger.error('[Client] Missing SocketCluster token');
+        return error;
       }
       localStorage.setItem('socketcluster.authToken', token);
     } catch (e) {
       localStorage.removeItem('socketcluster.authToken');
-      logger.error('wtf');
       logger.error(e.message);
-      return false;
+      return 'FAILURE';
     }
     logger.log(`[Client] Logged in as ${user.uid}`);
-    return true;
+    return 'SUCCESS';
   }
 
   sendMessage(message: string) {
@@ -221,10 +222,10 @@ class WirePlaceClient implements WirePlaceChatClient {
     return audioToken;
   };
 
-  async connect(): Promise<boolean> {
-    const success = await this._refreshToken();
-    if (!success) {
-      return false;
+  async connect(): Promise<ServerAuthResponse> {
+    const result = await this._refreshToken();
+    if (result !== 'SUCCESS') {
+      return result;
     }
     let lastSeen = Date.now();
 
@@ -262,7 +263,7 @@ class WirePlaceClient implements WirePlaceChatClient {
       }
     })();
 
-    return true;
+    return result;
   }
 }
 

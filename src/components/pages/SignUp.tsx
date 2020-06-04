@@ -1,7 +1,7 @@
 import React from 'react';
 import { createUseStyles, useTheme } from 'react-jss';
 
-import { Centered, Panel, Icon, Input, Message, Button } from 'components/ui';
+import { Button, Centered, Icon, Input, Message, Panel } from 'components/ui';
 import { Theme } from 'themes';
 import firebase from 'firebaseApp';
 import { PageProps } from 'components/auth/PageProps';
@@ -10,12 +10,29 @@ const SignUp = (props: PageProps) => {
   const classes = useStyles({ theme: useTheme() });
   const [email, setEmail] = React.useState<string>('');
   const [message, setMessage] = React.useState<string>('');
-  const [username, setUsername] = React.useState<string>('');
+  const [name, setName] = React.useState<string>('');
   const [password, setPassword] = React.useState<string>('');
   const [loading, setLoading] = React.useState<boolean>(false);
   const [error, setError] = React.useState<string | null>(null);
 
   const { from } = props.location.state || { from: '/ ' };
+
+  const verifyAndSave = async (user: firebase.User | null) => {
+    if (!user) {
+      throw new Error('User creation error. Please try again.');
+    }
+
+    if (!user.emailVerified) {
+      user.sendEmailVerification({ url: 'https://www.wireplace.net/' });
+    }
+
+    const fullName = user.displayName || name;
+    await firebase.firestore().collection('signups').doc(user.uid).set({
+      fullName,
+      message,
+    });
+    props.history.push(from, { from: '/signup' });
+  };
 
   const handleSubmit = async (event: React.FormEvent<any>) => {
     event.preventDefault();
@@ -25,14 +42,7 @@ const SignUp = (props: PageProps) => {
       const result = await firebase
         .auth()
         .createUserWithEmailAndPassword(email, password);
-
-      const { user } = result;
-      if (!user) {
-        throw new Error('User creation error. Please try again.');
-      }
-      user.sendEmailVerification({ url: 'https://www.wireplace.net/' });
-      await user.updateProfile({ displayName: username });
-      props.history.push(from, { from: '/signup' });
+      await verifyAndSave(result.user);
     } catch (e) {
       setError(e.message);
       setLoading(false);
@@ -42,8 +52,8 @@ const SignUp = (props: PageProps) => {
   const handleGoogle = async () => {
     try {
       const provider = new firebase.auth.GoogleAuthProvider();
-      await firebase.auth().signInWithPopup(provider);
-      props.history.push(from, { from: '/signup' });
+      const result = await firebase.auth().signInWithPopup(provider);
+      await verifyAndSave(result.user);
     } catch (e) {
       setError(e.message);
       setLoading(false);
@@ -62,8 +72,8 @@ const SignUp = (props: PageProps) => {
         </div>
         <div className={classes.row}>
           Wireplace is currently in closed beta. Sign up for an account to
-          reserve a username get on the waitlist. We promise to reach out to you
-          as we onboard more users. Thank you!{' '}
+          reserve a username and get on the waitlist. We promise to reach out to
+          you as we onboard more users. Thank you!{' '}
           <span role="img" aria-label="grin">
             😀
           </span>
@@ -71,13 +81,12 @@ const SignUp = (props: PageProps) => {
         <form onSubmit={handleSubmit}>
           <div className={classes.row}>
             <Input
-              value={username}
-              onValueChange={setUsername}
-              placeholder="Your display name"
+              value={name}
+              onValueChange={setName}
+              placeholder="Your name (will not be shown to other users)"
               size="lg"
               disabled={loading}
               required
-              maxLength={16}
             />
           </div>
           <div className={classes.row}>
@@ -107,11 +116,10 @@ const SignUp = (props: PageProps) => {
               componentClass="textarea"
               value={message}
               onValueChange={setMessage}
-              placeholder="What do I want to do on Wireplace?"
+              placeholder="What do I want to do on Wireplace? (optional)"
               rows={4}
               size="lg"
               disabled={loading}
-              required
             />
           </div>
           <div className={classes.row}>
@@ -122,7 +130,7 @@ const SignUp = (props: PageProps) => {
           <div className={classes.row}>
             <Button
               size="md"
-              color="red"
+              color="blue"
               loading={loading}
               onClick={handleGoogle}
               icon={<Icon icon="google" />}
