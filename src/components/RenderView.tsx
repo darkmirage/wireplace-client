@@ -47,7 +47,7 @@ const RenderView = (props: Props) => {
       runtime.stopLoop();
       window.removeEventListener('resize', renderer.resize);
     };
-  }, [client, sam, scene, emitter]);
+  }, [client, sam, scene, emitter, actorId]);
 
   return (
     <>
