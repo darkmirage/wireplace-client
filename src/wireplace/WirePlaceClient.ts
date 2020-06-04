@@ -5,7 +5,6 @@ import { AGClientSocket } from 'socketcluster-client';
 
 import logger from 'utils/logger';
 import TypedEventsEmitter, { Events } from 'wireplace/TypedEventsEmitter';
-import GameplayRuntime from './GameplayRuntime';
 import firebase from 'firebaseApp';
 
 export interface ChatLine {
@@ -24,7 +23,6 @@ type ActorID = string;
 interface WirePlaceClientProps {
   emitter: TypedEventsEmitter;
   scene: WirePlaceScene;
-  runtime: GameplayRuntime;
   hostname: string;
   port: number;
   roomId: string;
@@ -45,13 +43,13 @@ const UPDATE_FPS = 3;
 
 class WirePlaceClient implements WirePlaceChatClient {
   roomId: string;
-  runtime: GameplayRuntime;
   scene: WirePlaceScene;
   socket: AGClientSocket;
 
+  _username: string | null;
   _hostname: string;
   _port: number;
-  _actorId: string;
+  _actorId: string | null;
   _ee: TypedEventsEmitter;
   _unsubscribe: () => void;
   _userCache: Record<string, UserInfo>;
@@ -61,7 +59,6 @@ class WirePlaceClient implements WirePlaceChatClient {
     hostname,
     port,
     roomId,
-    runtime,
     scene,
   }: WirePlaceClientProps) {
     this.socket = socketClusterClient.create({
@@ -71,12 +68,12 @@ class WirePlaceClient implements WirePlaceChatClient {
     });
     this._hostname = hostname;
     this._port = port;
-    this._actorId = '___';
+    this._username = null;
+    this._actorId = null;
     this._ee = emitter;
     this._unsubscribe = () => {};
     this._userCache = {};
     this.roomId = roomId;
-    this.runtime = runtime;
     this.scene = scene;
     this._resetCache();
     logger.log('[Client]', { hostname, port, roomId });
@@ -91,9 +88,12 @@ class WirePlaceClient implements WirePlaceChatClient {
   // This is a hack to send updates on the current actor to the server at a fixed refresh rate
   _trackMainActor() {
     let update: Update = {};
-    this._unsubscribe = this.scene.onActorUpdate(this._actorId, (u) => {
-      Object.assign(update, u);
-    });
+    this._unsubscribe = this.scene.onActorUpdate(
+      this.getActorIDOrThrow(),
+      (u) => {
+        Object.assign(update, u);
+      }
+    );
 
     setInterval(() => {
       if (Object.keys(update).length > 0) {
@@ -128,6 +128,20 @@ class WirePlaceClient implements WirePlaceChatClient {
     }
     logger.log(`[Client] Logged in as ${user.uid}`);
     return 'SUCCESS';
+  }
+
+  getActorIDOrThrow(): ActorID {
+    if (this._actorId) {
+      return this._actorId;
+    }
+    throw new Error('Can only be called after a successful join');
+  }
+
+  getUsernameOrThrow(): string {
+    if (this._username) {
+      return this._username;
+    }
+    throw new Error('Can only be called after a successful join');
   }
 
   sendMessage(message: string) {
@@ -192,6 +206,8 @@ class WirePlaceClient implements WirePlaceChatClient {
 
   disconnect() {
     logger.log('[Client] Disconnect');
+    this._actorId = null;
+    this._username = null;
     this.socket.closeAllChannels();
     this._resetCache();
   }
@@ -205,9 +221,17 @@ class WirePlaceClient implements WirePlaceChatClient {
   }
 
   async join() {
-    const actorId: ActorID = await this.socket.invoke('join', {
-      roomId: this.roomId,
-    });
+    const {
+      actorId,
+      username,
+    }: { actorId: ActorID; username: string } = await this.socket.invoke(
+      'join',
+      {
+        roomId: this.roomId,
+      }
+    );
+
+    this._username = username;
     this._actorId = actorId;
     this._ee.emit(Events.SET_ACTIVE_ACTOR, actorId);
     logger.log(`[Client] Joined #${this.roomId} as Actor ${actorId}`);
@@ -259,7 +283,7 @@ class WirePlaceClient implements WirePlaceChatClient {
     (async () => {
       const channel = this.socket.subscribe('update:' + this.roomId);
       for await (let data of channel) {
-        this.scene.applySerializedDiff(data, this.runtime.actorId);
+        this.scene.applySerializedDiff(data);
       }
     })();
 

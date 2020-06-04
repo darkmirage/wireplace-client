@@ -4,12 +4,12 @@ import { useHistory, useLocation } from 'react-router-dom';
 
 import { Notification } from 'components/ui';
 import { getGlobalEmitter, Events } from 'wireplace/TypedEventsEmitter';
-import GameplayRuntime from 'wireplace/GameplayRuntime';
 import WirePlaceClient from 'wireplace/WirePlaceClient';
 
 type ChildProps = {
   client: WirePlaceClient;
   actorId: ActorID;
+  username: string;
 };
 
 type Props = {
@@ -35,13 +35,11 @@ const ClientProvider = (props: Props) => {
 
   React.useEffect(() => {
     const scene = new WirePlaceScene();
-    const runtime = new GameplayRuntime({ scene, emitter });
     const newClient = new WirePlaceClient({
       emitter,
       hostname,
       port,
       roomId,
-      runtime,
       scene,
     });
     newClient.connect().then((result) => {
@@ -75,7 +73,13 @@ const ClientProvider = (props: Props) => {
 
   return (
     <>
-      {client && actorId ? props.children({ client, actorId }) : props.spinner}
+      {client && actorId
+        ? props.children({
+            client,
+            actorId: client.getActorIDOrThrow(),
+            username: client.getUsernameOrThrow(),
+          })
+        : props.spinner}
     </>
   );
 };

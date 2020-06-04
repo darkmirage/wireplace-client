@@ -1,5 +1,5 @@
 import { Clock, Vector3, Quaternion, Euler } from 'three';
-import { WirePlaceScene, Update } from 'wireplace-scene';
+import { WirePlaceScene, Update, ActorID } from 'wireplace-scene';
 
 import TypedEventsEmitter, { Events } from 'wireplace/TypedEventsEmitter';
 import { AnimationActions } from 'constants/Animation';
@@ -24,11 +24,12 @@ export enum Directions {
 interface WirePlaceRuntimeProps {
   emitter: TypedEventsEmitter;
   scene: WirePlaceScene;
+  actorId: ActorID;
 }
 
 class GameplayRuntime {
   tick: number;
-  actorId: string | null;
+  actorId: ActorID;
   _scene: WirePlaceScene;
   _running: boolean;
   _lastTime: number;
@@ -40,9 +41,9 @@ class GameplayRuntime {
   _lastForward: Vector3;
   _lastRight: Vector3;
 
-  constructor({ scene, emitter }: WirePlaceRuntimeProps) {
+  constructor({ scene, emitter, actorId }: WirePlaceRuntimeProps) {
     this.tick = 0;
-    this.actorId = null;
+    this.actorId = actorId;
     this._running = false;
     this._lastTime = 0;
     this._scene = scene;
@@ -71,7 +72,6 @@ class GameplayRuntime {
         Directions.RANDOM
       ];
     });
-    this._ee.on(Events.SET_ACTIVE_ACTOR, (actorId) => this.setActor(actorId));
     this._ee.on(Events.PERFORM_ACTION, ({ actionType, actionState }) => {
       if (this.actorId) {
         const action = {
@@ -122,10 +122,6 @@ class GameplayRuntime {
 
   move(direction: keyof typeof Directions, start: boolean) {
     this._directions[direction] = start;
-  }
-
-  setActor(actorId: string) {
-    this.actorId = actorId;
   }
 
   startLoop = () => {

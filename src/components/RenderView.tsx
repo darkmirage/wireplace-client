@@ -1,7 +1,10 @@
 import React from 'react';
 import { createUseStyles } from 'react-jss';
+import { WirePlaceScene, ActorID } from 'wireplace-scene';
 
-import type WirePlaceClient from 'wireplace/WirePlaceClient';
+import { getGlobalEmitter } from 'wireplace/TypedEventsEmitter';
+import GameplayRuntime from 'wireplace/GameplayRuntime';
+import WirePlaceClient from 'wireplace/WirePlaceClient';
 import OverlayRenderer from 'wireplace/OverlayRenderer';
 import ThreeRenderer from 'wireplace/ThreeRenderer';
 import SpatialAudioManager from 'wireplace/SpatialAudioManager';
@@ -9,6 +12,8 @@ import SpatialAudioManager from 'wireplace/SpatialAudioManager';
 type Props = {
   client: WirePlaceClient;
   sam: SpatialAudioManager;
+  scene: WirePlaceScene;
+  actorId: ActorID;
 };
 
 const RenderView = (props: Props) => {
@@ -17,7 +22,9 @@ const RenderView = (props: Props) => {
   const [overlayContent, setOverlayContent] = React.useState<React.ReactNode>(
     null
   );
-  const { client, sam } = props;
+
+  const { client, sam, scene, actorId } = props;
+  const emitter = getGlobalEmitter();
 
   React.useEffect(() => {
     const { current } = ref;
@@ -25,6 +32,7 @@ const RenderView = (props: Props) => {
       throw new Error('ref.current is undefined');
     }
 
+    const runtime = new GameplayRuntime({ scene, emitter, actorId });
     const reacter = new OverlayRenderer(
       setOverlayContent,
       current,
@@ -33,13 +41,13 @@ const RenderView = (props: Props) => {
     const renderer = new ThreeRenderer({ reacter, sam });
     renderer.setDOMElement(current);
     window.addEventListener('resize', renderer.resize);
-    client.runtime.startLoop();
-    client.runtime.setRenderer(renderer);
+    runtime.startLoop();
+    runtime.setRenderer(renderer);
     return () => {
-      client.runtime.stopLoop();
+      runtime.stopLoop();
       window.removeEventListener('resize', renderer.resize);
     };
-  }, [client, sam]);
+  }, [client, sam, scene, emitter]);
 
   return (
     <>

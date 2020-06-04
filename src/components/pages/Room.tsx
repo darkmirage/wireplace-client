@@ -23,7 +23,6 @@ const Room = (props: PageProps) => {
   const classes = useStyles({ theme: useTheme() });
 
   const roomId = props.match.params['roomId'];
-  const username = 'test';
 
   const [sam] = React.useState<SpatialAudioManager>(new SpatialAudioManager());
 
@@ -36,7 +35,7 @@ const Room = (props: PageProps) => {
           port={PORT}
           spinner={<Spinner />}
         >
-          {({ client, actorId }) => (
+          {({ client, actorId, username }) => (
             <>
               <div className={classes.panel}>
                 <TopToolbar>
@@ -51,7 +50,12 @@ const Room = (props: PageProps) => {
                 <TextChat client={client} username={username} />
               </div>
               <div className={classes.main}>
-                <RenderView client={client} sam={sam} />
+                <RenderView
+                  scene={client.scene}
+                  client={client}
+                  sam={sam}
+                  actorId={actorId}
+                />
               </div>
             </>
           )}

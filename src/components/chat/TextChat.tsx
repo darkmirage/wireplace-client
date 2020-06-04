@@ -186,7 +186,6 @@ const useStyles = createUseStyles<Theme>((theme) => ({
     maskImage:
       'linear-gradient(rgba(0, 0, 0, 0) 0, rgba(0, 0, 0, 0) 20px, black 100px, black 100%)',
     maxHeight: 500,
-    minHeight: 300,
     overflowX: 'hidden',
     overflowY: 'scroll',
     paddingLeft: theme.spacing.normal,

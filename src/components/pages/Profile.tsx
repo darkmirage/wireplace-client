@@ -31,7 +31,6 @@ const Login = (props: PageProps) => {
       });
       props.history.push(props.location.state?.from || '/');
     } catch (e) {
-      console.log(e);
       setError(e.message);
       setLoading(false);
     }
