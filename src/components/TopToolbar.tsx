@@ -61,6 +61,7 @@ const useStyles = createUseStyles<Theme>((theme) => ({
     pointerEvents: 'none',
     position: 'absolute',
     transition: '200ms',
+    zIndex: theme.zIndices.top,
   },
   visible: {
     opacity: 1.0,
