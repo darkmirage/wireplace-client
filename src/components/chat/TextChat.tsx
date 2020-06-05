@@ -6,11 +6,12 @@ import { Events, getGlobalEmitter } from 'wireplace/TypedEventsEmitter';
 import { WirePlaceChatClient, ChatLine } from 'wireplace/WirePlaceClient';
 import {
   Animation,
-  Input,
   Button,
   Icon,
-  Tooltip,
+  Input,
+  InputGroup,
   PreventPropagation,
+  Tooltip,
 } from 'components/ui';
 import hexToRGB from 'utils/hexToRGB';
 import { Theme } from 'themes';
@@ -75,7 +76,7 @@ const TextChat = (props: Props) => {
     }
   }, [props.username, lastLine]);
 
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = (event: React.FormEvent<any>) => {
     event.preventDefault();
     if (message) {
       client.sendMessage(message);
@@ -131,7 +132,12 @@ const TextChat = (props: Props) => {
         onExited={() => setHideChat(true)}
         onEntering={() => setHideChat(false)}
       >
-        <div className={classes.messages} ref={messagesRef}>
+        <div
+          className={classNames(classes.messages, {
+            [classes.messagesGradient]: messageElements.length > 5,
+          })}
+          ref={messagesRef}
+        >
           {hideChat ? null : messageElements}
         </div>
       </Animation.Fade>
@@ -152,21 +158,28 @@ const TextChat = (props: Props) => {
           />
         </Tooltip>
         <form className={classes.form} onSubmit={handleSubmit}>
-          <Input
-            focused={focus}
-            className={classNames(classes.input, {
-              [classes.inputFocused]: focus,
-            })}
-            onBlur={() => getGlobalEmitter().emit(Events.FOCUS_CHAT, false)}
-            onFocus={() => {
-              getGlobalEmitter().emit(Events.FOCUS_CHAT, true);
-              setFadeChat(false);
-            }}
-            value={message}
-            placeholder={focus ? 'Type something' : 'Press enter to chat'}
-            onValueChange={setMessage}
-            tabIndex={2}
-          />
+          <InputGroup inside>
+            <Input
+              focused={focus}
+              className={classNames(classes.input, {
+                [classes.inputFocused]: focus,
+              })}
+              onBlur={() => getGlobalEmitter().emit(Events.FOCUS_CHAT, false)}
+              onFocus={() => {
+                getGlobalEmitter().emit(Events.FOCUS_CHAT, true);
+                setFadeChat(false);
+              }}
+              value={message}
+              placeholder={focus ? 'Type something' : 'Press enter to chat'}
+              onValueChange={setMessage}
+              tabIndex={2}
+            />
+            <Tooltip content={'Send message'} placement="autoVertical">
+              <InputGroup.Button onClick={handleSubmit}>
+                <Icon icon="send" />
+              </InputGroup.Button>
+            </Tooltip>
+          </InputGroup>
         </form>
       </PreventPropagation>
     </div>
@@ -190,8 +203,6 @@ const useStyles = createUseStyles<Theme>((theme) => ({
     pointerEvents: 'auto',
   },
   messages: {
-    maskImage:
-      'linear-gradient(rgba(0, 0, 0, 0) 0, rgba(0, 0, 0, 0) 20px, black 100px, black 100%)',
     maxHeight: 500,
     overflowX: 'hidden',
     overflowY: 'scroll',
@@ -209,6 +220,10 @@ const useStyles = createUseStyles<Theme>((theme) => ({
       pointerEvents: 'auto',
       width: theme.spacing.normal,
     },
+  },
+  messagesGradient: {
+    maskImage:
+      'linear-gradient(rgba(0, 0, 0, 0) 0, rgba(0, 0, 0, 0) 20px, black 100px, black 100%)',
   },
   message: {
     alignItems: 'flex-start',
@@ -234,7 +249,6 @@ const useStyles = createUseStyles<Theme>((theme) => ({
   },
   input: {
     background: 'rgba(0, 0, 0, 0.25)',
-    height: '100%',
     width: '100%',
   },
   inputFocused: {
