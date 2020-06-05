@@ -2,6 +2,7 @@ import React from 'react';
 import { Switch, Route } from 'react-router-dom';
 import { createUseStyles, useTheme } from 'react-jss';
 
+import Contact from 'components/Contact';
 import { Panel, Message } from 'components/ui';
 import UserControls from 'components/auth/UserControls';
 import Unverified from 'components/auth/Unverified';
@@ -60,6 +61,9 @@ const Home = (props: PageProps) => {
                   )}
                 />
               </Switch>
+            </div>
+            <div className={classes.row}>
+              <Contact />
             </div>
           </Panel>
         </div>

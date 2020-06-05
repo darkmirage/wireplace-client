@@ -1,6 +1,6 @@
 import React from 'react';
 import { createUseStyles, useTheme } from 'react-jss';
-import { BrowserRouter, Route, Switch } from 'react-router-dom';
+import { BrowserRouter, Route, Switch, Redirect } from 'react-router-dom';
 
 import { Theme } from 'themes';
 import Home from 'components/pages/Home';
@@ -25,8 +25,8 @@ const App = () => {
           <Route exact path="/signup" component={SignUp} />
           <Route exact path="/unverified" component={Home} />
           <PrivateRoute exact path="/profile" component={Profile} />
-          <PrivateRoute path="/:roomId/:userId" component={Room} />
-          <PrivateRoute path="/:roomId" component={Room} />
+          <PrivateRoute exact path="/main" component={Room} />
+          <Route path="/" render={() => <Redirect to="/" />} />
         </Switch>
       </div>
     </BrowserRouter>

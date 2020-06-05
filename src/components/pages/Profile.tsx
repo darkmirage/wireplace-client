@@ -9,6 +9,7 @@ import {
   Notification,
   Button,
 } from 'components/ui';
+import Contact from 'components/Contact';
 import { Theme } from 'themes';
 import firebase from 'firebaseApp';
 import { PageProps } from 'components/auth/PageProps';
@@ -68,6 +69,7 @@ const Login = (props: PageProps) => {
           </div>
         </form>
         {errorMessage}
+        <Contact />
       </Panel>
     </Centered>
   );

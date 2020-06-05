@@ -1,6 +1,7 @@
 import React from 'react';
 import { createUseStyles, useTheme } from 'react-jss';
 
+import Contact from 'components/Contact';
 import { Button, Centered, Icon, Input, Message, Panel } from 'components/ui';
 import { Theme } from 'themes';
 import firebase from 'firebaseApp';
@@ -140,6 +141,7 @@ const SignUp = (props: PageProps) => {
           </div>
           {errorMessage}
         </form>
+        <Contact />
       </Panel>
     </Centered>
   );

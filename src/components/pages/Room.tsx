@@ -7,11 +7,12 @@ import {
   PreventPropagation,
   Spinner,
 } from 'components/ui';
-import { PageProps } from 'components/auth/PageProps';
 import { HOSTNAME, PORT } from 'constants/ServerConfigs';
+import { PageProps } from 'components/auth/PageProps';
 import { Theme } from 'themes';
 import AvatarMenu from 'components/AvatarMenu';
 import ClientProvider from 'components/ClientProvider';
+import Contact from 'components/Contact';
 import EmoteMenu from 'components/EmoteMenu';
 import RenderView from 'components/RenderView';
 import SpatialAudioManager from 'wireplace/SpatialAudioManager';
@@ -57,6 +58,9 @@ const Room = (props: PageProps) => {
                   actorId={actorId}
                 />
               </div>
+              <div className={classes.feedback}>
+                <Contact compact />
+              </div>
             </>
           )}
         </ClientProvider>
@@ -92,9 +96,19 @@ const useStyles = createUseStyles<Theme>((theme) => ({
     width: 300,
     zIndex: theme.zIndices.middle,
   },
+  feedback: {
+    position: 'absolute',
+    bottom: 0,
+    right: 0,
+    padding: theme.spacing.normal,
+    pointerEvents: 'none',
+  },
   '@media (max-width: 400px)': {
     panel: {
       width: '100%',
+    },
+    feedback: {
+      display: 'none',
     },
   },
 }));
