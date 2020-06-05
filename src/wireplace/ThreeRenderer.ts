@@ -5,6 +5,7 @@ import {
   DirectionalLight,
   Fog,
   GridHelper,
+  Group,
   HemisphereLight,
   Mesh,
   MeshBasicMaterial,
@@ -13,11 +14,10 @@ import {
   PCFSoftShadowMap,
   PerspectiveCamera,
   PlaneBufferGeometry,
-  Scene,
-  WebGLRenderer,
-  Vector3,
-  Group,
   Raycaster,
+  Scene,
+  Vector3,
+  WebGLRenderer,
 } from 'three';
 import { MapControls } from 'three/examples/jsm/controls/OrbitControls';
 import Stats from 'three/examples/jsm/libs/stats.module';
@@ -65,6 +65,7 @@ class ThreeRenderer implements IRenderer {
   _scene: Scene;
   _camera: PerspectiveCamera;
   _prevCameraPosition: Vector3;
+  _light: DirectionalLight;
   _cameraLocked: boolean;
   _animation: AnimationRuntime;
   _controls: OrbitControls;
@@ -78,13 +79,21 @@ class ThreeRenderer implements IRenderer {
   constructor({ reacter, sam }: ThreeRendererProps) {
     this.domElement = document.createElement('div');
     const antialias = !isHighResolution();
-    logger.log('[Renderer] Anti-alias:', antialias);
+    const showShadows = true;
+
     this.webGLRenderer = new WebGLRenderer({ antialias });
-    this.webGLRenderer.shadowMap.enabled = true;
+    logger.log('[Renderer] Anti-alias:', antialias);
+
+    this.webGLRenderer.shadowMap.enabled = showShadows;
     this.webGLRenderer.shadowMap.type = PCFSoftShadowMap;
+    logger.log('[Renderer] Shadow Map:', showShadows);
+
+    this.webGLRenderer.setPixelRatio(1);
+
     this._scene = new Scene();
     this._camera = new PerspectiveCamera(45);
     this._prevCameraPosition = new Vector3();
+    this._light = new DirectionalLight(0xffffff);
     this._cameraLocked = DEFAULT_CAMERA_LOCKED;
     this._animation = new AnimationRuntime(this._scene);
     this._reacter = reacter;
@@ -132,6 +141,8 @@ class ThreeRenderer implements IRenderer {
     });
 
     this._setupScene();
+
+    (window as any).renderer = this;
   }
 
   // x and y are in screen space
@@ -158,11 +169,19 @@ class ThreeRenderer implements IRenderer {
 
     const bgObjs = new Group();
 
-    let l1 = new DirectionalLight(0xffffff);
-    l1.position.set(0, 200, 200);
-    l1.castShadow = true;
-    l1.intensity = 0.4;
-    bgObjs.add(l1);
+    this._light.position.set(0, 100, 100);
+    this._light.shadow.camera.far = 500;
+    this._light.shadow.camera.left = -20;
+    this._light.shadow.camera.bottom = -20;
+    this._light.shadow.camera.right = 20;
+    this._light.shadow.camera.top = 20;
+    this._light.castShadow = true;
+    this._light.intensity = 0.4;
+    this._light.shadow.mapSize.width = 1024;
+    this._light.shadow.mapSize.height = 1024;
+
+    bgObjs.add(this._light);
+    bgObjs.add(this._light.target);
 
     const l2 = new DirectionalLight(0xffffff);
     l2.position.set(0, 200, 200);
@@ -236,6 +255,7 @@ class ThreeRenderer implements IRenderer {
   }
 
   _updateControls(targetObjectId: string | null) {
+    this._light.target.position.copy(this._controls.target);
     if (!this._cameraLocked) {
       return;
     }
@@ -272,7 +292,6 @@ class ThreeRenderer implements IRenderer {
   }
 
   resize = () => {
-    this.webGLRenderer.setPixelRatio(window.devicePixelRatio);
     const width = this.domElement.clientWidth;
     const height = this.domElement.clientHeight;
     this.webGLRenderer.setSize(width, height);

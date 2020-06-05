@@ -1,5 +1,5 @@
 import { Vector3 } from 'three';
-import { ActorID, Actor } from 'wireplace-scene';
+import { ActorID } from 'wireplace-scene';
 
 import { IRenderer } from './IRenderer';
 
@@ -16,7 +16,6 @@ const ROLL_OFF_FACTOR = 6.0;
 const FFT_SIZE = 2 ** 5;
 
 const _v = new Vector3();
-const _data = new Uint8Array(FFT_SIZE / 2);
 
 class SpatialAudioManager {
   _soundActors: Record<ActorID, SpatialAudioActor>;
