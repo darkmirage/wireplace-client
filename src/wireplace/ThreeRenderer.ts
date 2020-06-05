@@ -343,6 +343,9 @@ class ThreeRenderer implements IRenderer {
         animated,
         this
       );
+
+      const audioLevels = this._sam.getAudioLevels();
+      this._reacter.updateAudioLevels(audioLevels);
     }
 
     if (sceneDirty || controlsDirty || animated || cameraDirty) {

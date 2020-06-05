@@ -1,17 +1,17 @@
 import { Vector3 } from 'three';
-import { ActorID } from 'wireplace-scene';
+import { ActorID, Actor } from 'wireplace-scene';
 
 import { IRenderer } from './IRenderer';
 
 interface SpatialAudioActor {
   actorId: ActorID;
-  analyser: AnalyserNode;
+  analyser: AnalyserNode | null;
   panner: PannerNode | null;
   output: GainNode;
 }
 
-const REF_DISTANCE = 5.0;
-const ROLL_OFF_FACTOR = 4.0;
+const REF_DISTANCE = 3.0;
+const ROLL_OFF_FACTOR = 6.0;
 
 const _v = new Vector3();
 
@@ -27,15 +27,19 @@ class SpatialAudioManager {
   addActor(
     actorId: ActorID,
     input: AudioNode,
-    trueSpatial: boolean = false
+    trueSpatial: boolean = false,
+    analyse: boolean = false
   ): SpatialAudioActor {
     const { context } = input;
     this._context = context;
-    const analyser = new AnalyserNode(context);
-    const output = new GainNode(context);
-    input.connect(analyser);
 
-    output.connect(context.destination);
+    const nodes: AudioNode[] = [input];
+
+    let analyser = null;
+    if (analyse) {
+      analyser = new AnalyserNode(context);
+      nodes.push(analyser);
+    }
 
     let panner = null;
     if (trueSpatial) {
@@ -46,13 +50,21 @@ class SpatialAudioManager {
       panner.coneInnerAngle = 120;
       panner.coneOuterGain = 0.3;
       panner.rolloffFactor = ROLL_OFF_FACTOR;
-      analyser.connect(panner);
-      panner.connect(output);
-    } else {
-      analyser.connect(output);
+      nodes.push(panner);
     }
 
-    const audioActor = { actorId, analyser, panner, output };
+    const output = new GainNode(context);
+    nodes.push(output);
+
+    for (let i = 0; i < nodes.length; i += 1) {
+      if (i === nodes.length - 1) {
+        nodes[i].connect(context.destination);
+      } else {
+        nodes[i].connect(nodes[i + 1]);
+      }
+    }
+
+    const audioActor = { actorId, panner, analyser, output };
     this._soundActors[actorId] = audioActor;
     return audioActor;
   }
@@ -66,6 +78,15 @@ class SpatialAudioManager {
     const { output } = actor;
     output.disconnect();
     delete this._soundActors[actorId];
+  }
+
+  getAudioLevels(): Record<ActorID, number> {
+    const levels: Record<ActorID, number> = {};
+    for (const actorId in this._soundActors) {
+      const { output } = this._soundActors[actorId];
+      levels[actorId] = output.gain.value;
+    }
+    return levels;
   }
 
   updateEnvironment = (
@@ -97,34 +118,47 @@ class SpatialAudioManager {
     listener.forwardY.value = _v.y;
     listener.forwardZ.value = _v.z;
 
-    animated.forEach((actorId) => {
-      const pose = renderer.getRendererPose(actorId);
-      const soundActor = this._soundActors[actorId];
-      if (!pose || !soundActor) {
-        return;
-      }
+    const updateActor = this._updateActor.bind(this, p1, renderer, currentTime);
 
-      const p2 = pose.position;
-      const q2 = pose.quaternion;
-      const { panner, output } = soundActor;
-      if (panner) {
-        _v.set(0, 0, 1).applyQuaternion(q2);
-        panner.positionX.value = p2.x;
-        panner.positionY.value = p2.y;
-        panner.positionZ.value = p2.z;
-        panner.orientationX.value = _v.x;
-        panner.orientationY.value = _v.y;
-        panner.orientationZ.value = _v.z;
-      } else {
-        _v.copy(p1).sub(p2);
-        const d = _v.length();
-        const gain = Math.pow(
-          Math.max(d, REF_DISTANCE) / REF_DISTANCE,
-          -ROLL_OFF_FACTOR
-        );
-        output.gain.setValueAtTime(gain, currentTime);
-      }
-    });
+    if (animated.has(activeActorId)) {
+      Object.keys(this._soundActors).forEach(updateActor);
+    } else {
+      animated.forEach(updateActor);
+    }
+  };
+
+  _updateActor = (
+    listenerPose: Vector3,
+    renderer: IRenderer,
+    currentTime: number,
+    actorId: ActorID
+  ) => {
+    const pose = renderer.getRendererPose(actorId);
+    const soundActor = this._soundActors[actorId];
+    if (!pose || !soundActor) {
+      return;
+    }
+
+    const p2 = pose.position;
+    const q2 = pose.quaternion;
+    const { panner, output } = soundActor;
+    if (panner) {
+      _v.set(0, 0, 1).applyQuaternion(q2);
+      panner.positionX.value = p2.x;
+      panner.positionY.value = p2.y;
+      panner.positionZ.value = p2.z;
+      panner.orientationX.value = _v.x;
+      panner.orientationY.value = _v.y;
+      panner.orientationZ.value = _v.z;
+    } else {
+      _v.copy(listenerPose).sub(p2);
+      const d = _v.length();
+      const gain = Math.pow(
+        Math.max(d, REF_DISTANCE) / REF_DISTANCE,
+        -ROLL_OFF_FACTOR
+      );
+      output.gain.setValueAtTime(gain, currentTime);
+    }
   };
 }
 

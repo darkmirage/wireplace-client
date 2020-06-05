@@ -2,6 +2,7 @@ import React from 'react';
 import { createUseStyles, useTheme } from 'react-jss';
 import { Scene, Camera, Vector3 } from 'three';
 
+import { Icon } from 'components/ui';
 import WirePlaceClient from 'wireplace/WirePlaceClient';
 import hexToRGB from 'utils/hexToRGB';
 import type { Theme } from 'themes';
@@ -16,6 +17,7 @@ type OverlayActor = {
   color: number;
   username?: string;
   distance: number;
+  audioLevel?: number;
 };
 
 type OverlayProps = {
@@ -34,9 +36,20 @@ const Overlay = (props: OverlayProps) => {
   const classes = useStyles({ theme: useTheme() });
 
   const overlays = props.actors.map(
-    ({ distance, username, actorId, x, y, color = 0 }, i) => {
+    ({ audioLevel, distance, username, actorId, x, y, color = 0 }, i) => {
       if (!username) {
         return null;
+      }
+
+      let audioIndicator = null;
+      if (audioLevel !== undefined) {
+        if (audioLevel >= 0.5) {
+          audioIndicator = <Icon size="3x" icon="volume-up" />;
+        } else if (audioLevel > 0.01) {
+          audioIndicator = <Icon size="3x" icon="volume-down" />;
+        } else {
+          audioIndicator = <Icon size="3x" icon="volume-off" />;
+        }
       }
 
       return (
@@ -47,10 +60,15 @@ const Overlay = (props: OverlayProps) => {
             zIndex: distance + 3,
             top: y,
             left: x,
-            background: hexToRGB(color),
           }}
         >
-          {username}
+          {audioIndicator}
+          <div
+            className={classes.nameplate}
+            style={{ background: hexToRGB(color) }}
+          >
+            {username}
+          </div>
         </PreventPropagation>
       );
     }
@@ -62,9 +80,8 @@ class OverlayRenderer {
   _setOverlayContent: React.Dispatch<React.SetStateAction<React.ReactNode>>;
   _domElement: HTMLDivElement;
   _getClient: () => WirePlaceClient;
-  _lastTick: number;
-  _lastFetched: number;
   _userInfo: Record<ActorID, UserInfo>;
+  _audioLevels: Record<ActorID, number>;
 
   constructor(
     setOverlayContent: React.Dispatch<React.SetStateAction<React.ReactNode>>,
@@ -74,26 +91,32 @@ class OverlayRenderer {
     this._setOverlayContent = setOverlayContent;
     this._domElement = domElement;
     this._getClient = getClient;
-    this._lastTick = -Infinity;
     this._userInfo = {};
-    this._lastFetched = -Infinity;
+    this._audioLevels = {};
   }
 
   _updateUserInfo(actors: Array<OverlayActor>) {
-    const tick = this._lastTick;
-    const now = Date.now();
-    if (now - this._lastFetched < 1000) {
-      return;
-    }
-    this._getClient()
-      .fetchUsersInfo(actors.map(({ actorId }) => actorId))
-      .then((userInfo) => {
-        if (this._lastTick !== tick) {
-          return;
+    const actorIds = actors
+      .map(({ actorId }) => {
+        if (actorId in this._userInfo) {
+          return '';
+        } else {
+          // Cache a placeholder empty username before server returns
+          this._userInfo[actorId] = { actorId, username: '' };
+          return actorId;
         }
-        this._lastFetched = Date.now();
+      })
+      .filter(Boolean);
+
+    this._getClient()
+      .fetchUsersInfo(actorIds)
+      .then((userInfo) => {
         Object.assign(this._userInfo, userInfo);
       });
+  }
+
+  updateAudioLevels(audioLevels: Record<ActorID, number>) {
+    this._audioLevels = audioLevels;
   }
 
   update(tick: number, delta: number, scene: Scene, camera: Camera) {
@@ -118,16 +141,15 @@ class OverlayRenderer {
           continue;
         }
         v.copy(child.position).sub(camera.position);
+        const actorId = child.name;
         const distance = v.length();
         const color: number = child.userData.color as any; // TODO: make this type safe
-        actorInfo.push({ x, y, actorId: child.name, color, distance });
+        const audioLevel = this._audioLevels[actorId];
+        actorInfo.push({ audioLevel, x, y, actorId, color, distance });
       }
     }
 
     actorInfo.sort((a, b) => b.distance - a.distance);
-
-    // TODO: Remove this extreme hack for rate-limiting
-    this._lastTick = Math.max(this._lastTick, tick);
     this._updateUserInfo(actorInfo);
 
     for (const ui of actorInfo) {
@@ -155,18 +177,25 @@ const useStyles = createUseStyles<Theme>((theme) => ({
     zIndex: theme.zIndices.middle,
   },
   actor: {
-    borderRadius: theme.spacing.normal,
-    color: '#ffffff',
     display: 'flex',
+    flexDirection: 'column',
+    pointerEvents: 'auto',
+    position: 'absolute',
+    transform: 'translate(-50%, -100px)',
+    alignItems: 'center',
+    height: '100px',
+    justifyContent: 'flex-end',
+  },
+  nameplate: {
+    marginTop: theme.spacing.normal,
+    color: '#ffffff',
     fontWeight: 500,
     opacity: 0.8,
+    borderRadius: theme.spacing.normal,
     paddingBottom: theme.spacing.narrow,
     paddingLeft: theme.spacing.normal,
     paddingRight: theme.spacing.normal,
     paddingTop: theme.spacing.narrow,
-    pointerEvents: 'auto',
-    position: 'absolute',
-    transform: 'translateX(-50%)',
   },
 }));
 
