@@ -22,8 +22,7 @@ import VoiceChat from 'components/chat/VoiceChat';
 
 const Room = (props: PageProps) => {
   const classes = useStyles({ theme: useTheme() });
-
-  const roomId = props.match.params['roomId'];
+  const roomId = 'main' || props.match.params['roomId'];
 
   const [sam] = React.useState<SpatialAudioManager>(new SpatialAudioManager());
 
