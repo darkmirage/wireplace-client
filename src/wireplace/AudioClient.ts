@@ -37,9 +37,12 @@ class AudioClient {
   }
 
   onConnection = (callback: (connected: boolean) => void) => {
-    this._ee.on(AudioEvents.CONNECTION, (connected: boolean) =>
-      callback(connected)
-    );
+    this._ee.on(AudioEvents.CONNECTION, (connected: boolean) => {
+      callback(connected);
+      if (!this.connected) {
+        this.sam.clearActors();
+      }
+    });
   };
 
   async join(actorId: ActorID, roomId: string) {

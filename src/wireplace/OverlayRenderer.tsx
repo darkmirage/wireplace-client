@@ -43,12 +43,13 @@ const Overlay = (props: OverlayProps) => {
 
       let audioIndicator = null;
       if (audioLevel !== undefined) {
+        const style = { opacity: Math.min(1, Math.max(0, audioLevel)) };
         if (audioLevel >= 0.5) {
-          audioIndicator = <Icon size="3x" icon="volume-up" />;
+          audioIndicator = <Icon size="3x" style={style} icon="volume-up" />;
         } else if (audioLevel > 0.01) {
-          audioIndicator = <Icon size="3x" icon="volume-down" />;
+          audioIndicator = <Icon size="3x" style={style} icon="volume-down" />;
         } else {
-          audioIndicator = <Icon size="3x" icon="volume-off" />;
+          audioIndicator = <Icon size="3x" style={style} icon="volume-off" />;
         }
       }
 

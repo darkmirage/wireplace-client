@@ -8,41 +8,37 @@ interface SpatialAudioActor {
   analyser: AnalyserNode | null;
   panner: PannerNode | null;
   output: GainNode;
+  gain: number;
 }
 
 const REF_DISTANCE = 3.0;
 const ROLL_OFF_FACTOR = 6.0;
+const FFT_SIZE = 2 ** 5;
 
 const _v = new Vector3();
+const _data = new Uint8Array(FFT_SIZE / 2);
 
 class SpatialAudioManager {
   _soundActors: Record<ActorID, SpatialAudioActor>;
   _context: BaseAudioContext | null;
+  _usePanner: boolean;
+  _useAnalyser: boolean;
 
   constructor() {
     this._soundActors = {};
     this._context = null;
+    this._usePanner = false;
+    this._useAnalyser = false;
   }
 
-  addActor(
-    actorId: ActorID,
-    input: AudioNode,
-    trueSpatial: boolean = false,
-    analyse: boolean = false
-  ): SpatialAudioActor {
+  addActor(actorId: ActorID, input: AudioNode): SpatialAudioActor {
     const { context } = input;
     this._context = context;
 
     const nodes: AudioNode[] = [input];
 
-    let analyser = null;
-    if (analyse) {
-      analyser = new AnalyserNode(context);
-      nodes.push(analyser);
-    }
-
     let panner = null;
-    if (trueSpatial) {
+    if (this._usePanner) {
       panner = new PannerNode(context);
       panner.distanceModel = 'exponential';
       panner.refDistance = REF_DISTANCE;
@@ -56,6 +52,13 @@ class SpatialAudioManager {
     const output = new GainNode(context);
     nodes.push(output);
 
+    let analyser = null;
+    if (this._useAnalyser) {
+      analyser = new AnalyserNode(context);
+      analyser.fftSize = FFT_SIZE;
+      nodes.push(analyser);
+    }
+
     for (let i = 0; i < nodes.length; i += 1) {
       if (i === nodes.length - 1) {
         nodes[i].connect(context.destination);
@@ -64,7 +67,7 @@ class SpatialAudioManager {
       }
     }
 
-    const audioActor = { actorId, panner, analyser, output };
+    const audioActor = { actorId, panner, analyser, output, gain: 0 };
     this._soundActors[actorId] = audioActor;
     return audioActor;
   }
@@ -80,11 +83,18 @@ class SpatialAudioManager {
     delete this._soundActors[actorId];
   }
 
+  clearActors() {
+    Object.values(this._soundActors).forEach(({ output }) => {
+      output.disconnect();
+    });
+    this._soundActors = {};
+  }
+
   getAudioLevels(): Record<ActorID, number> {
     const levels: Record<ActorID, number> = {};
     for (const actorId in this._soundActors) {
-      const { output } = this._soundActors[actorId];
-      levels[actorId] = output.gain.value;
+      const { gain } = this._soundActors[actorId];
+      levels[actorId] = gain;
     }
     return levels;
   }
@@ -157,6 +167,7 @@ class SpatialAudioManager {
         Math.max(d, REF_DISTANCE) / REF_DISTANCE,
         -ROLL_OFF_FACTOR
       );
+      soundActor.gain = gain;
       output.gain.setValueAtTime(gain, currentTime);
     }
   };
