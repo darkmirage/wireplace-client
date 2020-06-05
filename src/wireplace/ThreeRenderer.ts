@@ -45,6 +45,7 @@ const isHighResolution = () => {
 
 const DEFAULT_CAMERA_LOCKED = false;
 const TARGET_Y = 1.3;
+const FULL_UPDATE_THRESHOLD = 1.0;
 
 const _v1 = new Vector3();
 const _v2 = new Vector3();
@@ -72,6 +73,7 @@ class ThreeRenderer implements IRenderer {
   _controlTarget: Object3D | null;
   _cursor: Object3D;
   _floor: Object3D;
+  _delayedDelta: number;
 
   constructor({ reacter, sam }: ThreeRendererProps) {
     this.domElement = document.createElement('div');
@@ -87,6 +89,7 @@ class ThreeRenderer implements IRenderer {
     this._animation = new AnimationRuntime(this._scene);
     this._reacter = reacter;
     this._sam = sam;
+    this._delayedDelta = 0;
 
     this.cameraForward = new Vector3(0, 0, -1);
     this.cameraRight = new Vector3(1, 0, 0);
@@ -309,8 +312,14 @@ class ThreeRenderer implements IRenderer {
     updates: Record<ObjectID, Update>,
     activeActorId: ObjectID | null
   ) => {
-    this._updateControls(activeActorId);
+    const fullDelta = this._delayedDelta + delta;
+    const fullUpdate = fullDelta >= FULL_UPDATE_THRESHOLD;
+    this._delayedDelta += delta;
+    if (fullUpdate) {
+      this._delayedDelta = 0;
+    }
 
+    this._updateControls(activeActorId);
     const sceneDirty = Object.keys(updates).length > 0;
     const controlsDirty = this._controls.update();
 
@@ -326,8 +335,14 @@ class ThreeRenderer implements IRenderer {
 
     const animated = this._animation.update(tick, delta);
 
-    if (animated && activeActorId) {
-      this._sam.updateEnvironment(tick, delta, activeActorId, animated, this);
+    if (fullUpdate && animated && activeActorId) {
+      this._sam.updateEnvironment(
+        tick,
+        fullDelta,
+        activeActorId,
+        animated,
+        this
+      );
     }
 
     if (sceneDirty || controlsDirty || animated || cameraDirty) {

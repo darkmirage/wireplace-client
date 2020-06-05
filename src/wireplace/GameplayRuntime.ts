@@ -13,6 +13,9 @@ const _q = new Quaternion();
 const _r = new Euler();
 const _clock = new Clock();
 
+const NULL_UPDATE = {};
+const FULL_UPDATE_THRESHOLD = 1.0 / 3;
+
 export enum Directions {
   UP = 'UP',
   DOWN = 'DOWN',
@@ -40,6 +43,7 @@ class GameplayRuntime {
   _wasMoving: boolean;
   _lastForward: Vector3;
   _lastRight: Vector3;
+  _delayedDelta: number;
 
   constructor({ scene, emitter, actorId }: WirePlaceRuntimeProps) {
     this.tick = 0;
@@ -59,6 +63,7 @@ class GameplayRuntime {
     this._wasMoving = false;
     this._lastForward = new Vector3();
     this._lastRight = new Vector3();
+    this._delayedDelta = 0;
     this._registerEvents();
   }
 
@@ -190,10 +195,20 @@ class GameplayRuntime {
   }
 
   update = (tick: number, delta: number) => {
+    const fullDelta = delta + this._delayedDelta;
+    const fullUpdate = fullDelta >= FULL_UPDATE_THRESHOLD;
+    this._delayedDelta += delta;
+    if (fullUpdate) {
+      this._delayedDelta = 0;
+    }
+
     if (this._renderer) {
-      const diff = this._scene.retrieveDiff();
-      const updates = diff.d;
+      const updates = fullUpdate ? this._scene.retrieveDiff().d : NULL_UPDATE;
       this._renderer.render(tick, delta, updates, this.actorId);
+    }
+
+    if (!fullUpdate) {
+      return;
     }
 
     if (!this.actorId) {
@@ -257,7 +272,7 @@ class GameplayRuntime {
 
       _v1.normalize();
       _q.setFromUnitVectors(FORWARD, _v1);
-      _v1.multiplyScalar(speed * delta);
+      _v1.multiplyScalar(speed * fullDelta);
 
       _v1.x += p.x;
       _v1.y += p.y;
