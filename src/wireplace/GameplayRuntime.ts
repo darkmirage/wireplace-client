@@ -207,10 +207,6 @@ class GameplayRuntime {
       this._renderer.render(tick, delta, updates, this.actorId);
     }
 
-    if (!fullUpdate) {
-      return;
-    }
-
     if (!this.actorId) {
       return;
     }
