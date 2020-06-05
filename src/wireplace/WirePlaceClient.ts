@@ -1,5 +1,10 @@
 import axios from 'axios';
-import { WirePlaceScene, deserializeDiff, Update } from 'wireplace-scene';
+import {
+  IScene,
+  deserializeDiff,
+  Update,
+  WirePlaceSceneSerialized,
+} from 'wireplace-scene';
 import socketClusterClient from 'socketcluster-client';
 import { AGClientSocket } from 'socketcluster-client';
 
@@ -22,7 +27,7 @@ type ActorID = string;
 
 interface WirePlaceClientProps {
   emitter: TypedEventsEmitter;
-  scene: WirePlaceScene;
+  scene: IScene<WirePlaceSceneSerialized>;
   hostname: string;
   port: number;
   roomId: string;
@@ -43,7 +48,7 @@ const UPDATE_FPS = 3;
 
 class WirePlaceClient implements WirePlaceChatClient {
   roomId: string;
-  scene: WirePlaceScene;
+  scene: IScene<WirePlaceSceneSerialized>;
   socket: AGClientSocket;
 
   _username: string | null;
@@ -76,7 +81,12 @@ class WirePlaceClient implements WirePlaceChatClient {
     this.roomId = roomId;
     this.scene = scene;
     this._resetCache();
-    logger.log('[Client]', { hostname, port, roomId, sceneVersion: scene.version });
+    logger.log('[Client]', {
+      hostname,
+      port,
+      roomId,
+      sceneVersion: scene.version,
+    });
     (window as any).client = this;
   }
 

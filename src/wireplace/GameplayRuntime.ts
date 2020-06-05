@@ -1,5 +1,10 @@
 import { Clock, Vector3, Quaternion, Euler } from 'three';
-import { WirePlaceScene, Update, ActorID } from 'wireplace-scene';
+import {
+  IScene,
+  Update,
+  ActorID,
+  WirePlaceSceneSerialized,
+} from 'wireplace-scene';
 
 import TypedEventsEmitter, { Events } from 'wireplace/TypedEventsEmitter';
 import { AnimationActions } from 'constants/Animation';
@@ -26,14 +31,14 @@ export enum Directions {
 
 interface WirePlaceRuntimeProps {
   emitter: TypedEventsEmitter;
-  scene: WirePlaceScene;
+  scene: IScene<WirePlaceSceneSerialized>;
   actorId: ActorID;
 }
 
 class GameplayRuntime {
   tick: number;
   actorId: ActorID;
-  _scene: WirePlaceScene;
+  _scene: IScene<WirePlaceSceneSerialized>;
   _running: boolean;
   _lastTime: number;
   _directions: Record<keyof typeof Directions, boolean>;

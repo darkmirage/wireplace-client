@@ -1,6 +1,6 @@
 import React from 'react';
 import { createUseStyles } from 'react-jss';
-import { WirePlaceScene, ActorID } from 'wireplace-scene';
+import { IScene, ActorID, WirePlaceSceneSerialized } from 'wireplace-scene';
 
 import { getGlobalEmitter } from 'wireplace/TypedEventsEmitter';
 import GameplayRuntime from 'wireplace/GameplayRuntime';
@@ -12,7 +12,7 @@ import SpatialAudioManager from 'wireplace/SpatialAudioManager';
 type Props = {
   client: WirePlaceClient;
   sam: SpatialAudioManager;
-  scene: WirePlaceScene;
+  scene: IScene<WirePlaceSceneSerialized>;
   actorId: ActorID;
 };
 
