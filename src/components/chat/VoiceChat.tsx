@@ -23,6 +23,13 @@ const VoiceChat = (props: Props) => {
 
   React.useEffect(() => {
     const newAudio = new AudioClient(sam, props.client.joinAudio);
+    newAudio.onConnection((connected) => {
+      setConnected(connected);
+      setLoading(false);
+      if (!connected) {
+        setMuted(false);
+      }
+    });
     setAudio(newAudio);
   }, [props.client, sam]);
 
@@ -32,17 +39,11 @@ const VoiceChat = (props: Props) => {
 
   const handleJoin = () => {
     setLoading(true);
-    audio.join(actorId, props.client.roomId).then(() => {
-      setConnected(true);
-      setLoading(false);
-    });
+    audio.join(actorId, props.client.roomId);
   };
 
   const handleExit = () => {
-    audio.leave().then(() => {
-      setMuted(false);
-      setConnected(false);
-    });
+    audio.leave();
   };
 
   const handleMute = () => {

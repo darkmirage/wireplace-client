@@ -1,3 +1,4 @@
+import { EventEmitter } from 'events';
 import AgoraRTC, { IAgoraRTCClient, ILocalAudioTrack } from 'agora-rtc-sdk-ng';
 import { ActorID } from 'wireplace-scene';
 
@@ -14,11 +15,16 @@ interface IAudioTrack {
   };
 }
 
+enum AudioEvents {
+  CONNECTION = 'CONNECTION',
+}
+
 class AudioClient {
   sam: SpatialAudioManager;
   connected: boolean;
   _agora: IAgoraRTCClient | null;
   _local: ILocalAudioTrack | null;
+  _ee: EventEmitter;
   _fetchToken: () => Promise<string>;
 
   constructor(sam: SpatialAudioManager, fetchToken: () => Promise<string>) {
@@ -26,11 +32,30 @@ class AudioClient {
     this.connected = false;
     this._agora = null;
     this._local = null;
+    this._ee = new EventEmitter();
     this._fetchToken = fetchToken;
   }
 
+  onConnection = (callback: (connected: boolean) => void) => {
+    this._ee.on(AudioEvents.CONNECTION, (connected: boolean) =>
+      callback(connected)
+    );
+  };
+
   async join(actorId: ActorID, roomId: string) {
     this._agora = AgoraRTC.createClient({ mode: 'rtc', codec: 'vp8' });
+
+    this._agora.on('connection-state-change', (curState, prevState, reason) => {
+      if (curState === 'CONNECTED') {
+        this.connected = true;
+        this._ee.emit(AudioEvents.CONNECTION, true);
+      } else if (curState === 'DISCONNECTED') {
+        this.connected = false;
+        this._local = null;
+        this._ee.emit(AudioEvents.CONNECTION, false);
+      }
+    });
+
     this._agora.on('user-published', async (user, mediaType) => {
       await this._agora?.subscribe(user);
       const actorId = user.uid as ActorID;
@@ -63,7 +88,6 @@ class AudioClient {
       this._local.close();
     }
     await this._agora?.leave();
-    this.connected = false;
   }
 
   mute = (muted: boolean = true) => {
