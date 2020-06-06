@@ -1,6 +1,6 @@
 import React from 'react';
 import { createUseStyles, useTheme } from 'react-jss';
-import { Scene, Camera, Vector3 } from 'three';
+import { Object3D, Camera, Vector3 } from 'three';
 
 import { Icon } from 'components/ui';
 import WirePlaceClient from 'wireplace/WirePlaceClient';
@@ -120,10 +120,15 @@ class OverlayRenderer {
     this._audioLevels = audioLevels;
   }
 
-  update(tick: number, delta: number, scene: Scene, camera: Camera) {
+  update(
+    tick: number,
+    delta: number,
+    actorObjects: Object3D[],
+    camera: Camera
+  ) {
     const actorInfo: Array<OverlayActor> = [];
 
-    for (const child of scene.children) {
+    for (const child of actorObjects) {
       if (child.name) {
         v.copy(child.up).multiplyScalar(2.2);
         v.add(child.position);

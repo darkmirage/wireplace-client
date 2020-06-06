@@ -24,6 +24,7 @@ export enum Events {
   SPAWN_PROP,
   MOVE_PROP,
   SET_TRANSFORM_MODE,
+  SET_TRANSFORM_ENABLED,
 }
 
 type ValueOf<T> = T[keyof T];
@@ -66,6 +67,7 @@ interface EventPayloads {
   [Events.SPAWN_PROP]: AssetID;
   [Events.MOVE_PROP]: { actorId: ActorID; position: XYZ; rotation: XYZ };
   [Events.SET_TRANSFORM_MODE]: 'translate' | 'rotate' | 'scale';
+  [Events.SET_TRANSFORM_ENABLED]: boolean;
 }
 
 interface GenericTypedEventEmitter<P> {

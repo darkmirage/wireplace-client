@@ -35,13 +35,15 @@ import { Update } from 'wireplace-scene';
 import Stats from 'three/examples/jsm/libs/stats.module';
 
 import { getGlobalEmitter, Events } from 'wireplace/TypedEventsEmitter';
+import { IRenderer, IPose } from './IRenderer';
+import { Notification } from 'components/ui';
+import ActorRaycaster from './ActorRaycaster';
 import AnimationRuntime from './AnimationRuntime';
 import disposeObject3D from 'utils/disposeObject3D';
 import getMaterial from 'utils/getMaterial';
-import SpatialAudioManager from './SpatialAudioManager';
-import OverlayRenderer from './OverlayRenderer';
-import { IRenderer, IPose } from './IRenderer';
 import logger from 'utils/logger';
+import OverlayRenderer from './OverlayRenderer';
+import SpatialAudioManager from './SpatialAudioManager';
 
 type ObjectID = string;
 
@@ -71,6 +73,7 @@ class ThreeRenderer implements IRenderer {
   composer: EffectComposer;
   cameraForward: Vector3;
   cameraRight: Vector3;
+  raycaster: ActorRaycaster;
 
   _sam: SpatialAudioManager;
   _scene: Scene;
@@ -85,9 +88,12 @@ class ThreeRenderer implements IRenderer {
   _stats: Stats;
   _reacter: OverlayRenderer;
   _controlTarget: Object3D | null;
-  _cursor: Object3D;
-  _floor: Object3D;
+  _cursor: Group;
+  _floor: Group;
+  _actorGroup: Group;
+  _propActors: Object3D[];
   _delayedDelta: number;
+  _transformEnabled: boolean;
 
   constructor({ reacter, sam }: ThreeRendererProps) {
     this.domElement = document.createElement('div');
@@ -106,11 +112,19 @@ class ThreeRenderer implements IRenderer {
     this.composer = composer;
 
     this._scene = new Scene();
+    this._cursor = new Group();
+    this._floor = new Group();
+    this._actorGroup = new Group();
+    this._scene.add(this._floor);
+    this._scene.add(this._cursor);
+    this._scene.add(this._actorGroup);
+    this._propActors = [];
+
     this._camera = new PerspectiveCamera(45);
     this._prevCameraPosition = new Vector3();
     this._light = new DirectionalLight(0xffffff);
     this._cameraLocked = DEFAULT_CAMERA_LOCKED;
-    this._animation = new AnimationRuntime(this._scene);
+    this._animation = new AnimationRuntime(this._actorGroup);
     this._reacter = reacter;
     this._sam = sam;
     this._delayedDelta = 0;
@@ -118,35 +132,9 @@ class ThreeRenderer implements IRenderer {
     this.cameraForward = new Vector3(0, 0, -1);
     this.cameraRight = new Vector3(1, 0, 0);
 
-    this._controlTarget = null;
-    this._controls = initializeMapControls(this.webGLRenderer, this._camera);
-    this._gizmos = initializeGizmos(
-      this.webGLRenderer,
-      this._controls,
-      this._camera
-    );
-
-    this._cursor = new Group();
-    this._floor = new Group();
-    this._scene.add(this._floor);
-    this._scene.add(this._cursor);
-
     this._stats = new (Stats as any)();
     this._stats.dom.setAttribute('style', 'position: fixed; right: 0; top: 0');
     document.body.appendChild(this._stats.dom);
-
-    // TODO: find a less hacky way to achieve this
-    getGlobalEmitter().on(Events.WINDOW_RESIZE, () => {
-      this._reacter.update(Infinity, 0, this._scene, this._camera);
-    });
-
-    getGlobalEmitter().on(Events.MOUSE_UP, (coords) => {
-      this._clickCursor(coords);
-      const { x, y, z } = this._cursor.position;
-      getGlobalEmitter().emit(Events.MOVE_TO, { x, y, z });
-    });
-
-    this._setupScene();
 
     const renderPass = new RenderPass(this._scene, this._camera);
     this.composer.addPass(renderPass);
@@ -162,6 +150,10 @@ class ThreeRenderer implements IRenderer {
     }
 
     const outlinePass = new OutlinePass(resolution, this._scene, this._camera);
+    outlinePass.edgeStrength = 2;
+    outlinePass.edgeThickness = 0.5;
+    outlinePass.visibleEdgeColor.setHex(0xffff00);
+    outlinePass.hiddenEdgeColor.setHex(0xaaaaaa);
     this.composer.addPass(outlinePass);
 
     this._fxaa = new ShaderPass(FXAAShader);
@@ -175,6 +167,70 @@ class ThreeRenderer implements IRenderer {
     }
 
     logger.log('[Renderer] Effects:', { enableBloom, showShadows, antialias });
+
+    this.raycaster = new ActorRaycaster(
+      this._propActors,
+      this._camera,
+      outlinePass
+    );
+    this.raycaster.enable();
+
+    this._controlTarget = null;
+    this._controls = initializeMapControls(this.webGLRenderer, this._camera);
+    this._gizmos = initializeGizmos(
+      this.webGLRenderer,
+      this._controls,
+      this._camera,
+      outlinePass
+    );
+
+    this._setupScene();
+
+    // TODO: find a less hacky way to achieve this
+    getGlobalEmitter().on(Events.WINDOW_RESIZE, () => {
+      this._reacter.update(
+        Infinity,
+        0,
+        this._actorGroup.children,
+        this._camera
+      );
+    });
+
+    getGlobalEmitter().on(Events.MOUSE_UP, (coords) => {
+      if (this._transformEnabled) {
+        const actorId = this.raycaster.raycast(coords);
+
+        if (actorId) {
+          const obj = this._getObjectById(actorId);
+          if (obj) {
+            this._gizmos.attach(obj);
+          }
+          return;
+        }
+      }
+
+      this._gizmos.detach();
+
+      this._clickCursor(coords);
+      const { x, y, z } = this._cursor.position;
+      getGlobalEmitter().emit(Events.MOVE_TO, { x, y, z });
+    });
+
+    this._transformEnabled = false;
+    getGlobalEmitter().on(Events.SET_TRANSFORM_ENABLED, (enabled) => {
+      if (this._transformEnabled !== enabled) {
+        Notification.info({
+          key: 'edit-mode',
+          title: 'Edit mode',
+          description: enabled ? 'Enabled' : 'Disabled',
+        });
+      }
+      this._transformEnabled = enabled;
+      if (!this._transformEnabled) {
+        document.body.style.cursor = 'auto';
+        this._gizmos.detach();
+      }
+    });
 
     (window as any).renderer = this;
   }
@@ -273,8 +329,12 @@ class ThreeRenderer implements IRenderer {
       obj.position.set(u.position.x, u.position.y, u.position.z);
     }
 
+    if (u.movable) {
+      this._propActors.push(obj);
+    }
+
     this._animation.loadAsset(obj, u);
-    this._scene.add(obj);
+    this._actorGroup.add(obj);
     return obj;
   }
 
@@ -409,8 +469,18 @@ class ThreeRenderer implements IRenderer {
       this._reacter.updateAudioLevels(audioLevels);
     }
 
+    if (this._transformEnabled) {
+      const showPointer = !!this.raycaster.raycast() && !this._gizmos.object;
+      document.body.style.cursor = showPointer ? 'pointer' : 'auto';
+    }
+
     if (sceneDirty || controlsDirty || animated || cameraDirty) {
-      this._reacter.update(tick, delta, this._scene, this._camera);
+      this._reacter.update(
+        tick,
+        delta,
+        this._actorGroup.children,
+        this._camera
+      );
     }
 
     this.composer.render(delta);
@@ -444,15 +514,22 @@ const TRANSLATION_SNAP = 0.1;
 function initializeGizmos(
   renderer: WebGLRenderer,
   controls: OrbitControls,
-  camera: PerspectiveCamera
+  camera: PerspectiveCamera,
+  outlinePass: OutlinePass
 ): TransformControls {
   const gizmos = new TransformControls(camera, renderer.domElement);
   gizmos.setTranslationSnap(TRANSLATION_SNAP);
   gizmos.setRotationSnap(ROTATION_SNAP);
+  gizmos.addEventListener('change', () => {
+    outlinePass.enabled = !gizmos.object;
+  });
   gizmos.addEventListener('dragging-changed', (event) => {
     controls.enabled = !event.value;
     if (!event.value) {
       const object = gizmos.object!;
+      if (!object) {
+        return;
+      }
       const actorId = object.name;
       if (!actorId) {
         return;
@@ -469,10 +546,12 @@ function initializeGizmos(
     }
   });
   gizmos.addEventListener('objectChange', () => {
-    const object = gizmos.object!;
-    object.position.setY(
-      Math.min(MAX_HEIGHT, Math.max(MIN_HEIGHT, object.position.y))
-    );
+    const object = gizmos.object;
+    if (object) {
+      object.position.setY(
+        Math.min(MAX_HEIGHT, Math.max(MIN_HEIGHT, object.position.y))
+      );
+    }
   });
   gizmos.setSize(1.5);
   getGlobalEmitter().on(Events.SET_TRANSFORM_MODE, (mode) => {

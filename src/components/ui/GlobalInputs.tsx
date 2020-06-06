@@ -24,10 +24,12 @@ function handleGlobalKeyPress(event: React.KeyboardEvent<any>) {
     }
     case 'g': {
       getGlobalEmitter().emit(Events.SET_TRANSFORM_MODE, 'translate');
+      getGlobalEmitter().emit(Events.SET_TRANSFORM_ENABLED, true);
       break;
     }
     case 'r': {
       getGlobalEmitter().emit(Events.SET_TRANSFORM_MODE, 'rotate');
+      getGlobalEmitter().emit(Events.SET_TRANSFORM_ENABLED, true);
       break;
     }
     case '1': {
@@ -88,13 +90,6 @@ function handleGlobalKeyPress(event: React.KeyboardEvent<any>) {
       });
       break;
     }
-    case 'Escape': {
-      getGlobalEmitter().emit(Events.PERFORM_ACTION, {
-        actionType: AnimationActions.IDLE,
-        actionState: -1,
-      });
-      break;
-    }
   }
 }
 
@@ -119,6 +114,11 @@ function handleGlobalKeyDown(event: React.KeyboardEvent<any>) {
     case 'Escape': {
       // Note: browser never fires KeyPress event for Escape key
       getGlobalEmitter().emit(Events.FOCUS_CHAT, false);
+      getGlobalEmitter().emit(Events.PERFORM_ACTION, {
+        actionType: AnimationActions.IDLE,
+        actionState: -1,
+      });
+      getGlobalEmitter().emit(Events.SET_TRANSFORM_ENABLED, false);
       break;
     }
   }

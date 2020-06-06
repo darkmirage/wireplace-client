@@ -4,7 +4,7 @@ import {
   AnimationMixer,
   LoopRepeat,
   Object3D,
-  Scene,
+  Group,
   Vector3,
 } from 'three';
 import { Update, ActorID } from 'wireplace-scene';
@@ -110,11 +110,11 @@ function initializeMetadata(obj: Object3D, u: Update): AnimationMetadata {
 }
 
 class AnimationRuntime {
-  _scene: Scene;
+  _actorObjects: Array<Object3D>;
   _activeTweens: Array<Tween>;
 
-  constructor(scene: Scene) {
-    this._scene = scene;
+  constructor(actorGroup: Group) {
+    this._actorObjects = actorGroup.children;
     this._activeTweens = [];
   }
 
@@ -284,7 +284,7 @@ class AnimationRuntime {
       }
     }
 
-    for (const obj of this._scene.children) {
+    for (const obj of this._actorObjects) {
       const data = getMetadata(obj);
       if (!data) {
         continue;
