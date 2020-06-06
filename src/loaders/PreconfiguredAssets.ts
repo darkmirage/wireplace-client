@@ -95,6 +95,146 @@ export const PropAssets: Array<Asset> = [
     url: '/synty/office/SM_Prop_CoffeeTable_01.fbx',
     scale: 0.01,
   },
+  {
+    name: 'SM_Bld_Floor_Carpet_01.fbx',
+    url: '/synty/office/SM_Bld_Floor_Carpet_01.fbx',
+    scale: 0.01,
+  },
+  {
+    name: 'SM_Bld_Wall_Blank_01.fbx',
+    url: '/synty/office/SM_Bld_Wall_Blank_01.fbx',
+    scale: 0.01,
+  },
+  {
+    name: 'SM_Bld_Wall_Blank_Door_01.fbx',
+    url: '/synty/office/SM_Bld_Wall_Blank_Door_01.fbx',
+    scale: 0.01,
+  },
+  {
+    name: 'SM_Bld_Wall_Blank_Window_01.fbx',
+    url: '/synty/office/SM_Bld_Wall_Blank_Window_01.fbx',
+    scale: 0.01,
+  },
+  {
+    name: 'SM_Prop_Bin_01.fbx',
+    url: '/synty/office/SM_Prop_Bin_01.fbx',
+    scale: 0.01,
+  },
+  {
+    name: 'SM_Prop_Chair_01.fbx',
+    url: '/synty/office/SM_Prop_Chair_01.fbx',
+    scale: 0.01,
+  },
+  {
+    name: 'SM_Prop_Chair_02.fbx',
+    url: '/synty/office/SM_Prop_Chair_02.fbx',
+    scale: 0.01,
+  },
+  {
+    name: 'SM_Prop_Computer_Keyboard_01.fbx',
+    url: '/synty/office/SM_Prop_Computer_Keyboard_01.fbx',
+    scale: 0.01,
+  },
+  {
+    name: 'SM_Prop_Computer_Monitor_Double_01.fbx',
+    url: '/synty/office/SM_Prop_Computer_Monitor_Double_01.fbx',
+    scale: 0.01,
+  },
+  {
+    name: 'SM_Prop_Couch_03.fbx',
+    url: '/synty/office/SM_Prop_Couch_03.fbx',
+    scale: 0.01,
+  },
+  {
+    name: 'SM_Prop_Cup_01.fbx',
+    url: '/synty/office/SM_Prop_Cup_01.fbx',
+    scale: 0.01,
+  },
+  {
+    name: 'SM_Prop_Desk_01.fbx',
+    url: '/synty/office/SM_Prop_Desk_01.fbx',
+    scale: 0.01,
+  },
+  {
+    name: 'SM_Prop_Desk_02.fbx',
+    url: '/synty/office/SM_Prop_Desk_02.fbx',
+    scale: 0.01,
+  },
+  {
+    name: 'SM_Prop_Desk_04.fbx',
+    url: '/synty/office/SM_Prop_Desk_04.fbx',
+    scale: 0.01,
+  },
+  {
+    name: 'SM_Prop_Desk_Standing_01.fbx',
+    url: '/synty/office/SM_Prop_Desk_Standing_01.fbx',
+    scale: 0.01,
+  },
+  {
+    name: 'SM_Prop_FaxMachine_01.fbx',
+    url: '/synty/office/SM_Prop_FaxMachine_01.fbx',
+    scale: 0.01,
+  },
+  {
+    name: 'SM_Prop_Folder_Holder_01.fbx',
+    url: '/synty/office/SM_Prop_Folder_Holder_01.fbx',
+    scale: 0.01,
+  },
+  {
+    name: 'SM_Prop_Folder_Manila_02.fbx',
+    url: '/synty/office/SM_Prop_Folder_Manila_02.fbx',
+    scale: 0.01,
+  },
+  {
+    name: 'SM_Prop_Fridge_01.fbx',
+    url: '/synty/office/SM_Prop_Fridge_01.fbx',
+    scale: 0.01,
+  },
+  {
+    name: 'SM_Prop_Headphones_01.fbx',
+    url: '/synty/office/SM_Prop_Headphones_01.fbx',
+    scale: 0.01,
+  },
+  {
+    name: 'SM_Prop_Laptop_01.fbx',
+    url: '/synty/office/SM_Prop_Laptop_01.fbx',
+    scale: 0.01,
+  },
+  {
+    name: 'SM_Prop_Laptop_02.fbx',
+    url: '/synty/office/SM_Prop_Laptop_02.fbx',
+    scale: 0.01,
+  },
+  {
+    name: 'SM_Prop_Monitor_Crt_01.fbx',
+    url: '/synty/office/SM_Prop_Monitor_Crt_01.fbx',
+    scale: 0.01,
+  },
+  {
+    name: 'SM_Prop_NotePad_01.fbx',
+    url: '/synty/office/SM_Prop_NotePad_01.fbx',
+    scale: 0.01,
+  },
+  {
+    name: 'SM_Prop_Note_01.fbx',
+    url: '/synty/office/SM_Prop_Note_01.fbx',
+    scale: 0.01,
+  },
+  {
+    name: 'SM_Prop_Papers_01.fbx',
+    url: '/synty/office/SM_Prop_Papers_01.fbx',
+    scale: 0.01,
+  },
+  {
+    name: 'SM_Prop_Paper_02.fbx',
+    url: '/synty/office/SM_Prop_Paper_02.fbx',
+    scale: 0.01,
+  },
+  {
+    name: 'SM_Prop_Paper_Pile_02.fbx',
+    url: '/synty/office/SM_Prop_Paper_Pile_02.fbx',
+    scale: 0.01,
+  },
 ];
 
 // TODO: Build a real cache module
@@ -117,6 +257,19 @@ async function waitForPreload() {
 
 function loadFromCache(assetId: number): Object3D {
   const asset = assetCache[assetId];
+
+  if (!asset) {
+    if (assetId >= MAX_AVATAR_COUNT) {
+      console.warn(
+        'Asset failed to load',
+        assetId,
+        PropAssets[assetId - MAX_AVATAR_COUNT]
+      );
+    } else {
+      console.warn('Asset failed to load', assetId);
+    }
+    return new Object3D();
+  }
 
   if (assetId < MAX_AVATAR_COUNT) {
     const copy = SkeletonUtils.clone(asset);

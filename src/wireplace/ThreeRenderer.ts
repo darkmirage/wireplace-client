@@ -98,8 +98,9 @@ class ThreeRenderer implements IRenderer {
   constructor({ reacter, sam }: ThreeRendererProps) {
     this.domElement = document.createElement('div');
     const antialias = !isHighResolution();
-    const showShadows = true;
+    const showShadows = !isHighResolution();
     const enableBloom = !isHighResolution();
+    const enableOutline = !isHighResolution();
 
     this.webGLRenderer = new WebGLRenderer({ antialias });
     this.webGLRenderer.autoClear = false;
@@ -154,7 +155,9 @@ class ThreeRenderer implements IRenderer {
     outlinePass.edgeThickness = 0.5;
     outlinePass.visibleEdgeColor.setHex(0xffff00);
     outlinePass.hiddenEdgeColor.setHex(0xaaaaaa);
-    this.composer.addPass(outlinePass);
+    if (enableOutline) {
+      this.composer.addPass(outlinePass);
+    }
 
     this._fxaa = new ShaderPass(FXAAShader);
     (this._fxaa.material as any).uniforms['resolution'].value.x =
@@ -166,7 +169,12 @@ class ThreeRenderer implements IRenderer {
       this.composer.addPass(this._fxaa);
     }
 
-    logger.log('[Renderer] Effects:', { enableBloom, showShadows, antialias });
+    logger.log('[Renderer] Effects:', {
+      enableBloom,
+      enableOutline,
+      showShadows,
+      antialias,
+    });
 
     this.raycaster = new ActorRaycaster(
       this._propActors,
@@ -298,6 +306,7 @@ class ThreeRenderer implements IRenderer {
     const floor = new Mesh(new PlaneBufferGeometry(2000, 2000), floorMaterial);
     floor.rotation.x = -Math.PI / 2;
     floor.receiveShadow = true;
+    floor.position.setY(-0.01);
     this._floor.add(floor);
 
     const material = new MeshBasicMaterial({
@@ -315,7 +324,7 @@ class ThreeRenderer implements IRenderer {
       grid.material.opacity = 0.1;
       grid.material.transparent = true;
     }
-    grid.position.setY(0.005);
+    grid.position.setY(-0.005);
     bgObjs.add(grid);
 
     bgObjs.add(this._gizmos);
@@ -503,7 +512,7 @@ function initializeMapControls(
 ): OrbitControls {
   const controls = new MapControls(camera, renderer.domElement);
 
-  controls.enableDamping = true;
+  controls.enableDamping = false;
   controls.dampingFactor = 0.05;
   controls.target.set(0, TARGET_Y, 0);
   controls.screenSpacePanning = false;
@@ -518,7 +527,7 @@ function initializeMapControls(
 const MIN_HEIGHT = 0;
 const MAX_HEIGHT = 2.8;
 const ROTATION_SNAP = Math.PI / 8;
-const TRANSLATION_SNAP = 0.1;
+const TRANSLATION_SNAP = 0.05;
 
 function initializeGizmos(
   renderer: WebGLRenderer,
