@@ -34,6 +34,13 @@ class OverlayRenderer {
     this._audioLevels = audioLevels;
   }
 
+  removeOverlay(actorId: ActorID) {
+    const element = document.getElementById('actor-' + actorId);
+    if (element) {
+      element.remove();
+    }
+  }
+
   update(
     tick: number,
     delta: number,

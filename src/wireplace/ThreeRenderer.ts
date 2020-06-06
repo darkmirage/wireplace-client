@@ -434,7 +434,10 @@ class ThreeRenderer implements IRenderer {
             this._gizmos.detach();
           }
           this._actorGroup.remove(obj);
+          this._avatarActors = this._avatarActors.filter((a) => a !== obj);
+          this._propActors = this._propActors.filter((a) => a !== obj);
           disposeObject3D(obj);
+          this._overlay.removeOverlay(objectId);
         }
         continue;
       }
