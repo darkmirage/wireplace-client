@@ -111,6 +111,10 @@ function handleGlobalKeyDown(event: React.KeyboardEvent<any>) {
       getGlobalEmitter().emit(Events.MOVE_RIGHT, true);
       break;
     }
+    case 'Delete': {
+      getGlobalEmitter().emit(Events.DELETION_REQUEST);
+      break;
+    }
     case 'Escape': {
       // Note: browser never fires KeyPress event for Escape key
       getGlobalEmitter().emit(Events.FOCUS_CHAT, false);

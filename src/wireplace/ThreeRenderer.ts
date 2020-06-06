@@ -232,6 +232,12 @@ class ThreeRenderer implements IRenderer {
       }
     });
 
+    getGlobalEmitter().on(Events.DELETION_REQUEST, () => {
+      if (this._gizmos.object) {
+        getGlobalEmitter().emit(Events.REMOVE_PROP, this._gizmos.object.name);
+      }
+    });
+
     (window as any).renderer = this;
   }
 
@@ -416,7 +422,10 @@ class ThreeRenderer implements IRenderer {
 
       if (u.deleted) {
         if (obj) {
-          this._scene.remove(obj);
+          if (this._gizmos.object === obj) {
+            this._gizmos.detach();
+          }
+          this._actorGroup.remove(obj);
           disposeObject3D(obj);
         }
         continue;

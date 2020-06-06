@@ -86,6 +86,7 @@ class WirePlaceClient implements WirePlaceChatClient {
     this._ee.on(Events.MOVE_PROP, ({ actorId, rotation, position }) => {
       this.socket.transmit('move', { actorId, update: { rotation, position } });
     });
+    this._ee.on(Events.REMOVE_PROP, this.removeProp);
 
     logger.log('[Client]', {
       hostname,
@@ -121,6 +122,10 @@ class WirePlaceClient implements WirePlaceChatClient {
 
   spawnProp = (assetId: number) => {
     this.socket.invoke('spawn', { assetId, roomId: this.roomId });
+  };
+
+  removeProp = (actorId: ActorID) => {
+    this.socket.invoke('remove', { actorId, roomId: this.roomId });
   };
 
   async _refreshToken(): Promise<ServerAuthResponse> {

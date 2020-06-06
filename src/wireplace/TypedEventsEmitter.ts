@@ -22,9 +22,11 @@ export enum Events {
   TOGGLE_RANDOM_WALK,
   WINDOW_RESIZE,
   SPAWN_PROP,
+  REMOVE_PROP,
   MOVE_PROP,
   SET_TRANSFORM_MODE,
   SET_TRANSFORM_ENABLED,
+  DELETION_REQUEST,
 }
 
 type ValueOf<T> = T[keyof T];
@@ -65,9 +67,11 @@ interface EventPayloads {
   };
   [Events.WINDOW_RESIZE]: void;
   [Events.SPAWN_PROP]: AssetID;
+  [Events.REMOVE_PROP]: ActorID;
   [Events.MOVE_PROP]: { actorId: ActorID; position: XYZ; rotation: XYZ };
   [Events.SET_TRANSFORM_MODE]: 'translate' | 'rotate' | 'scale';
   [Events.SET_TRANSFORM_ENABLED]: boolean;
+  [Events.DELETION_REQUEST]: void;
 }
 
 interface GenericTypedEventEmitter<P> {
