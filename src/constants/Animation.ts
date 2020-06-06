@@ -1,6 +1,7 @@
 type ValueOf<T> = T[keyof T];
 
 export enum AnimationActions {
+  STATIC,
   IDLE,
   ANGRY,
   BOW,

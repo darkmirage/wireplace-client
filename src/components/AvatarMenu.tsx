@@ -1,7 +1,7 @@
 import React from 'react';
 import { createUseStyles, useTheme } from 'react-jss';
 
-import { Assets } from 'loaders/PreconfiguredAssets';
+import { AvatarAssets } from 'loaders/PreconfiguredAssets';
 import { Button, ButtonGroup, Icon, Tooltip } from 'components/ui';
 import { Events, getGlobalEmitter } from 'wireplace/TypedEventsEmitter';
 import { MenuProps } from 'components/TopToolbar';
@@ -15,7 +15,7 @@ const AvatarMenu = ({ activeMenu, updateDropdown }: Props) => {
   const classes = useStyles({ theme: useTheme() });
   const visible = activeMenu === MENU_NAME;
 
-  const assets = Assets.map(({ name }, i) => {
+  const assets = AvatarAssets.map(({ name }, i) => {
     return (
       <Button
         key={i}

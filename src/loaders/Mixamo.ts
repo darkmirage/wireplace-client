@@ -2,6 +2,8 @@ import { AnimationClip } from 'three';
 import { AnimationAction, AnimationActions } from 'constants/Animation';
 import FBXLoader from './FBXLoader';
 
+const staticAnimation = new AnimationClip('static', 0, []);
+
 const AnimationURLs: Partial<Record<AnimationAction, string>> = {
   [AnimationActions.ANGRY]: '/mixamo/animations/synty/Angry.fbx',
   [AnimationActions.BOW]: '/mixamo/animations/synty/Bow.fbx',
@@ -41,6 +43,9 @@ async function loadIntoCache(animationType: AnimationAction) {
 }
 
 function getClip(animationType: AnimationAction): AnimationClip | null {
+  if (animationType === AnimationActions.STATIC) {
+    return staticAnimation;
+  }
   return clipCache[animationType] || null;
 }
 

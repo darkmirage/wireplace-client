@@ -97,7 +97,7 @@ function initializeMetadata(obj: Object3D, u: Update): AnimationMetadata {
     target: new Object3D(),
     color: 0,
     speed: 1.4,
-    actionType: AnimationActions.IDLE,
+    actionType: AnimationActions.STATIC,
     actionState: -1,
     playing: null,
     asset: null,

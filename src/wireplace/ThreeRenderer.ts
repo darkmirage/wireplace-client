@@ -25,7 +25,6 @@ import type { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import type { Update } from 'wireplace-scene';
 
 import { getGlobalEmitter, Events } from 'wireplace/TypedEventsEmitter';
-import { loadDefaultMap } from 'loaders/PreconfiguredAssets';
 import AnimationRuntime from './AnimationRuntime';
 import disposeObject3D from 'utils/disposeObject3D';
 import getMaterial from 'utils/getMaterial';
@@ -222,8 +221,6 @@ class ThreeRenderer implements IRenderer {
     grid.position.setY(0.005);
     bgObjs.add(grid);
 
-    const map = await loadDefaultMap();
-    bgObjs.add(map);
     this._scene.add(bgObjs);
   }
 
