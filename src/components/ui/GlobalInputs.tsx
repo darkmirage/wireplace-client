@@ -22,6 +22,14 @@ function handleGlobalKeyPress(event: React.KeyboardEvent<any>) {
       getGlobalEmitter().emit(Events.TOGGLE_RANDOM_WALK);
       break;
     }
+    case 'g': {
+      getGlobalEmitter().emit(Events.SET_TRANSFORM_MODE, 'translate');
+      break;
+    }
+    case 'r': {
+      getGlobalEmitter().emit(Events.SET_TRANSFORM_MODE, 'rotate');
+      break;
+    }
     case '1': {
       getGlobalEmitter().emit(Events.PERFORM_ACTION, {
         actionType: AnimationActions.WAVE,

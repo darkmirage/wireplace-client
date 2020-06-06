@@ -83,6 +83,9 @@ class WirePlaceClient implements WirePlaceChatClient {
     this._resetCache();
 
     this._ee.on(Events.SPAWN_PROP, this.spawnProp);
+    this._ee.on(Events.MOVE_PROP, ({ actorId, rotation, position }) => {
+      this.socket.transmit('move', { actorId, update: { rotation, position } });
+    });
 
     logger.log('[Client]', {
       hostname,
@@ -110,7 +113,7 @@ class WirePlaceClient implements WirePlaceChatClient {
 
     setInterval(() => {
       if (Object.keys(update).length > 0) {
-        this.socket.transmit('move', update);
+        this.socket.transmit('move', { actorId: this._actorId, update });
         update = {};
       }
     }, 1000 / UPDATE_FPS);

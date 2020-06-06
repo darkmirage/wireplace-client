@@ -20,6 +20,7 @@ import {
   WebGLRenderer,
 } from 'three';
 import { MapControls } from 'three/examples/jsm/controls/OrbitControls';
+import { TransformControls } from 'three/examples/jsm/controls/TransformControls';
 import Stats from 'three/examples/jsm/libs/stats.module';
 import type { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import type { Update } from 'wireplace-scene';
@@ -68,6 +69,7 @@ class ThreeRenderer implements IRenderer {
   _cameraLocked: boolean;
   _animation: AnimationRuntime;
   _controls: OrbitControls;
+  _gizmos: TransformControls;
   _stats: Stats;
   _reacter: OverlayRenderer;
   _controlTarget: Object3D | null;
@@ -102,22 +104,13 @@ class ThreeRenderer implements IRenderer {
     this.cameraForward = new Vector3(0, 0, -1);
     this.cameraRight = new Vector3(1, 0, 0);
 
-    const controls = new MapControls(
-      this._camera,
-      this.webGLRenderer.domElement
-    );
-
-    controls.enableDamping = true;
-    controls.dampingFactor = 0.05;
-    controls.target.set(0, TARGET_Y, 0);
-    controls.screenSpacePanning = false;
-    controls.maxPolarAngle = Math.PI / 2 + Math.PI / 32;
-    controls.minPolarAngle = Math.PI / 16;
-    controls.enableKeys = false;
-    controls.minDistance = 0.5;
-    controls.maxDistance = 10;
-    this._controls = controls;
     this._controlTarget = null;
+    this._controls = initializeMapControls(this.webGLRenderer, this._camera);
+    this._gizmos = initializeGizmos(
+      this.webGLRenderer,
+      this._controls,
+      this._camera
+    );
 
     this._cursor = new Group();
     this._floor = new Group();
@@ -220,6 +213,8 @@ class ThreeRenderer implements IRenderer {
     }
     grid.position.setY(0.005);
     bgObjs.add(grid);
+
+    bgObjs.add(this._gizmos);
 
     this._scene.add(bgObjs);
   }
@@ -371,6 +366,78 @@ class ThreeRenderer implements IRenderer {
     this.webGLRenderer.render(this._scene, this._camera);
     this._stats.update();
   };
+}
+
+function initializeMapControls(
+  renderer: WebGLRenderer,
+  camera: PerspectiveCamera
+): OrbitControls {
+  const controls = new MapControls(camera, renderer.domElement);
+
+  controls.enableDamping = true;
+  controls.dampingFactor = 0.05;
+  controls.target.set(0, TARGET_Y, 0);
+  controls.screenSpacePanning = false;
+  controls.maxPolarAngle = Math.PI / 2 + Math.PI / 32;
+  controls.minPolarAngle = Math.PI / 16;
+  controls.enableKeys = false;
+  controls.minDistance = 0.5;
+  controls.maxDistance = 10;
+  return controls;
+}
+
+const MIN_HEIGHT = 0;
+const MAX_HEIGHT = 2.8;
+const ROTATION_SNAP = Math.PI / 8;
+const TRANSLATION_SNAP = 0.1;
+
+function initializeGizmos(
+  renderer: WebGLRenderer,
+  controls: OrbitControls,
+  camera: PerspectiveCamera
+): TransformControls {
+  const gizmos = new TransformControls(camera, renderer.domElement);
+  gizmos.setTranslationSnap(TRANSLATION_SNAP);
+  gizmos.setRotationSnap(ROTATION_SNAP);
+  gizmos.addEventListener('dragging-changed', (event) => {
+    controls.enabled = !event.value;
+    if (!event.value) {
+      const object = gizmos.object!;
+      const actorId = object.name;
+      if (!actorId) {
+        return;
+      }
+      const p = object.position;
+      const position = { x: p.x, y: p.y, z: p.z };
+      const r = object.rotation;
+      const rotation = { x: r.x, y: r.y, z: r.z };
+      getGlobalEmitter().emit(Events.MOVE_PROP, {
+        actorId,
+        rotation,
+        position,
+      });
+    }
+  });
+  gizmos.addEventListener('objectChange', () => {
+    const object = gizmos.object!;
+    object.position.setY(
+      Math.min(MAX_HEIGHT, Math.max(MIN_HEIGHT, object.position.y))
+    );
+  });
+  gizmos.setSize(1.5);
+  getGlobalEmitter().on(Events.SET_TRANSFORM_MODE, (mode) => {
+    gizmos.setMode(mode);
+    if (mode === 'translate') {
+      gizmos.showX = true;
+      gizmos.showY = true;
+      gizmos.showZ = true;
+    } else if (mode === 'rotate') {
+      gizmos.showX = false;
+      gizmos.showY = true;
+      gizmos.showZ = false;
+    }
+  });
+  return gizmos;
 }
 
 export default ThreeRenderer;

@@ -245,10 +245,23 @@ class AnimationRuntime {
       data.movable = u.movable;
     }
     if (u.position) {
-      data.target.position.set(u.position.x, u.position.y, u.position.z);
+      if (data.movable) {
+        obj.position.set(u.position.x, u.position.y, u.position.z);
+      } else {
+        data.target.position.set(u.position.x, u.position.y, u.position.z);
+      }
     }
     if (u.rotation) {
-      data.target.rotation.set(u.rotation.x, u.rotation.y, u.rotation.z, 'XYZ');
+      if (data.movable) {
+        obj.rotation.set(u.rotation.x, u.rotation.y, u.rotation.z, 'XYZ');
+      } else {
+        data.target.rotation.set(
+          u.rotation.x,
+          u.rotation.y,
+          u.rotation.z,
+          'XYZ'
+        );
+      }
     }
     if (u.scale) {
       data.target.scale.set(u.scale.x, u.scale.y, u.scale.z);
@@ -281,8 +294,6 @@ class AnimationRuntime {
 
       // Objects that are movable by user selection should not be tweened
       if (movable) {
-        obj.position.copy(target.position);
-        obj.quaternion.copy(target.quaternion);
         continue;
       }
 
