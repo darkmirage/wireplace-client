@@ -16,14 +16,23 @@ import {
   PlaneBufferGeometry,
   Raycaster,
   Scene,
+  Vector2,
   Vector3,
   WebGLRenderer,
 } from 'three';
-import { MapControls } from 'three/examples/jsm/controls/OrbitControls';
+import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer';
+import { OutlinePass } from 'three/examples/jsm/postprocessing/OutlinePass';
+import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass';
+import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass';
+import { FXAAShader } from 'three/examples/jsm/shaders/FXAAShader';
+import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass';
+import {
+  MapControls,
+  OrbitControls,
+} from 'three/examples/jsm/controls/OrbitControls';
 import { TransformControls } from 'three/examples/jsm/controls/TransformControls';
+import { Update } from 'wireplace-scene';
 import Stats from 'three/examples/jsm/libs/stats.module';
-import type { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
-import type { Update } from 'wireplace-scene';
 
 import { getGlobalEmitter, Events } from 'wireplace/TypedEventsEmitter';
 import AnimationRuntime from './AnimationRuntime';
@@ -59,8 +68,10 @@ type ThreeRendererProps = {
 class ThreeRenderer implements IRenderer {
   domElement: HTMLDivElement;
   webGLRenderer: WebGLRenderer;
+  composer: EffectComposer;
   cameraForward: Vector3;
   cameraRight: Vector3;
+
   _sam: SpatialAudioManager;
   _scene: Scene;
   _camera: PerspectiveCamera;
@@ -70,6 +81,7 @@ class ThreeRenderer implements IRenderer {
   _animation: AnimationRuntime;
   _controls: OrbitControls;
   _gizmos: TransformControls;
+  _fxaa: ShaderPass;
   _stats: Stats;
   _reacter: OverlayRenderer;
   _controlTarget: Object3D | null;
@@ -81,15 +93,17 @@ class ThreeRenderer implements IRenderer {
     this.domElement = document.createElement('div');
     const antialias = !isHighResolution();
     const showShadows = true;
+    const enableBloom = !isHighResolution();
 
     this.webGLRenderer = new WebGLRenderer({ antialias });
-    logger.log('[Renderer] Anti-alias:', antialias);
-
+    this.webGLRenderer.autoClear = false;
     this.webGLRenderer.shadowMap.enabled = showShadows;
     this.webGLRenderer.shadowMap.type = PCFSoftShadowMap;
-    logger.log('[Renderer] Shadow Map:', showShadows);
-
     this.webGLRenderer.setPixelRatio(1);
+
+    const composer = new EffectComposer(this.webGLRenderer);
+    composer.setPixelRatio(1);
+    this.composer = composer;
 
     this._scene = new Scene();
     this._camera = new PerspectiveCamera(45);
@@ -134,6 +148,34 @@ class ThreeRenderer implements IRenderer {
 
     this._setupScene();
 
+    const renderPass = new RenderPass(this._scene, this._camera);
+    this.composer.addPass(renderPass);
+
+    const width = this.domElement.clientWidth;
+    const height = this.domElement.clientHeight;
+    const resolution = new Vector2(width, height);
+    const pixelRatio = this.webGLRenderer.getPixelRatio();
+
+    if (enableBloom) {
+      const bloomPass = new UnrealBloomPass(resolution, 0.3, 0.4, 0.8);
+      this.composer.addPass(bloomPass);
+    }
+
+    const outlinePass = new OutlinePass(resolution, this._scene, this._camera);
+    this.composer.addPass(outlinePass);
+
+    this._fxaa = new ShaderPass(FXAAShader);
+    (this._fxaa.material as any).uniforms['resolution'].value.x =
+      1 / (width * pixelRatio);
+    (this._fxaa.material as any).uniforms['resolution'].value.y =
+      1 / (height * pixelRatio);
+
+    if (antialias) {
+      this.composer.addPass(this._fxaa);
+    }
+
+    logger.log('[Renderer] Effects:', { enableBloom, showShadows, antialias });
+
     (window as any).renderer = this;
   }
 
@@ -154,10 +196,10 @@ class ThreeRenderer implements IRenderer {
   };
 
   async _setupScene() {
-    this._scene.background = new Color(0xdbf7ff);
+    this._scene.background = new Color(0x777777);
     this._camera.position.set(0, 4, 5);
     const distance = this._camera.position.length();
-    this._scene.fog = new Fog(0xdbf7ff, distance * 1.5, distance * 5);
+    this._scene.fog = new Fog(0x777777, distance * 1.5, distance * 3);
 
     const bgObjs = new Group();
 
@@ -287,6 +329,14 @@ class ThreeRenderer implements IRenderer {
     const width = this.domElement.clientWidth;
     const height = this.domElement.clientHeight;
     this.webGLRenderer.setSize(width, height);
+    this.composer.setSize(width, height);
+
+    const pixelRatio = this.webGLRenderer.getPixelRatio();
+    (this._fxaa.material as any).uniforms['resolution'].value.x =
+      1 / (width * pixelRatio);
+    (this._fxaa.material as any).uniforms['resolution'].value.y =
+      1 / (height * pixelRatio);
+
     this._camera.aspect = width / height;
     this._camera.updateProjectionMatrix();
   };
@@ -363,7 +413,7 @@ class ThreeRenderer implements IRenderer {
       this._reacter.update(tick, delta, this._scene, this._camera);
     }
 
-    this.webGLRenderer.render(this._scene, this._camera);
+    this.composer.render(delta);
     this._stats.update();
   };
 }
@@ -378,10 +428,10 @@ function initializeMapControls(
   controls.dampingFactor = 0.05;
   controls.target.set(0, TARGET_Y, 0);
   controls.screenSpacePanning = false;
-  controls.maxPolarAngle = Math.PI / 2 + Math.PI / 32;
+  controls.maxPolarAngle = Math.PI / 2 + Math.PI / 16;
   controls.minPolarAngle = Math.PI / 16;
   controls.enableKeys = false;
-  controls.minDistance = 0.5;
+  controls.minDistance = 1.0;
   controls.maxDistance = 10;
   return controls;
 }
