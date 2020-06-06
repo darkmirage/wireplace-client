@@ -16,13 +16,14 @@ import { getAnimationIndex, loadAsset } from 'loaders/PreconfiguredAssets';
 import { getClip } from 'loaders/Mixamo';
 
 interface AnimationMetadata {
-  assetId: number | null;
-  animateable: boolean;
-  target: Object3D;
-  color: number;
-  speed: number;
-  actionType: AnimationAction;
   actionState: number;
+  actionType: AnimationAction;
+  animateable: boolean;
+  assetId: number | null;
+  color: number;
+  movable: boolean;
+  speed: number;
+  target: Object3D;
   playing: {
     actionType: AnimationAction;
     clip: AnimationClip;
@@ -92,17 +93,18 @@ function getThreeAnimationActionFromMetadata(
 
 function initializeMetadata(obj: Object3D, u: Update): AnimationMetadata {
   const data: AnimationMetadata = {
-    assetId: null,
-    animateable: true,
-    target: new Object3D(),
-    color: 0,
-    speed: 1.4,
-    actionType: AnimationActions.STATIC,
     actionState: -1,
-    playing: null,
+    actionType: AnimationActions.STATIC,
+    animateable: true,
     asset: null,
-    mixer: null,
+    assetId: null,
+    color: 0,
     lastTickMoved: 0,
+    mixer: null,
+    movable: !!u.movable,
+    playing: null,
+    speed: 1.4,
+    target: new Object3D(),
   };
   return data;
 }
@@ -239,6 +241,9 @@ class AnimationRuntime {
     if (u.speed !== undefined) {
       data.speed = u.speed;
     }
+    if (u.movable !== undefined) {
+      data.movable = u.movable;
+    }
     if (u.position) {
       data.target.position.set(u.position.x, u.position.y, u.position.z);
     }
@@ -272,7 +277,15 @@ class AnimationRuntime {
         continue;
       }
 
-      const { target, speed, actionType } = data;
+      const { target, speed, actionType, movable } = data;
+
+      // Objects that are movable by user selection should not be tweened
+      if (movable) {
+        obj.position.copy(target.position);
+        obj.quaternion.copy(target.quaternion);
+        continue;
+      }
+
       _v.copy(target.position).sub(obj.position);
       if (!obj.position.equals(target.position)) {
         data.lastTickMoved = tick;

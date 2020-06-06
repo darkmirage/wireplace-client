@@ -172,37 +172,4 @@ async function loadAsset(assetId: number): Promise<Object3D> {
   const obj = loadFromCache(assetId);
   return obj;
 }
-
-async function loadDefaultMap(): Promise<Group> {
-  const group = new Group();
-  const addToScene = (g: Object3D) => {
-    group.add(g);
-    return g;
-  };
-
-  const loaders = [
-    loadAsset(1001)
-      .then(addToScene)
-      .then((g) => {
-        g.position.set(-1, 0, -2);
-        return g;
-      }),
-    loadAsset(1000)
-      .then(addToScene)
-      .then((g) => {
-        g.position.set(3.4, 0, -2.5);
-        return g;
-      }),
-    loadAsset(1002)
-      .then(addToScene)
-      .then((g) => {
-        g.position.set(3, 0, 1);
-        return g;
-      }),
-  ];
-
-  Promise.allSettled(loaders);
-  return group;
-}
-
 export { getAnimationIndex, loadAsset };

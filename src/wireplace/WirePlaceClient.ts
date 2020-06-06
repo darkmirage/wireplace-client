@@ -81,6 +81,9 @@ class WirePlaceClient implements WirePlaceChatClient {
     this.roomId = roomId;
     this.scene = scene;
     this._resetCache();
+
+    this._ee.on(Events.SPAWN_PROP, this.spawnProp);
+
     logger.log('[Client]', {
       hostname,
       port,
@@ -112,6 +115,10 @@ class WirePlaceClient implements WirePlaceChatClient {
       }
     }, 1000 / UPDATE_FPS);
   }
+
+  spawnProp = (assetId: number) => {
+    this.socket.invoke('spawn', { assetId, roomId: this.roomId });
+  };
 
   async _refreshToken(): Promise<ServerAuthResponse> {
     const user = await this.getUserOrThrow();

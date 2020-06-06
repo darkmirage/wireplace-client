@@ -21,6 +21,7 @@ export enum Events {
   SET_MOVING,
   TOGGLE_RANDOM_WALK,
   WINDOW_RESIZE,
+  SPAWN_PROP,
 }
 
 type ValueOf<T> = T[keyof T];
@@ -36,6 +37,8 @@ type XYZ = {
   y: number;
   z: number;
 };
+
+type AssetID = number;
 
 interface EventPayloads {
   [Events.ANIMATION_STOPPED]: { actorId: ActorID; actionType: AnimationAction };
@@ -58,6 +61,7 @@ interface EventPayloads {
     actionState?: number;
   };
   [Events.WINDOW_RESIZE]: void;
+  [Events.SPAWN_PROP]: AssetID;
 }
 
 interface GenericTypedEventEmitter<P> {
