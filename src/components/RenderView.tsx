@@ -19,9 +19,6 @@ type Props = {
 const RenderView = (props: Props) => {
   const ref = React.useRef<HTMLDivElement | null>(null);
   const classes = useStyles();
-  const [overlayContent, setOverlayContent] = React.useState<React.ReactNode>(
-    null
-  );
 
   const { client, sam, scene, actorId } = props;
   const emitter = getGlobalEmitter();
@@ -33,12 +30,8 @@ const RenderView = (props: Props) => {
     }
 
     const runtime = new GameplayRuntime({ scene, emitter, actorId });
-    const reacter = new OverlayRenderer(
-      setOverlayContent,
-      current,
-      () => client
-    );
-    const renderer = new ThreeRenderer({ reacter, sam });
+    const overlay = new OverlayRenderer(current, () => client);
+    const renderer = new ThreeRenderer({ overlay, sam });
     renderer.setDOMElement(current);
     window.addEventListener('resize', renderer.resize);
     runtime.startLoop();
@@ -49,12 +42,7 @@ const RenderView = (props: Props) => {
     };
   }, [client, sam, scene, emitter, actorId]);
 
-  return (
-    <>
-      <div ref={ref} className={classes.canvas} />
-      {overlayContent}
-    </>
-  );
+  return <div ref={ref} className={classes.canvas} />;
 };
 
 const useStyles = createUseStyles({

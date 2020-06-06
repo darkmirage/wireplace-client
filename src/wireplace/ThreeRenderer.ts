@@ -63,7 +63,7 @@ const _v2 = new Vector3();
 const _raycaster = new Raycaster();
 
 type ThreeRendererProps = {
-  reacter: OverlayRenderer;
+  overlay: OverlayRenderer;
   sam: SpatialAudioManager;
 };
 
@@ -86,16 +86,17 @@ class ThreeRenderer implements IRenderer {
   _gizmos: TransformControls;
   _fxaa: ShaderPass;
   _stats: Stats;
-  _reacter: OverlayRenderer;
+  _overlay: OverlayRenderer;
   _controlTarget: Object3D | null;
   _cursor: Group;
   _floor: Group;
   _actorGroup: Group;
+  _avatarActors: Object3D[];
   _propActors: Object3D[];
   _delayedDelta: number;
   _transformEnabled: boolean;
 
-  constructor({ reacter, sam }: ThreeRendererProps) {
+  constructor({ overlay, sam }: ThreeRendererProps) {
     this.domElement = document.createElement('div');
     const antialias = !isHighResolution();
     const showShadows = !isHighResolution();
@@ -120,13 +121,14 @@ class ThreeRenderer implements IRenderer {
     this._scene.add(this._cursor);
     this._scene.add(this._actorGroup);
     this._propActors = [];
+    this._avatarActors = [];
 
     this._camera = new PerspectiveCamera(45);
     this._prevCameraPosition = new Vector3();
     this._light = new DirectionalLight(0xffffff);
     this._cameraLocked = DEFAULT_CAMERA_LOCKED;
     this._animation = new AnimationRuntime(this._actorGroup);
-    this._reacter = reacter;
+    this._overlay = overlay;
     this._sam = sam;
     this._delayedDelta = 0;
 
@@ -196,12 +198,7 @@ class ThreeRenderer implements IRenderer {
 
     // TODO: find a less hacky way to achieve this
     getGlobalEmitter().on(Events.WINDOW_RESIZE, () => {
-      this._reacter.update(
-        Infinity,
-        0,
-        this._actorGroup.children,
-        this._camera
-      );
+      this._overlay.update(Infinity, 0, this._avatarActors, this._camera);
     });
 
     getGlobalEmitter().on(Events.MOUSE_UP, (coords) => {
@@ -346,6 +343,8 @@ class ThreeRenderer implements IRenderer {
 
     if (u.movable) {
       this._propActors.push(obj);
+    } else {
+      this._avatarActors.push(obj);
     }
 
     this._animation.loadAsset(obj, u);
@@ -484,7 +483,7 @@ class ThreeRenderer implements IRenderer {
       );
 
       const audioLevels = this._sam.getAudioLevels();
-      this._reacter.updateAudioLevels(audioLevels);
+      this._overlay.updateAudioLevels(audioLevels);
     }
 
     if (this._transformEnabled) {
@@ -493,12 +492,7 @@ class ThreeRenderer implements IRenderer {
     }
 
     if (sceneDirty || controlsDirty || animated || cameraDirty) {
-      this._reacter.update(
-        tick,
-        delta,
-        this._actorGroup.children,
-        this._camera
-      );
+      this._overlay.update(tick, delta, this._avatarActors, this._camera);
     }
 
     this.composer.render(delta);

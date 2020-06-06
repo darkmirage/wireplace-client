@@ -1,119 +1,33 @@
-import React from 'react';
-import { createUseStyles, useTheme } from 'react-jss';
+import { create } from 'jss';
+import camelCase from 'jss-plugin-camel-case';
+import defaultUnit from 'jss-plugin-default-unit';
 import { Object3D, Camera, Vector3 } from 'three';
 
-import { Icon } from 'components/ui';
 import WirePlaceClient from 'wireplace/WirePlaceClient';
 import hexToRGB from 'utils/hexToRGB';
-import type { Theme } from 'themes';
-import { PreventPropagation } from 'components/ui';
 
 type ActorID = string;
-
-type OverlayActor = {
-  actorId: string;
-  x: number;
-  y: number;
-  color: number;
-  username?: string;
-  distance: number;
-  audioLevel?: number;
-};
-
-type OverlayProps = {
-  delta: number;
-  actors: Array<OverlayActor>;
-};
 
 interface UserInfo {
   actorId: ActorID;
   username: string;
 }
 
-const v = new Vector3();
-
-const Overlay = (props: OverlayProps) => {
-  const classes = useStyles({ theme: useTheme() });
-
-  const overlays = props.actors.map(
-    ({ audioLevel, distance, username, actorId, x, y, color = 0 }, i) => {
-      if (!username) {
-        return null;
-      }
-
-      let audioIndicator = null;
-      if (audioLevel !== undefined) {
-        const style = { opacity: Math.min(1, Math.max(0, audioLevel)) };
-        if (audioLevel >= 0.5) {
-          audioIndicator = <Icon size="3x" style={style} icon="volume-up" />;
-        } else if (audioLevel > 0.01) {
-          audioIndicator = <Icon size="3x" style={style} icon="volume-down" />;
-        } else {
-          audioIndicator = <Icon size="3x" style={style} icon="volume-off" />;
-        }
-      }
-
-      return (
-        <PreventPropagation
-          className={classes.actor}
-          key={actorId}
-          style={{
-            zIndex: distance + 3,
-            top: y,
-            left: x,
-          }}
-        >
-          {audioIndicator}
-          <div
-            className={classes.nameplate}
-            style={{ background: hexToRGB(color) }}
-          >
-            {username}
-          </div>
-        </PreventPropagation>
-      );
-    }
-  );
-  return <div className={classes.container}>{overlays}</div>;
-};
+const _v = new Vector3();
 
 class OverlayRenderer {
-  _setOverlayContent: React.Dispatch<React.SetStateAction<React.ReactNode>>;
   _domElement: HTMLDivElement;
   _getClient: () => WirePlaceClient;
   _userInfo: Record<ActorID, UserInfo>;
   _audioLevels: Record<ActorID, number>;
 
-  constructor(
-    setOverlayContent: React.Dispatch<React.SetStateAction<React.ReactNode>>,
-    domElement: HTMLDivElement,
-    getClient: () => WirePlaceClient
-  ) {
-    this._setOverlayContent = setOverlayContent;
-    this._domElement = domElement;
+  constructor(domElement: HTMLDivElement, getClient: () => WirePlaceClient) {
+    this._domElement = document.createElement('div');
+    domElement.append(this._domElement);
+    this._domElement.className = classes.overlayContainer;
     this._getClient = getClient;
     this._userInfo = {};
     this._audioLevels = {};
-  }
-
-  _updateUserInfo(actors: Array<OverlayActor>) {
-    const actorIds = actors
-      .map(({ actorId }) => {
-        if (actorId in this._userInfo) {
-          return '';
-        } else {
-          // Cache a placeholder empty username before server returns
-          this._userInfo[actorId] = { actorId, username: '' };
-          return actorId;
-        }
-      })
-      .filter(Boolean);
-
-    this._getClient()
-      .fetchUsersInfo(actorIds)
-      .then((userInfo) => {
-        Object.assign(this._userInfo, userInfo);
-      });
   }
 
   updateAudioLevels(audioLevels: Record<ActorID, number>) {
@@ -126,83 +40,140 @@ class OverlayRenderer {
     actorObjects: Object3D[],
     camera: Camera
   ) {
-    const actorInfo: Array<OverlayActor> = [];
+    const fetchIds: ActorID[] = [];
 
     for (const child of actorObjects) {
-      if (child.name) {
-        v.copy(child.up).multiplyScalar(2.2);
-        v.add(child.position);
-        v.project(camera);
-        const widthHalf = this._domElement.clientWidth / 2;
-        const heightHalf = this._domElement.clientHeight / 2;
-        let { x, y } = v;
-        x = x * widthHalf + widthHalf;
-        y = -(y * heightHalf) + heightHalf;
-        if (
-          x < 0 ||
-          x > this._domElement.clientWidth ||
-          y < 0 ||
-          y > this._domElement.clientHeight
-        ) {
-          continue;
+      if (!child.name) {
+        continue;
+      }
+
+      const actorId = child.name;
+
+      let element = document.getElementById('actor-' + actorId);
+      let nameplate = document.getElementById('nameplate-' + actorId);
+      let audioIndicator = document.getElementById('audio-' + actorId);
+      if (!element || !nameplate || !audioIndicator) {
+        element = document.createElement('div');
+        element.id = 'actor-' + actorId;
+        element.className = classes.overlayActor;
+        this._domElement.append(element);
+
+        audioIndicator = document.createElement('i');
+        audioIndicator.id = 'audio-' + actorId;
+        element.append(audioIndicator);
+
+        nameplate = document.createElement('div');
+        nameplate.id = 'nameplate-' + actorId;
+        nameplate.className = classes.overlayNameplate;
+        element.append(nameplate);
+      }
+
+      _v.copy(child.up).multiplyScalar(2.2);
+      _v.add(child.position);
+      _v.project(camera);
+      const widthHalf = this._domElement.clientWidth / 2;
+      const heightHalf = this._domElement.clientHeight / 2;
+      let { x, y } = _v;
+      x = x * widthHalf + widthHalf;
+      y = -(y * heightHalf) + heightHalf;
+      if (
+        x < 0 ||
+        x > this._domElement.clientWidth ||
+        y < 0 ||
+        y > this._domElement.clientHeight
+      ) {
+        element.style.display = 'none';
+        continue;
+      } else {
+        element.style.display = '';
+      }
+      _v.copy(child.position).sub(camera.position);
+
+      const distance = _v.length();
+      const color: number = child.userData.color as any; // TODO: make this type safe
+      const audioLevel = this._audioLevels[actorId];
+
+      if (audioLevel !== undefined) {
+        audioIndicator.style.visibility = 'visible';
+        const opacity = Math.min(1, Math.max(0, audioLevel));
+        audioIndicator.style.opacity = opacity.toString();
+        if (audioLevel >= 0.5) {
+          audioIndicator.className =
+            'rs-icon rs-icon-volume-up rs-icon-size-3x';
+        } else if (audioLevel > 0.01) {
+          audioIndicator.className =
+            'rs-icon rs-icon-volume-down rs-icon-size-3x';
+        } else {
+          audioIndicator.className =
+            'rs-icon rs-icon-volume-off rs-icon-size-3x';
         }
-        v.copy(child.position).sub(camera.position);
-        const actorId = child.name;
-        const distance = v.length();
-        const color: number = child.userData.color as any; // TODO: make this type safe
-        const audioLevel = this._audioLevels[actorId];
-        actorInfo.push({ audioLevel, x, y, actorId, color, distance });
+      } else {
+        audioIndicator.style.visibility = 'hidden';
+      }
+
+      element.style.zIndex = Math.floor(distance + 3).toString();
+      element.style.top = `${y}px`;
+      element.style.left = `${x}px`;
+      nameplate.style.backgroundColor = hexToRGB(color);
+
+      if (this._userInfo[actorId]) {
+        nameplate.innerText = this._userInfo[actorId].username;
+      } else {
+        this._userInfo[actorId] = { actorId, username: '' };
+        fetchIds.push(actorId);
       }
     }
 
-    actorInfo.sort((a, b) => b.distance - a.distance);
-    this._updateUserInfo(actorInfo);
-
-    for (const ui of actorInfo) {
-      if (this._userInfo[ui.actorId]) {
-        ui.username = this._userInfo[ui.actorId].username;
-      }
-    }
-
-    const content = <Overlay delta={delta} actors={actorInfo} />;
-    this._setOverlayContent(content);
+    this._getClient()
+      .fetchUsersInfo(fetchIds)
+      .then((userInfo) => {
+        Object.assign(this._userInfo, userInfo);
+      });
   }
 }
-
-const useStyles = createUseStyles<Theme>((theme) => ({
-  container: {
-    alignItems: 'center',
-    display: 'flex',
-    height: '100%',
-    justifyContent: 'center',
-    outline: 'none',
-    pointerEvents: 'none',
-    position: 'absolute',
-    top: 0,
-    width: '100%',
-    zIndex: theme.zIndices.middle,
+const jss = create();
+jss.use(camelCase(), defaultUnit());
+const sheet = jss.createStyleSheet(
+  {
+    overlayContainer: {
+      alignItems: 'center',
+      display: 'flex',
+      height: '100%',
+      justifyContent: 'center',
+      outline: 'none',
+      pointerEvents: 'none',
+      position: 'absolute',
+      top: 0,
+      width: '100%',
+      zIndex: 5,
+    },
+    overlayActor: {
+      display: 'flex',
+      flexDirection: 'column',
+      pointerEvents: 'auto',
+      position: 'absolute',
+      transform: 'translate(-50%, -100px)',
+      alignItems: 'center',
+      height: '100px',
+      justifyContent: 'flex-end',
+    },
+    overlayNameplate: {
+      marginTop: 8,
+      color: '#ffffff',
+      fontWeight: 500,
+      opacity: 0.8,
+      borderRadius: 8,
+      paddingBottom: 4,
+      paddingLeft: 8,
+      paddingRight: 8,
+      paddingTop: 4,
+    },
   },
-  actor: {
-    display: 'flex',
-    flexDirection: 'column',
-    pointerEvents: 'auto',
-    position: 'absolute',
-    transform: 'translate(-50%, -100px)',
-    alignItems: 'center',
-    height: '100px',
-    justifyContent: 'flex-end',
-  },
-  nameplate: {
-    marginTop: theme.spacing.normal,
-    color: '#ffffff',
-    fontWeight: 500,
-    opacity: 0.8,
-    borderRadius: theme.spacing.normal,
-    paddingBottom: theme.spacing.narrow,
-    paddingLeft: theme.spacing.normal,
-    paddingRight: theme.spacing.normal,
-    paddingTop: theme.spacing.narrow,
-  },
-}));
+  {
+    classNamePrefix: 'OverlayRenderer',
+  }
+);
+const classes = sheet.classes;
+sheet.attach();
 
 export default OverlayRenderer;
