@@ -62,7 +62,7 @@ function handleGlobalKeyPress(event: React.KeyboardEvent<any>) {
     case '5': {
       getGlobalEmitter().emit(Events.PERFORM_ACTION, {
         actionType: AnimationActions.DANCE_YMCA,
-        actionState: 2,
+        actionState: -1,
       });
       break;
     }
@@ -87,6 +87,13 @@ function handleGlobalKeyPress(event: React.KeyboardEvent<any>) {
     case '9': {
       getGlobalEmitter().emit(Events.PERFORM_ACTION, {
         actionType: AnimationActions.DIE,
+      });
+      break;
+    }
+    case 's': {
+      getGlobalEmitter().emit(Events.PERFORM_ACTION, {
+        actionType: AnimationActions.SIT_IDLE,
+        actionState: -1,
       });
       break;
     }

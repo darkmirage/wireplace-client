@@ -17,6 +17,7 @@ export enum AnimationActions {
   SALUTE,
   WALK,
   WAVE,
+  SIT_IDLE,
 }
 
 export type AnimationAction = ValueOf<typeof AnimationActions>;

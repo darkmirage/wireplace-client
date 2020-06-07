@@ -21,6 +21,7 @@ const AnimationURLs: Partial<Record<AnimationAction, string>> = {
   [AnimationActions.SALUTE]: '/mixamo/animations/synty/Salute.fbx',
   [AnimationActions.WALK]: '/mixamo/animations/synty/Walking.fbx',
   [AnimationActions.WAVE]: '/mixamo/animations/synty/Waving.fbx',
+  [AnimationActions.SIT_IDLE]: '/mixamo/animations/synty/SittingIdle.fbx',
 };
 
 const clipCache: Partial<Record<AnimationAction, AnimationClip>> = {};
@@ -61,6 +62,7 @@ async function preload() {
   await loadIntoCache(AnimationActions.SALUTE);
   await loadIntoCache(AnimationActions.CRY);
   await loadIntoCache(AnimationActions.DIE);
+  await loadIntoCache(AnimationActions.SIT_IDLE);
 }
 
 preload();
