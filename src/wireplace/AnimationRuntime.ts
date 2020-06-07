@@ -1,113 +1,20 @@
-import {
-  AnimationAction as ThreeAnimationAction,
-  AnimationClip,
-  AnimationMixer,
-  LoopRepeat,
-  Object3D,
-  Group,
-  Vector3,
-} from 'three';
+import { AnimationMixer, LoopRepeat, Object3D, Group, Vector3 } from 'three';
 import { Update, ActorID } from 'wireplace-scene';
 
 import Tween, { TweenTarget } from 'wireplace/Tween';
 import { getGlobalEmitter, Events } from 'wireplace/TypedEventsEmitter';
 import { AnimationAction, AnimationActions } from 'constants/Animation';
-import { getAnimationIndex, loadAsset } from 'loaders/PreconfiguredAssets';
-import { getClip } from 'loaders/Mixamo';
-
-interface AnimationMetadata {
-  actionState: number;
-  actionType: AnimationAction;
-  animateable: boolean;
-  assetId: number | null;
-  color: number;
-  movable: boolean;
-  speed: number;
-  target: Object3D;
-  playing: {
-    actionType: AnimationAction;
-    clip: AnimationClip;
-  } | null;
-  asset: Object3D | null;
-  mixer: AnimationMixer | null;
-
-  // Frame when the actor last moved
-  lastTickMoved: number;
-}
+import { loadAsset } from 'loaders/PreconfiguredAssets';
+import {
+  getMetadata,
+  getAndAssertMetadata,
+  getThreeAnimationActionFromMetadata,
+} from './RendererMetadata';
 
 const SMOOTHING_CONSTANT = 5.0;
 const ANIMATION_FADE_TIME = 0.3;
 
 const _v = new Vector3();
-
-function getMetadata(obj: Object3D): AnimationMetadata | null {
-  const data: AnimationMetadata = obj.userData as any;
-  if (!data.animateable) {
-    return null;
-  }
-  return data;
-}
-
-function getAndAssertMetadata(obj: Object3D): AnimationMetadata {
-  const data = getMetadata(obj);
-  if (!data) {
-    throw new Error('Missing metadata');
-  }
-  return data;
-}
-
-function getClipFromMetadata(
-  obj: Object3D,
-  actionType: AnimationAction
-): AnimationClip | null {
-  const data = getAndAssertMetadata(obj);
-  if (data.assetId === null || data.asset === null) {
-    return null;
-  }
-
-  let clip: AnimationClip | null;
-  const index = getAnimationIndex(data.assetId, actionType);
-  if (index === undefined) {
-    clip = getClip(actionType);
-  } else {
-    clip = (data.asset as any).animations[index];
-  }
-
-  return clip;
-}
-
-function getThreeAnimationActionFromMetadata(
-  obj: Object3D,
-  actionType: AnimationAction
-): ThreeAnimationAction | null {
-  const data = getAndAssertMetadata(obj);
-  if (data.assetId === null || !data.asset || !data.mixer) {
-    return null;
-  }
-  const clip = getClipFromMetadata(obj, actionType);
-  if (!clip) {
-    return null;
-  }
-  return data.mixer.clipAction(clip);
-}
-
-function initializeMetadata(obj: Object3D, u: Update): AnimationMetadata {
-  const data: AnimationMetadata = {
-    actionState: -1,
-    actionType: AnimationActions.STATIC,
-    animateable: true,
-    asset: null,
-    assetId: null,
-    color: 0,
-    lastTickMoved: 0,
-    mixer: null,
-    movable: !!u.movable,
-    playing: null,
-    speed: 1.4,
-    target: new Object3D(),
-  };
-  return data;
-}
 
 class AnimationRuntime {
   _actorObjects: Array<Object3D>;
@@ -136,11 +43,7 @@ class AnimationRuntime {
   }
 
   loadAsset(obj: Object3D, u: Update) {
-    let data = getMetadata(obj);
-    if (!data) {
-      data = initializeMetadata(obj, u);
-      obj.userData = data;
-    }
+    let data = getAndAssertMetadata(obj);
 
     const assetId = u.assetId || 0;
     if (data.assetId === assetId) {
@@ -231,6 +134,11 @@ class AnimationRuntime {
 
   applyUpdate(obj: Object3D, u: Update) {
     const data = getAndAssertMetadata(obj);
+
+    if (u.revision === undefined) {
+      throw new Error('Missing revision number');
+    }
+    data.revision = u.revision;
 
     if (u.color) {
       data.color = u.color;

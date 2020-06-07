@@ -31,7 +31,7 @@ import {
   OrbitControls,
 } from 'three/examples/jsm/controls/OrbitControls';
 import { TransformControls } from 'three/examples/jsm/controls/TransformControls';
-import { Update } from 'wireplace-scene';
+import { Update, isRevisionNewer } from 'wireplace-scene';
 import Stats from 'three/examples/jsm/libs/stats.module';
 
 import { getGlobalEmitter, Events } from 'wireplace/TypedEventsEmitter';
@@ -44,6 +44,7 @@ import getMaterial from 'utils/getMaterial';
 import logger from 'utils/logger';
 import OverlayRenderer from './OverlayRenderer';
 import SpatialAudioManager from './SpatialAudioManager';
+import { initializeMetadata, getAndAssertMetadata } from './RendererMetadata';
 
 type ObjectID = string;
 
@@ -341,12 +342,17 @@ class ThreeRenderer implements IRenderer {
       obj.position.set(u.position.x, u.position.y, u.position.z);
     }
 
+    if (u.rotation) {
+      obj.rotation.set(u.rotation.x, u.rotation.y, u.rotation.z, 'XYZ');
+    }
+
     if (u.movable) {
       this._propActors.push(obj);
     } else {
       this._avatarActors.push(obj);
     }
 
+    obj.userData = initializeMetadata(obj, u);
     this._animation.loadAsset(obj, u);
     this._actorGroup.add(obj);
     return obj;
@@ -443,6 +449,17 @@ class ThreeRenderer implements IRenderer {
       }
 
       obj = obj || this._initializeObject(objectId, u);
+
+      const data = getAndAssertMetadata(obj);
+
+      if (u.revision === undefined) {
+        throw new Error('Revision number is missing');
+      }
+
+      if (!isRevisionNewer(data.revision, u.revision)) {
+        return;
+      }
+
       this._animation.applyUpdate(obj, u);
     }
   }
