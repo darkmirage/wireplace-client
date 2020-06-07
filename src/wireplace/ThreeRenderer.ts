@@ -100,8 +100,8 @@ class ThreeRenderer implements IRenderer {
   constructor({ overlay, sam }: ThreeRendererProps) {
     this.domElement = document.createElement('div');
     const antialias = !isHighResolution();
-    const showShadows = !isHighResolution();
-    const enableBloom = !isHighResolution();
+    const showShadows = true;
+    const enableBloom = false;
     const enableOutline = !isHighResolution();
 
     this.webGLRenderer = new WebGLRenderer({ antialias });
@@ -264,10 +264,10 @@ class ThreeRenderer implements IRenderer {
   };
 
   async _setupScene() {
-    this._scene.background = new Color(0x777777);
+    this._scene.background = new Color(0xeeefff);
     this._camera.position.set(0, 4, 5);
     const distance = this._camera.position.length();
-    this._scene.fog = new Fog(0x777777, distance * 3, distance * 5);
+    this._scene.fog = new Fog(0xeeefff, distance * 3, distance * 5);
 
     const bgObjs = new Group();
 
