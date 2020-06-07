@@ -120,6 +120,28 @@ class WirePlaceClient implements WirePlaceChatClient {
     }, 1000 / UPDATE_FPS);
   }
 
+  saveScene(): string {
+    return JSON.stringify(
+      Object.values(this.scene.retrieveDiff(true).d)
+        .map((actor) => {
+          const { assetId, rotation, position } = actor;
+          if (
+            assetId! < 1000 ||
+            (position!.x === 0 && position!.y === 0 && position!.z === 0)
+          ) {
+            return null;
+          }
+          return {
+            assetId,
+            position,
+            rotation,
+            movable: true,
+          };
+        })
+        .filter(Boolean)
+    );
+  }
+
   spawnProp = (assetId: number) => {
     this.socket.invoke('spawn', { assetId, roomId: this.roomId });
   };

@@ -266,7 +266,7 @@ class ThreeRenderer implements IRenderer {
     this._scene.background = new Color(0x777777);
     this._camera.position.set(0, 4, 5);
     const distance = this._camera.position.length();
-    this._scene.fog = new Fog(0x777777, distance * 1.5, distance * 3);
+    this._scene.fog = new Fog(0x777777, distance * 3, distance * 5);
 
     const bgObjs = new Group();
 
@@ -298,7 +298,7 @@ class ThreeRenderer implements IRenderer {
     bgObjs.add(l4);
 
     const floorMaterial = new MeshStandardMaterial({
-      color: 0x666666,
+      color: 0x717171,
     });
     const floor = new Mesh(new PlaneBufferGeometry(2000, 2000), floorMaterial);
     floor.rotation.x = -Math.PI / 2;
@@ -513,7 +513,7 @@ function initializeMapControls(
   controls.dampingFactor = 0.05;
   controls.target.set(0, TARGET_Y, 0);
   controls.screenSpacePanning = false;
-  controls.maxPolarAngle = Math.PI / 2 + Math.PI / 16;
+  controls.maxPolarAngle = Math.PI / 2 - Math.PI / 16;
   controls.minPolarAngle = Math.PI / 16;
   controls.enableKeys = false;
   controls.minDistance = 1.0;

@@ -1,4 +1,4 @@
-import { Group, Object3D, AnimationUtils } from 'three';
+import { Group, Object3D, AnimationUtils, Material, Mesh } from 'three';
 import { SkeletonUtils } from 'three/examples/jsm/utils/SkeletonUtils';
 
 import { AnimationAction, AnimationActions } from 'constants/Animation';
@@ -10,6 +10,7 @@ interface Asset {
   url: string;
   scale: number;
   animations?: Partial<Record<AnimationAction, number>>;
+  onLoaded?: (obj: Object3D) => void;
 }
 
 /*
@@ -81,17 +82,17 @@ export const AvatarAssets: Array<Asset> = [
 
 export const PropAssets: Array<Asset> = [
   {
-    name: 'Conference Table',
+    name: 'SM_Prop_Table_Conference_01.fbx',
     url: '/synty/office/SM_Prop_Table_Conference_01.fbx',
     scale: 0.01,
   },
   {
-    name: 'Table Tennis',
+    name: 'SM_Prop_TableTennis_01.fbx',
     url: '/synty/office/SM_Prop_TableTennis_01.fbx',
     scale: 0.01,
   },
   {
-    name: 'Coffee Table',
+    name: 'SM_Prop_CoffeeTable_01.fbx',
     url: '/synty/office/SM_Prop_CoffeeTable_01.fbx',
     scale: 0.01,
   },
@@ -216,23 +217,71 @@ export const PropAssets: Array<Asset> = [
     scale: 0.01,
   },
   {
-    name: 'SM_Prop_Note_01.fbx',
-    url: '/synty/office/SM_Prop_Note_01.fbx',
+    name: 'SM_Prop_ArcadeMachine_01.fbx',
+    url: '/synty/office/SM_Prop_ArcadeMachine_01.fbx',
     scale: 0.01,
   },
   {
-    name: 'SM_Prop_Papers_01.fbx',
-    url: '/synty/office/SM_Prop_Papers_01.fbx',
+    name: 'SM_Prop_Chair_03.fbx',
+    url: '/synty/office/SM_Prop_Chair_03.fbx',
     scale: 0.01,
   },
   {
-    name: 'SM_Prop_Paper_02.fbx',
-    url: '/synty/office/SM_Prop_Paper_02.fbx',
+    name: 'SM_Prop_Chair_04.fbx',
+    url: '/synty/office/SM_Prop_Chair_04.fbx',
     scale: 0.01,
   },
   {
-    name: 'SM_Prop_Paper_Pile_02.fbx',
-    url: '/synty/office/SM_Prop_Paper_Pile_02.fbx',
+    name: 'SM_Prop_JellyStapler_01.fbx',
+    url: '/synty/office/SM_Prop_JellyStapler_01.fbx',
+    scale: 0.01,
+    onLoaded: (obj) => {
+      ((obj.children[0] as Mesh).material as Material[])[1].transparent = true;
+    },
+  },
+  {
+    name: 'SM_Prop_Phone_Desk_01.fbx',
+    url: '/synty/office/SM_Prop_Phone_Desk_01.fbx',
+    scale: 0.01,
+  },
+  {
+    name: 'SM_Prop_Plant_02.fbx',
+    url: '/synty/office/SM_Prop_Plant_02.fbx',
+    scale: 0.01,
+  },
+  {
+    name: 'SM_Prop_Plant_05.fbx',
+    url: '/synty/office/SM_Prop_Plant_05.fbx',
+    scale: 0.01,
+  },
+  {
+    name: 'SM_Prop_Plant_09.fbx',
+    url: '/synty/office/SM_Prop_Plant_09.fbx',
+    scale: 0.01,
+  },
+  {
+    name: 'SM_Prop_Printer_01.fbx',
+    url: '/synty/office/SM_Prop_Printer_01.fbx',
+    scale: 0.01,
+  },
+  {
+    name: 'SM_Prop_Rug_01.fbx',
+    url: '/synty/office/SM_Prop_Rug_01.fbx',
+    scale: 0.01,
+  },
+  {
+    name: 'SM_Prop_Shelf_03.fbx',
+    url: '/synty/office/SM_Prop_Shelf_03.fbx',
+    scale: 0.01,
+  },
+  {
+    name: 'SM_Prop_Table_Round_02.fbx',
+    url: '/synty/office/SM_Prop_Table_Round_02.fbx',
+    scale: 0.01,
+  },
+  {
+    name: 'SM_Prop_Whiteboard_02.fbx',
+    url: '/synty/office/SM_Prop_Whiteboard_02.fbx',
     scale: 0.01,
   },
 ];
@@ -286,12 +335,15 @@ function loadFromCache(assetId: number): Object3D {
 }
 
 async function preload(assetId: number) {
-  const { url, scale } =
+  const { url, scale, onLoaded } =
     assetId < MAX_AVATAR_COUNT
       ? AvatarAssets[assetId]
       : PropAssets[assetId - MAX_AVATAR_COUNT];
   const g = await new FBXLoader().loadGroupAsync(url);
   g.scale.set(scale, scale, scale);
+  if (onLoaded) {
+    onLoaded(g);
+  }
   assetCache[assetId] = g;
 }
 
