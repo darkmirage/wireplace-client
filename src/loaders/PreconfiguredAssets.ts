@@ -115,6 +115,10 @@ export const PropAssets: Array<Asset> = [
     name: 'SM_Bld_Wall_Blank_Window_01.fbx',
     url: '/synty/office/SM_Bld_Wall_Blank_Window_01.fbx',
     scale: 0.01,
+    onLoaded: (obj) => {
+      ((obj.children[0].children[0] as Mesh)
+        .material as Material).transparent = true;
+    },
   },
   {
     name: 'SM_Prop_Bin_01.fbx',
@@ -282,6 +286,30 @@ export const PropAssets: Array<Asset> = [
   {
     name: 'SM_Prop_Whiteboard_02.fbx',
     url: '/synty/office/SM_Prop_Whiteboard_02.fbx',
+    scale: 0.01,
+  },
+  {
+    name: 'SM_Bld_Wall_Glass_01.fbx',
+    url: '/synty/office/SM_Bld_Wall_Glass_01.fbx',
+    scale: 0.01,
+    onLoaded: (obj) => {
+      ((obj.children[0].children[0] as Mesh)
+        .material as Material).transparent = true;
+    },
+  },
+  {
+    name: 'SM_Prop_Photocopier_01.fbx',
+    url: '/synty/office/SM_Prop_Photocopier_01.fbx',
+    scale: 0.01,
+  },
+  {
+    name: 'SM_Prop_Poster_01.fbx',
+    url: '/synty/office/SM_Prop_Poster_01.fbx',
+    scale: 0.01,
+  },
+  {
+    name: 'SM_Prop_Poster_02.fbx',
+    url: '/synty/office/SM_Prop_Poster_02.fbx',
     scale: 0.01,
   },
 ];
