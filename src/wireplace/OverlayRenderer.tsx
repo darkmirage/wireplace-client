@@ -118,7 +118,7 @@ class OverlayRenderer {
         audioIndicator.style.visibility = 'hidden';
       }
 
-      element.style.zIndex = Math.floor(distance + 3).toString();
+      element.style.zIndex = Math.floor(10000 - distance + 3).toString();
       element.style.top = `${y}px`;
       element.style.left = `${x}px`;
       nameplate.style.backgroundColor = hexToRGB(color);
