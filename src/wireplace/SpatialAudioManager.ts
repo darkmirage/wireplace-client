@@ -11,8 +11,8 @@ interface SpatialAudioActor {
   gain: number;
 }
 
-const REF_DISTANCE = 3.0;
-const ROLL_OFF_FACTOR = 6.0;
+const REF_DISTANCE = 4.0;
+const ROLL_OFF_FACTOR = 5.0;
 const FFT_SIZE = 2 ** 5;
 
 const _v = new Vector3();
