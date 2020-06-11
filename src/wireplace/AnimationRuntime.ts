@@ -221,9 +221,13 @@ class AnimationRuntime {
         if (_v.length() <= 0.005) {
           obj.position.copy(target.position);
         } else {
-          this.resumeAction(obj, AnimationActions.WALK);
+          if (actionType === AnimationActions.WALK) {
+            this.resumeAction(obj, AnimationActions.WALK);
+          } else {
+            this.startAction(obj, AnimationActions.WALK);
+          }
         }
-      } else if (tick - data.lastTickMoved > 20) {
+      } else if (tick - data.lastTickMoved > 10) {
         getGlobalEmitter().emit(Events.ANIMATION_STOPPED, {
           actorId: obj.name,
           actionType: AnimationActions.WALK,
