@@ -19,6 +19,11 @@ const AuthenticatedContainer = ({ loggedOut, children, spinner }: Props) => {
   React.useEffect(() => {
     return firebase.auth().onAuthStateChanged((user) => {
       setCurrentUser(user);
+
+      if (user) {
+        const { displayName, email, uid } = user;
+        firebase.analytics().setUserProperties({ displayName, email, uid });
+      }
       setLoading(false);
     });
   }, []);

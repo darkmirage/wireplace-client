@@ -4,6 +4,7 @@ import classNames from 'classnames';
 
 import { ButtonToolbar, PreventPropagation } from 'components/ui';
 import { Theme } from 'themes';
+import firebase from 'firebaseApp';
 
 export type UpdateDropdown = (menu: string, content: React.ReactNode) => void;
 
@@ -26,9 +27,11 @@ const TopToolbar = ({ children }: Props) => {
     if (newContent) {
       setContent(newContent);
       setMenu(newMenu);
+      firebase.analytics().logEvent('menu_open', { menuName: newMenu });
     } else {
       setContent(null);
       setMenu('');
+      firebase.analytics().logEvent('menu_close');
     }
   };
 

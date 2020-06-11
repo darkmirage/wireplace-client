@@ -307,6 +307,12 @@ class WirePlaceClient implements WirePlaceChatClient {
         this._resetCache();
         this._unsubscribe();
         lastSeen = Date.now();
+        firebase
+          .analytics()
+          .logEvent('client_disconnected', {
+            roomId: this.roomId,
+            actorId: this._actorId,
+          });
       }
     })();
 
@@ -321,6 +327,12 @@ class WirePlaceClient implements WirePlaceChatClient {
         const diff = deserializeDiff(diffRaw);
         logger.log('[Client] Initial diff:', diff);
         this.scene.applyDiff(diff);
+        firebase
+          .analytics()
+          .logEvent('client_connected', {
+            roomId: this.roomId,
+            actorId: this._actorId,
+          });
       }
     })();
 

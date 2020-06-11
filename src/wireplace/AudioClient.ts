@@ -3,6 +3,7 @@ import AgoraRTC, { IAgoraRTCClient, ILocalAudioTrack } from 'agora-rtc-sdk-ng';
 import { ActorID } from 'wireplace-scene';
 
 import SpatialAudioManager from 'wireplace/SpatialAudioManager';
+import firebase from 'firebaseApp';
 
 const AGORA_APP_ID = '2fe980bdfc9f40f9bde6d0348f8f2f9d';
 
@@ -52,10 +53,14 @@ class AudioClient {
       if (curState === 'CONNECTED') {
         this.connected = true;
         this._ee.emit(AudioEvents.CONNECTION, true);
+        firebase.analytics().logEvent('audio_connected', { actorId, roomId });
       } else if (curState === 'DISCONNECTED') {
         this.connected = false;
         this._local = null;
         this._ee.emit(AudioEvents.CONNECTION, false);
+        firebase
+          .analytics()
+          .logEvent('audio_disconnected', { actorId, roomId });
       }
     });
 
@@ -95,6 +100,11 @@ class AudioClient {
 
   mute = (muted: boolean = true) => {
     this._local?.setMute(muted);
+    if (muted) {
+      firebase.analytics().logEvent('audio_muted');
+    } else {
+      firebase.analytics().logEvent('audio_unmuted');
+    }
   };
 }
 
