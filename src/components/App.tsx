@@ -3,12 +3,13 @@ import { createUseStyles, useTheme } from 'react-jss';
 import { BrowserRouter, Route, Switch, Redirect } from 'react-router-dom';
 
 import { Theme } from 'themes';
+import AnalyticsComponent from 'components/AnalyticsComponent';
 import Home from 'components/pages/Home';
 import Login from 'components/pages/Login';
 import Logout from 'components/pages/Logout';
-import Room from 'components/pages/Room';
 import PrivateRoute from 'components/auth/PrivateRoute';
 import Profile from 'components/pages/Profile';
+import Room from 'components/pages/Room';
 import SignUp from 'components/pages/SignUp';
 
 const App = () => {
@@ -17,6 +18,7 @@ const App = () => {
   return (
     <BrowserRouter>
       <div className={classes.app}>
+        <AnalyticsComponent />
         <Switch>
           <Route exact path="/" component={Home} />
           <Route exact path="/waitlist" component={Home} />
