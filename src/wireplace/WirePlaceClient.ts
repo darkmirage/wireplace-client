@@ -84,7 +84,11 @@ class WirePlaceClient implements WirePlaceChatClient {
 
     this._ee.on(Events.SPAWN_PROP, this.spawnProp);
     this._ee.on(Events.MOVE_PROP, ({ actorId, rotation, position }) => {
-      this.socket.transmit('move', { actorId, update: { rotation, position } });
+      this.socket.transmit('move', {
+        actorId,
+        roomId: this.roomId,
+        update: { rotation, position },
+      });
     });
     this._ee.on(Events.REMOVE_PROP, this.removeProp);
 
@@ -114,7 +118,11 @@ class WirePlaceClient implements WirePlaceChatClient {
 
     setInterval(() => {
       if (Object.keys(update).length > 0) {
-        this.socket.transmit('move', { actorId: this._actorId, update });
+        this.socket.transmit('move', {
+          actorId: this._actorId,
+          roomId: this.roomId,
+          update,
+        });
         update = {};
       }
     }, 1000 / UPDATE_FPS);
@@ -192,7 +200,7 @@ class WirePlaceClient implements WirePlaceChatClient {
   }
 
   sendMessage(message: string) {
-    this.socket.transmit('say', message);
+    this.socket.transmit('say', { roomId: this.roomId, message });
   }
 
   onMessage(callback: ChatCallback): Function {
@@ -203,7 +211,7 @@ class WirePlaceClient implements WirePlaceChatClient {
       }
     };
     this.socket
-      .invoke('getChatHistory', {})
+      .invoke('getChatHistory', { roomId: this.roomId })
       .then((lines) => lines.forEach(callback))
       .then(startListeniing);
     return () => {
@@ -233,22 +241,14 @@ class WirePlaceClient implements WirePlaceChatClient {
     const additionalResults: Record<
       ActorID,
       UserInfo
-    > = await this.socket.invoke('user', query);
+    > = await this.socket.invoke('getRoomUsers', {
+      query,
+      roomId: this.roomId,
+    });
     Object.assign(result, additionalResults);
     Object.assign(this._userCache, additionalResults);
 
     return result;
-  };
-
-  fetchUserInfo = async (actorId: ActorID): Promise<UserInfo | null> => {
-    if (actorId in this._userCache) {
-      return this._userCache[actorId];
-    }
-    const user = await this.socket.invoke('user', actorId);
-    if (user) {
-      this._userCache[actorId] = user;
-    }
-    return user;
   };
 
   disconnect() {
@@ -321,7 +321,9 @@ class WirePlaceClient implements WirePlaceChatClient {
         this._resetCache();
         await this.join();
         logger.log('[Client] Connection info:', info);
-        const diffRaw = await this.socket.invoke('sync', {});
+        const diffRaw = await this.socket.invoke('sync', {
+          roomId: this.roomId,
+        });
         const diff = deserializeDiff(diffRaw);
         logger.log('[Client] Initial diff:', diff);
         this.scene.applyDiff(diff);
