@@ -142,15 +142,19 @@ class OverlayRenderer {
         if (audioLevel >= 0.5) {
           audioIndicator.className =
             'rs-icon rs-icon-volume-up rs-icon-size-3x';
+          listEntry.style.filter = 'grayscale(0)';
         } else if (audioLevel > 0.01) {
           audioIndicator.className =
             'rs-icon rs-icon-volume-down rs-icon-size-3x';
+          listEntry.style.filter = 'grayscale(0.3)';
         } else {
           audioIndicator.className =
             'rs-icon rs-icon-volume-off rs-icon-size-3x';
+          listEntry.style.filter = 'grayscale(1.0)';
         }
       } else {
         audioIndicator.style.visibility = 'hidden';
+        listEntry.style.filter = 'grayscale(1.0)';
       }
 
       element.style.zIndex = Math.floor(10000 - distance + 3).toString();
@@ -189,6 +193,7 @@ const sheet = jss.createStyleSheet(
       height: '100%',
       justifyContent: 'center',
       outline: 'none',
+      overflow: 'hidden',
       pointerEvents: 'none',
       position: 'absolute',
       top: 0,
@@ -241,14 +246,16 @@ const sheet = jss.createStyleSheet(
       cursor: 'pointer',
       fontWeight: 500,
       marginTop: 8,
-      opacity: 0.5,
+      opacity: 0.8,
       paddingBottom: 4,
       paddingLeft: 8,
       paddingRight: 8,
       paddingTop: 4,
       transition: '200ms',
+      filter: 'grayscale(1)',
       '&:hover': {
         opacity: 1,
+        filter: 'grayscale(0)',
       },
     },
     userListHeader: {
