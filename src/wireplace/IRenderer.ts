@@ -17,4 +17,5 @@ export interface IRenderer {
   cameraRight: Vector3;
   toggleCameraLock: () => void;
   getRendererPose: (actorId: ActorID) => IPose | null;
+  moveCamera: (coords: { x: number; y: number; z: number }) => void;
 }

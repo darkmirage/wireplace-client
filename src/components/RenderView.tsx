@@ -30,7 +30,7 @@ const RenderView = (props: Props) => {
     }
 
     const runtime = new GameplayRuntime({ scene, emitter, actorId });
-    const overlay = new OverlayRenderer(current, () => client);
+    const overlay = new OverlayRenderer(() => client);
     const renderer = new ThreeRenderer({ overlay, sam });
     renderer.setDOMElement(current);
     window.addEventListener('resize', renderer.resize);

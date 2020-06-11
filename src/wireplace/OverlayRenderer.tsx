@@ -1,10 +1,10 @@
 import { create } from 'jss';
-import camelCase from 'jss-plugin-camel-case';
-import defaultUnit from 'jss-plugin-default-unit';
+import preset from 'jss-preset-default';
 import { Object3D, Camera, Vector3 } from 'three';
 
 import WirePlaceClient from 'wireplace/WirePlaceClient';
 import hexToRGB from 'utils/hexToRGB';
+import { Events, getGlobalEmitter } from 'wireplace/TypedEventsEmitter';
 
 type ActorID = string;
 
@@ -15,16 +15,32 @@ interface UserInfo {
 
 const _v = new Vector3();
 
+function handleClick(event: MouseEvent) {
+  event.stopPropagation();
+  getGlobalEmitter().emit(
+    Events.SET_CAMERA_TARGET,
+    (event.target as HTMLDivElement).dataset.actorId
+  );
+}
+
 class OverlayRenderer {
   _domElement: HTMLDivElement;
+  _listElement: HTMLDivElement;
   _getClient: () => WirePlaceClient;
   _userInfo: Record<ActorID, UserInfo>;
   _audioLevels: Record<ActorID, number>;
 
-  constructor(domElement: HTMLDivElement, getClient: () => WirePlaceClient) {
-    this._domElement = document.createElement('div');
-    domElement.append(this._domElement);
+  constructor(getClient: () => WirePlaceClient) {
+    this._domElement = document.getElementById('overlay') as any;
+    this._listElement = document.getElementById('user-list') as any;
+    this._listElement.className = classes.userList;
     this._domElement.className = classes.overlayContainer;
+
+    const header = document.createElement('div');
+    header.innerText = 'Online users';
+    header.className = classes.userListHeader;
+    this._listElement.append(header);
+
     this._getClient = getClient;
     this._userInfo = {};
     this._audioLevels = {};
@@ -38,6 +54,10 @@ class OverlayRenderer {
     const element = document.getElementById('actor-' + actorId);
     if (element) {
       element.remove();
+    }
+    const entry = document.getElementById('user-list-' + actorId);
+    if (entry) {
+      entry.remove();
     }
   }
 
@@ -59,20 +79,35 @@ class OverlayRenderer {
       let element = document.getElementById('actor-' + actorId);
       let nameplate = document.getElementById('nameplate-' + actorId);
       let audioIndicator = document.getElementById('audio-' + actorId);
-      if (!element || !nameplate || !audioIndicator) {
+      let listEntry = document.getElementById('user-list-' + actorId);
+
+      if (!element) {
         element = document.createElement('div');
         element.id = 'actor-' + actorId;
         element.className = classes.overlayActor;
         this._domElement.append(element);
+      }
 
+      if (!audioIndicator) {
         audioIndicator = document.createElement('i');
         audioIndicator.id = 'audio-' + actorId;
         element.append(audioIndicator);
+      }
 
+      if (!nameplate) {
         nameplate = document.createElement('div');
         nameplate.id = 'nameplate-' + actorId;
         nameplate.className = classes.overlayNameplate;
         element.append(nameplate);
+      }
+
+      if (!listEntry) {
+        listEntry = document.createElement('div');
+        listEntry.id = 'user-list-' + actorId;
+        listEntry.className = classes.userListEntry;
+        listEntry.dataset.actorId = actorId;
+        listEntry.addEventListener('click', handleClick, true);
+        this._listElement.append(listEntry);
       }
 
       _v.copy(child.up).multiplyScalar(2.2);
@@ -121,10 +156,16 @@ class OverlayRenderer {
       element.style.zIndex = Math.floor(10000 - distance + 3).toString();
       element.style.top = `${y}px`;
       element.style.left = `${x}px`;
-      nameplate.style.backgroundColor = hexToRGB(color);
+
+      const backgroundColor = hexToRGB(color);
+      nameplate.style.backgroundColor = backgroundColor;
+      listEntry.style.backgroundColor = backgroundColor;
 
       if (this._userInfo[actorId]) {
-        nameplate.innerText = this._userInfo[actorId].username;
+        if (!nameplate.innerText) {
+          nameplate.innerText = this._userInfo[actorId].username;
+          listEntry.innerText = this._userInfo[actorId].username;
+        }
       } else {
         this._userInfo[actorId] = { actorId, username: '' };
         fetchIds.push(actorId);
@@ -139,7 +180,7 @@ class OverlayRenderer {
   }
 }
 const jss = create();
-jss.use(camelCase(), defaultUnit());
+jss.setup(preset());
 const sheet = jss.createStyleSheet(
   {
     overlayContainer: {
@@ -175,9 +216,53 @@ const sheet = jss.createStyleSheet(
       paddingRight: 8,
       paddingTop: 4,
     },
+    userList: {
+      maxHeight: '70%',
+      overflowY: 'scroll',
+      position: 'absolute',
+      right: 8,
+      top: 100,
+      zIndex: 6,
+      '&::-webkit-scrollbar-thumb': {
+        background: 'rgba(0, 0, 0, 0.3)',
+        borderRadius: 4,
+        pointerEvents: 'auto',
+        width: 8,
+      },
+      '&::-webkit-scrollbar': {
+        background: 'rgba(0, 0, 0, 0)',
+        pointerEvents: 'auto',
+        width: 8,
+      },
+    },
+    userListEntry: {
+      borderRadius: 8,
+      color: '#ffffff',
+      cursor: 'pointer',
+      fontWeight: 500,
+      marginTop: 8,
+      opacity: 0.5,
+      paddingBottom: 4,
+      paddingLeft: 8,
+      paddingRight: 8,
+      paddingTop: 4,
+      transition: '200ms',
+      '&:hover': {
+        opacity: 1,
+      },
+    },
+    userListHeader: {
+      color: '#333',
+      fontWeight: 'bold',
+    },
+    '@media (max-width: 400px)': {
+      userList: {
+        display: 'none',
+      },
+    },
   },
   {
-    classNamePrefix: 'OverlayRenderer',
+    classNamePrefix: 'OverlayRenderer-',
   }
 );
 const classes = sheet.classes;

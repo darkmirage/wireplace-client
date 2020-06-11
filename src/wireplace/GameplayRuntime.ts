@@ -94,6 +94,10 @@ class GameplayRuntime {
     this._ee.on(Events.SET_CAMERA_TRACKING_MODE, () => {
       this._renderer?.toggleCameraLock();
     });
+    this._ee.on(Events.SET_CAMERA_TARGET, (actorId) => {
+      const actor = this._scene.getActorOrThrow(actorId);
+      this._renderer?.moveCamera(actor.position);
+    });
     this._ee.on(Events.MOVE_TO, ({ x, y, z }) => {
       _v1.set(x, y, z);
       this.moveTo(_v1, true);

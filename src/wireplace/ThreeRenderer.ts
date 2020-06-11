@@ -395,6 +395,16 @@ class ThreeRenderer implements IRenderer {
     }
   }
 
+  moveCamera(coords: { x: number; y: number; z: number }) {
+    this._cameraLocked = false;
+
+    _v1.copy(this._camera.position).sub(this._controls.target);
+
+    this._controls.target.set(coords.x, coords.y, coords.z);
+    this._controls.target.y += TARGET_Y;
+    this._camera.position.copy(this._controls.target).add(_v1);
+  }
+
   toggleCameraLock = () => {
     this._cameraLocked = !this._cameraLocked;
   };
