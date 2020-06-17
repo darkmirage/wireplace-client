@@ -21,6 +21,8 @@ const Guide = () => {
 
         <ul className={classes.lines}>
           <li>Click anywhere to move your avatar</li>
+          <li>Scroll to zoom in and out</li>
+          <li>Drag to look around the room</li>
           <li>
             Press <span className={classes.key}>1</span> to{' '}
             <span className={classes.key}>9</span> to perform an emote
