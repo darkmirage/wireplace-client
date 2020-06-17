@@ -14,6 +14,7 @@ import AvatarMenu from 'components/AvatarMenu';
 import ClientProvider from 'components/ClientProvider';
 import Contact from 'components/Contact';
 import EmoteMenu from 'components/EmoteMenu';
+import Guide from 'components/Guide';
 import RenderView from 'components/RenderView';
 import SpatialAudioManager from 'wireplace/SpatialAudioManager';
 import TextChat from 'components/chat/TextChat';
@@ -37,6 +38,7 @@ const Room = (props: PageProps) => {
         >
           {({ client, actorId, username }) => (
             <>
+              <Guide />
               <div className={classes.panel}>
                 <TopToolbar>
                   {(menuProps) => (
