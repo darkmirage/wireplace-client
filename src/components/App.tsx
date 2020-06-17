@@ -27,7 +27,7 @@ const App = () => {
           <Route exact path="/signup" component={SignUp} />
           <Route exact path="/unverified" component={Home} />
           <PrivateRoute exact path="/profile" component={Profile} />
-          <PrivateRoute exact path="/:roomId" component={Room} />
+          <Route exact path="/:roomId" component={Room} />
           <Route path="/" render={() => <Redirect to="/" />} />
         </Switch>
       </div>

@@ -159,6 +159,29 @@ class WirePlaceClient implements WirePlaceChatClient {
   };
 
   async _refreshToken(): Promise<ServerAuthResponse> {
+    const uuid = localStorage.getItem('WIREPLACE_UUID');
+    const username = localStorage.getItem('WIREPLACE_USER');
+    if (uuid && username) {
+      try {
+        const res = await axios.post(
+          `${window.location.protocol}//${this._hostname}:${this._port}/manual-login`,
+          { uuid, username }
+        );
+        const { token, error } = res.data;
+        if (!token) {
+          return error;
+        }
+        localStorage.setItem('socketcluster.authToken', token);
+      } catch (e) {
+        localStorage.removeItem('socketcluster.authToken');
+        logger.error(e.message);
+        return 'FAILURE';
+      }
+      logger.log(`[Client] Logged in as ${uuid}`);
+      return 'SUCCESS';
+    }
+
+    // Assume Firebase login if generated UUID is not present
     const user = await this.getUserOrThrow();
     try {
       const firebaseToken = await user.getIdToken();

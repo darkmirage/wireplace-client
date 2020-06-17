@@ -4,7 +4,7 @@ import { createUseStyles, useTheme } from 'react-jss';
 
 import Contact from 'components/Contact';
 import { Panel, Message } from 'components/ui';
-import UserControls from 'components/auth/UserControls';
+import JoinChannel from 'components/JoinChannel';
 import Unverified from 'components/auth/Unverified';
 import { PageProps } from 'components/auth/PageProps';
 import { Theme } from 'themes';
@@ -42,7 +42,7 @@ const Home = (props: PageProps) => {
             </div>
             <div className={classes.row}>
               <Switch>
-                <Route exact path="/" component={UserControls} />
+                <Route exact path="/" component={JoinChannel} />
                 <Route exact path="/unverified" component={Unverified} />
                 <Route
                   exact
