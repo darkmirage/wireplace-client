@@ -120,12 +120,16 @@ class SpatialAudioManager {
     const p1 = listenerPose.position;
     const q1 = listenerPose.quaternion;
     _v.set(0, 0, 1).applyQuaternion(q1);
-    listener.positionX.value = p1.x;
-    listener.positionY.value = p1.y;
-    listener.positionZ.value = p1.z;
-    listener.forwardX.value = _v.x;
-    listener.forwardY.value = _v.y;
-    listener.forwardZ.value = _v.z;
+
+    // listener API is missing (Firefox)
+    if (listener.positionX) {
+      listener.positionX.value = p1.x;
+      listener.positionY.value = p1.y;
+      listener.positionZ.value = p1.z;
+      listener.forwardX.value = _v.x;
+      listener.forwardY.value = _v.y;
+      listener.forwardZ.value = _v.z;
+    }
 
     const updateActor = this._updateActor.bind(this, p1, renderer, currentTime);
 
